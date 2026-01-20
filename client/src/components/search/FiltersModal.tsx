@@ -138,9 +138,6 @@ export default function FiltersModal({
            (vehiclesEnabled ? vehicleAmenities : []);
   }, [category, vehiclesEnabled]);
 
-  // Early return after all hooks to avoid hook order violation
-  if (!isOpen) return null;
-
   const adjustCounter = (field: string, operation: 'increment' | 'decrement') => {
     const currentValue = localFilters[field] || 0;
     const newValue = operation === 'increment' ? currentValue + 1 : Math.max(0, currentValue - 1);
@@ -192,10 +189,8 @@ export default function FiltersModal({
     setLocalFilters(clearedFilters);
   };
 
-  // Utiliser Portal pour rendre au-dessus de la carte Leaflet
-  if (typeof document === 'undefined') return null;
-
-  return createPortal(
+  // Utiliser Portal pour rendre au-dessus de la carte Leaflet (comme le sélecteur de langue)
+  return isOpen && typeof document !== 'undefined' && createPortal(
     <div
       className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50"
       onClick={onClose}
