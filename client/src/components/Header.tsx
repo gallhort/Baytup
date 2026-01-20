@@ -466,6 +466,11 @@ const Header = React.memo(function Header({
   }, [headerState.isAnimating]);
 
   const handleClickOutside = useCallback(() => {
+    // Don't close on mobile (< 1024px) - only the X button should close the modal
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      return;
+    }
+
     if (headerState.searchExpanded && !headerState.isAnimating) {
       setHeaderState(prev => ({
         ...prev,
