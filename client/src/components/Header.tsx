@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -1634,7 +1635,7 @@ const Header = React.memo(function Header({
                 )}
 
                 {/* Language/Globe Selector - Enhanced - Hidden on Mobile */}
-                <div className="hidden sm:block" ref={languageMenuRef}>
+                <div className="hidden sm:block relative" ref={languageMenuRef}>
                   <button
                     onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
                     className="p-2 sm:p-2.5 lg:p-3 rounded-full hover:bg-gray-50 transition-all duration-200 hover:scale-110"
@@ -1642,9 +1643,15 @@ const Header = React.memo(function Header({
                   >
                     <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-700" />
                   </button>
+                </div>
 
-                  {isLanguageMenuOpen && (
-                    <div className="fixed right-4 top-16 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 z-[99999] animate-in slide-in-from-top-2 duration-200">
+                {/* Language Menu Portal - Rendered at body level to avoid z-index issues */}
+                {isLanguageMenuOpen && typeof document !== 'undefined' && createPortal(
+                  <div className="fixed inset-0 z-[99999]" onClick={() => setIsLanguageMenuOpen(false)}>
+                    <div
+                      className="absolute right-4 top-16 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 animate-in slide-in-from-top-2 duration-200"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="px-4 py-3 border-b border-gray-100">
                         <div className="text-sm font-semibold text-gray-900">{t.languageAndRegion}</div>
                       </div>
@@ -1699,8 +1706,9 @@ const Header = React.memo(function Header({
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>,
+                  document.body
+                )}
 
                 {/* Enhanced User Menu - Optimized for all screens */}
                 <div className="relative" ref={userMenuRef}>

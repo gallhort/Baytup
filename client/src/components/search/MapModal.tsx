@@ -212,23 +212,23 @@ export default function MapModal({
 
         {/* Enhanced Map Container */}
         <div className={`relative ${isFullscreen ? 'h-[calc(100vh-120px)]' : 'h-[calc(90vh-140px)]'}`}>
-          {/* Floating counter badge - Repositioned to avoid zoom buttons on mobile */}
+          {/* Floating counter badge - Compact and centered on mobile to avoid zoom buttons */}
           {currentMapBounds && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 sm:left-20 sm:translate-x-0 z-10 pointer-events-none">
-              <div className="bg-white/95 backdrop-blur-lg rounded-xl shadow-lg px-3 py-2 flex items-center gap-2 pointer-events-auto">
-                <div className="p-1 bg-gradient-to-br from-[#FF6B35] to-orange-600 rounded-lg">
-                  <MapPin className="w-3 h-3 text-white" />
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 sm:left-20 sm:translate-x-0 z-10 pointer-events-none">
+              <div className="bg-white/95 backdrop-blur-lg rounded-lg shadow-md px-2 py-1 sm:px-3 sm:py-2 flex items-center gap-1 sm:gap-2 pointer-events-auto">
+                <div className="p-0.5 sm:p-1 bg-gradient-to-br from-[#FF6B35] to-orange-600 rounded">
+                  <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
                 </div>
                 <div>
-                  <p className="text-base sm:text-lg font-bold text-gray-900 leading-none">
+                  <p className="text-sm sm:text-base font-bold text-gray-900 leading-none">
                     {visibleListingsCount}
                   </p>
-                  <p className="text-[9px] sm:text-[10px] text-gray-600 whitespace-nowrap">
+                  <p className="text-[8px] sm:text-[9px] text-gray-600 whitespace-nowrap leading-tight">
                     {visibleListingsCount === 1 ? ((t as any)?.mapDetails?.propertyFound || 'Property found') : ((t as any)?.mapDetails?.propertiesFound || 'Properties found')}
                   </p>
                 </div>
                 {visibleListingsCount === 0 && (
-                  <p className="text-[9px] sm:text-[10px] text-orange-600 font-medium">
+                  <p className="text-[8px] sm:text-[9px] text-orange-600 font-medium">
                     {(t as any)?.map?.panZoom || 'Pan or zoom out'}
                   </p>
                 )}
