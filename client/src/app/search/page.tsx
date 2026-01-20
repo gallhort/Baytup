@@ -679,8 +679,8 @@ function SearchPageContent() {
           </div>
         </div>
 
-        {/* Right: Map Panel (55% - Fixed, hidden on mobile) */}
-        <div className="hidden lg:block lg:w-[55%] flex-shrink-0 h-full relative bg-gray-100">
+        {/* Right: Map Panel (55% - Fixed, hidden on mobile avec marge droite) */}
+        <div className="hidden lg:block lg:w-[55%] flex-shrink-0 h-full relative bg-gray-100 pr-6">
           <div className="h-full w-full">
             <LeafletMapView
               listings={listings}
