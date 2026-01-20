@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Minus, Plus } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFeature } from '@/contexts/FeatureFlagsContext'; // ✅ Feature flags
@@ -191,9 +192,18 @@ export default function FiltersModal({
     setLocalFilters(clearedFilters);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+  // Utiliser Portal pour rendre au-dessus de la carte Leaflet
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <button
@@ -431,6 +441,7 @@ export default function FiltersModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
