@@ -13,6 +13,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import CityAutocomplete from '@/components/listing/CityAutocomplete';
+import LeafletLocationPicker from '@/components/listing/LeafletLocationPicker';
 import { useTranslation } from '@/hooks/useTranslation';
 import PriceInput from '@/components/common/PriceInput';
 
@@ -713,12 +714,12 @@ export default function EditListingPage() {
           </div>
         </div>
 
-        {/* Google Maps Location Picker */}
+        {/* Leaflet Location Picker */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700 mb-3">
             {(t as any).location.pinLocation} <span className="text-red-500">*</span>
           </label>
-          <GoogleMapsLocationPicker
+          <LeafletLocationPicker
             center={{
               lat: formData.location.coordinates[1] || 36.7538,
               lng: formData.location.coordinates[0] || 3.0588
@@ -1433,7 +1434,6 @@ export default function EditListingPage() {
   }
 
   return (
-    <GoogleMapsScriptLoader>
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-5xl mx-auto px-4">
         {/* Header */}
@@ -1532,6 +1532,5 @@ export default function EditListingPage() {
         </form>
         </div>
       </div>
-    </GoogleMapsScriptLoader>
   );
 }

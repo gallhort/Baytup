@@ -30,7 +30,8 @@
       "Bash(ssh-keygen:*)",
       "Bash(ssh:*)",
       "Bash(sshpass -p 'n4OKwuNQ' ssh -o StrictHostKeyChecking=no root@135.125.211.180 \"cd /var/www/html && git status\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(sshpass -p 'n4OKwuNQ' ssh -o StrictHostKeyChecking=no root@212.227.96.59 \"cd /var/www/html && git stash && git pull origin master\")"
     ]
   }
 }
