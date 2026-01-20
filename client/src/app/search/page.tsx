@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useSocketListings, useSocketConnection } from '@/hooks/useSocket';
 import FilterSidebar from '@/components/search/FilterSidebar';
 import HorizontalFilters from '@/components/search/HorizontalFilters';
+import HorizontalFilterChips from '@/components/search/HorizontalFilterChips';
 import FiltersModal from '@/components/search/FiltersModal';
 import SearchResults from '@/components/search/SearchResults';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -96,6 +97,8 @@ function SearchPageContent() {
   const [hoveredListing, setHoveredListing] = useState<string | null>(null);
   // ✅ NEW: Track visible listings from map for dynamic list synchronization
   const [mapVisibleListings, setMapVisibleListings] = useState<Listing[]>([]);
+  // ✅ Abritel-style: Search on map move
+  const [searchOnMapMove, setSearchOnMapMove] = useState(false);
 
   // ✅ SIMPLIFIED: Simple radius-based search only
   const [searchRadius, setSearchRadius] = useState(50); // km
@@ -554,7 +557,7 @@ function SearchPageContent() {
   }, [viewMode, mapVisibleListings, filteredListings]);
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 flex flex-col" style={{ height: '100vh', paddingTop: '72px' }}>
+    <div className="bg-white flex flex-col" style={{ height: '100vh', paddingTop: '72px' }}>
       {/* SEO Head Tags */}
       <head>
         <title>{seoTitle}</title>
@@ -563,202 +566,145 @@ function SearchPageContent() {
         <meta property="og:description" content={seoDescription} />
       </head>
 
-      {/* Simplified Compact Header */}
-      <div className="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0 mt-3">
-        <div className="w-full px-12 py-2.5">
-          <div className="flex items-center justify-between">
-            {/* Simplified Results Count with Radius and Location */}
+      {/* Abritel-style Top Bar with Horizontal Filters */}
+      <div className="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          {/* Results count */}
+          <div className="py-3 border-b border-gray-100">
             <div className="text-sm text-gray-700">
               {loading ? (
                 <span className="inline-block w-48 h-4 bg-gray-200 rounded animate-pulse" />
               ) : (
                 <>
-                  <span className="font-semibold text-[#FF6B35]">{listingsToDisplay.length}</span>
-                  {' '}{listingsToDisplay.length > 1 ? 'logements trouvés' : 'logement trouvé'}
-                  {' '}dans un rayon de <span className="font-medium">{searchRadius} km</span>
+                  <span className="font-bold text-gray-900 text-lg">{listingsToDisplay.length}</span>
+                  <span className="ml-2">
+                    {listingsToDisplay.length > 1 ? 'logements' : 'logement'}
+                  </span>
                   {filters.location && (
-                    <> autour de <span className="font-medium">{filters.location.split(',')[0]}</span></>
+                    <span className="text-gray-600">
+                      {' '}• {filters.location.split(',')[0]}
+                    </span>
                   )}
                 </>
               )}
             </div>
-
-            {/* Filters Button and View Mode */}
-            <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setIsFiltersModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl hover:border-gray-900 hover:shadow-md transition-all duration-200"
-                  >
-                    <SlidersHorizontal className="w-4 h-4" />
-                    <span className="font-medium">Filtres</span>
-                  </button>
-
-                  {/* ✅ View Mode Toggle with 3 modes (List | List+Map | Map) */}
-                  <div className="hidden md:flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
-                  <button
-                    onClick={() => handleViewModeChange('list')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-                      viewMode === 'list'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    title={t.view?.list || 'List only'}
-                  >
-                    <Grid3X3 className="w-4 h-4" />
-                    {t.view?.list || 'List'}
-                  </button>
-                  <button
-                    onClick={() => handleViewModeChange('split')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-                      viewMode === 'split'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    title={t.view?.split || 'List + Map (50/50)'}
-                  >
-                    <Grid3X3 className="w-4 h-4" />
-                    <MapPin className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleViewModeChange('map')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-                      viewMode === 'map'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    title={t.view?.map || 'Map only'}
-                  >
-                    <MapPin className="w-4 h-4" />
-                    {t.view?.map || 'Map'}
-                  </button>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
-      {/* Main Content Area - Full Width (Airbnb-style) */}
-      <div className="flex-1 overflow-hidden w-full">
-        {/* ✅ Sidebar removed - Using Airbnb-style modal filters instead */}
+          {/* Horizontal Filter Chips */}
+          <HorizontalFilterChips
+            onFiltersClick={() => setIsFiltersModalOpen(true)}
+            activeFiltersCount={0}
+            sortValue={filters.sort}
+            onSortChange={(value) => handleFilterChange({ ...filters, sort: value })}
+            searchOnMapMove={searchOnMapMove}
+            onSearchOnMapMoveChange={setSearchOnMapMove}
+          />
+        </div>
+      </div>
 
-        {/* ✅ Main Results Area with Split-Screen Support (3 modes) */}
-        <div className={`h-full ${viewMode === 'split' ? 'flex' : ''}`}>
-            {/* List Section (50% in split, 100% in list, hidden in map-only) */}
-            {(viewMode === 'list' || viewMode === 'split') && (
-              <div
-                ref={listContainerRef}
-                className={`hide-scrollbar ${viewMode === 'split' ? 'w-1/2 flex-shrink-0 overflow-y-auto h-full' : 'w-full overflow-y-auto h-full'}`}
-                onScroll={(e) => {
-                  // Track scroll position in real-time (only if not currently updating)
-                  if (!isUpdatingListings.current) {
-                    if (listContainerRef.current) {
-                      scrollPositionRef.current = listContainerRef.current.scrollTop;
-                    }
-                  }
-                }}
-              >
-                {/* Padding inside scrollable container */}
-                <div className={viewMode === 'split' ? 'pl-12 pr-12 py-6' : 'px-12 py-6'}>
-                {error && (
-                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-                    {error}
-                  </div>
-                )}
-
-                {loading && listingsToDisplay.length === 0 ? (
-                  <LoadingSkeleton />
-                ) : listingsToDisplay.length === 0 ? (
-                  /* Enhanced Empty State */
-                  <div className="bg-white rounded-3xl shadow-sm p-12 text-center">
-                    <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
-                      <MapPin className="w-16 h-16 text-gray-400" />
-                    </div>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      {t.empty?.title || 'No results found'}
-                    </h2>
-                    <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                      {t.empty?.description || 'Try adjusting your filters or search in a different area'}
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <button
-                        onClick={() => handleFilterChange({ ...filters, location: '' })}
-                        className="px-6 py-3 bg-[#FF6B35] hover:bg-orange-600 text-white rounded-xl font-medium transition-colors duration-200"
-                      >
-                        {t.empty?.clearLocation || 'Clear Location'}
-                      </button>
-                      <button
-                        onClick={() => window.location.href = '/'}
-                        className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200"
-                      >
-                        {t.empty?.backToHome || 'Back to Home'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    {/* Connection Status */}
-                    {!isConnected && (
-                      <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm">
-                        {t.connection?.offline || 'Using offline mode. Real-time updates disabled.'}
-                      </div>
-                    )}
-
-                    {/* Enhanced Search Results */}
-                    <SearchResults
-                      listings={listingsToDisplay}
-                      loading={loading}
-                      hasMore={hasMore}
-                      onLoadMore={handleLoadMore}
-                      currency={currency}
-                      language={language}
-                    />
-                  </div>
-                )}
-                </div>
-                {/* End padding div */}
+      {/* Abritel-style Split Screen Layout: 42% List + 58% Map (Fixed) */}
+      <div className="flex-1 overflow-hidden w-full flex">
+        {/* Left: Listings Panel (42% - Scrollable) */}
+        <div
+          ref={listContainerRef}
+          className="w-full lg:w-[42%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
+        >
+          <div className="px-4 sm:px-6 lg:px-8 py-6">
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                {error}
               </div>
             )}
 
-            {/* ✅ Map Section (50% in split, 100% in map-only, hidden in list-only) */}
-            {(viewMode === 'split' || viewMode === 'map') && (
-              <div className={viewMode === 'split' ? 'w-1/2 flex-shrink-0 h-full pr-12 py-6' : 'w-full h-full px-12 py-6'}>
-                <div className="h-full rounded-2xl overflow-hidden shadow-xl">
-                  <LeafletMapView
-                    listings={listings}
-                    center={mapCenter}
-                    zoom={10}
-                    selectedListing={selectedListing}
-                    onListingSelect={handleListingSelect}
-                    onListingHover={handleListingHover}
-                    onVisibleListingsChange={handleVisibleListingsChange}
-                    currency={currency}
-                    className="w-full h-full"
-                    interactive={true}
-                    fitBounds={false}
-                  />
-                </div>
+            {loading && listingsToDisplay.length === 0 ? (
+              <div className="space-y-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 flex h-[180px]">
+                    <div className="w-[200px] sm:w-[240px] bg-gray-200 animate-pulse" />
+                    <div className="flex-1 p-4 space-y-3">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
+                      <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-
-            {/* Floating Map Button - Only visible in list-only mode */}
-            {viewMode === 'list' && listingsToDisplay.length > 0 && (
-              <div className="fixed bottom-8 right-8 z-30">
+            ) : listingsToDisplay.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
+                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                  <MapPin className="w-12 h-12 text-gray-400" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Aucun logement trouvé
+                </h2>
+                <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                  Essayez d'ajuster vos filtres ou de chercher dans une autre zone
+                </p>
                 <button
-                  onClick={() => setIsMapModalOpen(true)}
-                  className="group flex items-center gap-3 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] hover:from-[#E55A2B] hover:to-[#E57F1B] text-white pl-6 pr-7 py-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+                  onClick={() => handleFilterChange({ ...filters, location: '' })}
+                  className="px-6 py-3 bg-[#FF6B35] hover:bg-orange-600 text-white rounded-xl font-medium transition-colors duration-200"
                 >
-                  <MapPin className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                  <span className="font-bold text-base">
-                    {t.map?.showCategoryOnMap?.replace('{category}', filters.category === 'stays' ? t.categories?.stays : t.categories?.vehicles) || 'Show on Map'}
-                  </span>
-                  {listingsToDisplay.length > 0 && (
-                    <span className="bg-white/20 text-white text-sm font-semibold px-2.5 py-1 rounded-full">
-                      {listingsToDisplay.length}
-                    </span>
-                  )}
+                  Effacer la localisation
                 </button>
               </div>
+            ) : (
+              <div>
+                {/* Connection Status */}
+                {!isConnected && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm">
+                    Mode hors ligne. Mises à jour en temps réel désactivées.
+                  </div>
+                )}
+
+                {/* Abritel-style Search Results */}
+                <SearchResults
+                  listings={listingsToDisplay}
+                  loading={loading}
+                  hasMore={hasMore}
+                  onLoadMore={handleLoadMore}
+                  currency={currency}
+                  language={language}
+                  onListingHover={handleListingHover}
+                  hoveredListing={hoveredListing}
+                />
+              </div>
             )}
+          </div>
+        </div>
+
+        {/* Right: Map Panel (58% - Fixed, hidden on mobile) */}
+        <div className="hidden lg:block lg:w-[58%] flex-shrink-0 h-full relative bg-gray-100">
+          <div className="h-full w-full">
+            <LeafletMapView
+              listings={listings}
+              center={mapCenter}
+              zoom={10}
+              selectedListing={selectedListing}
+              onListingSelect={handleListingSelect}
+              onListingHover={handleListingHover}
+              onVisibleListingsChange={handleVisibleListingsChange}
+              currency={currency}
+              className="w-full h-full"
+              interactive={true}
+              fitBounds={false}
+            />
+          </div>
+        </div>
+
+        {/* Mobile: Floating Map Button (only visible on mobile) */}
+        <div className="lg:hidden fixed bottom-6 right-6 z-30">
+          <button
+            onClick={() => setIsMapModalOpen(true)}
+            className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-full shadow-2xl transition-all duration-300"
+          >
+            <MapPin className="w-5 h-5" />
+            <span className="font-bold">Carte</span>
+            {listingsToDisplay.length > 0 && (
+              <span className="bg-white/20 text-white text-sm font-semibold px-2 py-0.5 rounded-full">
+                {listingsToDisplay.length}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 

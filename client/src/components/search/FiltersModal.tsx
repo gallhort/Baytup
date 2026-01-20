@@ -132,10 +132,13 @@ export default function FiltersModal({
       { value: 'childSeat', label: 'Siège enfant', icon: '👶' },
     ];
 
-    // Return stay amenities if category is 'stay'
-    // Return vehicle amenities only if category is 'vehicle' AND feature is enabled
-    return category === 'stay' ? stayAmenities :
-           (vehiclesEnabled ? vehicleAmenities : []);
+    // Normalize category (handle both 'stay' and 'stays', 'vehicle' and 'vehicles')
+    const normalizedCategory = category === 'stays' ? 'stay' : category === 'vehicles' ? 'vehicle' : category;
+
+    // Return stay amenities if category is 'stay' or 'stays'
+    // Return vehicle amenities only if category is 'vehicle'/'vehicles' AND feature is enabled
+    return normalizedCategory === 'stay' ? stayAmenities :
+           (vehiclesEnabled ? vehicleAmenities : stayAmenities);
   }, [category, vehiclesEnabled]);
 
   const adjustCounter = (field: string, operation: 'increment' | 'decrement') => {
@@ -194,12 +197,14 @@ export default function FiltersModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50"
+      className="fixed inset-0 flex items-center justify-center bg-black/50"
+      style={{ zIndex: 999999 }}
       onClick={onClose}
     >
       <div
         className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
+        style={{ position: 'relative', zIndex: 1000000 }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
