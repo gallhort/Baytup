@@ -616,18 +616,19 @@ function SearchPageContent() {
 
             {loading && listingsToDisplay.length === 0 ? (
               <div className="space-y-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[200px]">
-                    <div className="w-[200px] lg:w-[240px] bg-gray-200 animate-pulse" />
+                {[...Array(7)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[185px]">
+                    <div className="w-[140px] lg:w-[150px] bg-gray-200 animate-pulse" />
                     <div className="flex-1 p-4 flex justify-between gap-4">
-                      <div className="flex-1 space-y-3">
+                      <div className="flex-1 space-y-2.5">
                         <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
                         <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5" />
                         <div className="h-3 bg-gray-200 rounded animate-pulse w-3/5" />
                         <div className="h-3 bg-gray-200 rounded animate-pulse w-2/5 mt-auto" />
                       </div>
-                      <div className="w-32 space-y-2 flex flex-col items-end">
+                      <div className="w-32 space-y-1.5 flex flex-col items-end justify-end">
                         <div className="h-6 bg-gray-200 rounded animate-pulse w-24" />
+                        <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
                         <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
                         <div className="h-3 bg-gray-200 rounded animate-pulse w-16" />
                       </div>

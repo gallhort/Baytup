@@ -41,18 +41,19 @@ export default function SearchResults({
   if (loading) {
     return (
       <div className="space-y-4">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[200px]">
-            <div className="w-[200px] lg:w-[240px] bg-gray-200 animate-pulse" />
+        {[...Array(7)].map((_, i) => (
+          <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[185px]">
+            <div className="w-[140px] lg:w-[150px] bg-gray-200 animate-pulse" />
             <div className="flex-1 p-4 flex justify-between gap-4">
-              <div className="flex-1 space-y-3">
+              <div className="flex-1 space-y-2.5">
                 <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
                 <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5" />
                 <div className="h-3 bg-gray-200 rounded animate-pulse w-3/5" />
                 <div className="h-3 bg-gray-200 rounded animate-pulse w-2/5 mt-auto" />
               </div>
-              <div className="w-32 space-y-2 flex flex-col items-end">
+              <div className="w-32 space-y-1.5 flex flex-col items-end justify-end">
                 <div className="h-6 bg-gray-200 rounded animate-pulse w-24" />
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
                 <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
                 <div className="h-3 bg-gray-200 rounded animate-pulse w-16" />
               </div>
@@ -112,14 +113,14 @@ export default function SearchResults({
               onMouseLeave={() => onListingHover?.(null)}
             >
               {/* Card container - Abritel exact size */}
-              <div className={`bg-white rounded-lg overflow-hidden transition-all duration-200 flex flex-col sm:flex-row h-auto sm:h-[200px] border ${
+              <div className={`bg-white rounded-lg overflow-hidden transition-all duration-200 flex flex-col sm:flex-row h-auto sm:h-[185px] border ${
                 hoveredListing === listingId
                   ? 'shadow-lg border-gray-400'
                   : 'shadow-sm hover:shadow-md border-gray-200 hover:border-gray-300'
               }`}>
 
-                {/* Image Section - Larger like Abritel (200-240px) */}
-                <div className="relative w-full sm:w-[200px] lg:w-[240px] h-48 sm:h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                {/* Image Section - Abritel exact size (140-150px) */}
+                <div className="relative w-full sm:w-[140px] lg:w-[150px] h-44 sm:h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                   <img
                     src={getListingImageUrl(listing, 0)}
                     alt={listing.title}
