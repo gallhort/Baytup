@@ -226,7 +226,8 @@ export default function LeafletMapView({
   }, [hoveredListing]);
 
   // Function to offset markers with duplicate coordinates
-  const offsetDuplicateCoordinates = useCallback((listings: any[]) => {
+  // Offset radius scales with zoom level - larger offset when zoomed out, smaller when zoomed in
+  const offsetDuplicateCoordinates = useCallback((listings: any[], zoomLevel: number) => {
     const coordMap = new Map<string, any[]>();
 
     // Group listings by coordinates
@@ -248,7 +249,11 @@ export default function LeafletMapView({
         result.push(group[0]);
       } else {
         // Multiple listings at same location - apply circular offset
-        const offsetRadius = 0.0002; // ~20 meters offset
+        // Dynamic offset based on zoom: larger when zoomed out, smaller when zoomed in
+        // Formula: offsetRadius = 0.001 * (0.7 ^ (zoom - 10))
+        // Zoom 6: ~0.0024° (large), Zoom 10: 0.001° (base), Zoom 14: ~0.00024° (small)
+        const offsetRadius = 0.001 * Math.pow(0.7, zoomLevel - 10);
+
         group.forEach((listing, index) => {
           const angle = (index / group.length) * 2 * Math.PI;
           const offsetLat = offsetRadius * Math.cos(angle);
@@ -296,9 +301,9 @@ export default function LeafletMapView({
       };
     });
 
-    // Apply offset to duplicate coordinates
-    return offsetDuplicateCoordinates(filtered);
-  }, [listings, selectedCategory, offsetDuplicateCoordinates]);
+    // Apply offset to duplicate coordinates with dynamic radius based on zoom
+    return offsetDuplicateCoordinates(filtered, zoom);
+  }, [listings, selectedCategory, zoom, offsetDuplicateCoordinates]);
 
   // Convert center coordinates
   const mapCenter = useMemo(() => ({
