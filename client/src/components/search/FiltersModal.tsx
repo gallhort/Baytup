@@ -89,9 +89,8 @@ export default function FiltersModal({
     }).length;
   }, [allListings, localFilters, category, totalResults]);
 
-  if (!isOpen) return null;
-
   // ✅ FEATURE FLAG: Conditionally show vehicle types only if enabled
+  // IMPORTANT: Must be before early return to avoid hook order violation
   const propertyTypes = useMemo(() => {
     const stayTypes = [
       { value: 'apartment', label: 'Appartement', icon: '🏢' },
@@ -137,6 +136,9 @@ export default function FiltersModal({
     return category === 'stay' ? stayAmenities :
            (vehiclesEnabled ? vehicleAmenities : []);
   }, [category, vehiclesEnabled]);
+
+  // Early return after all hooks to avoid hook order violation
+  if (!isOpen) return null;
 
   const adjustCounter = (field: string, operation: 'increment' | 'decrement') => {
     const currentValue = localFilters[field] || 0;
