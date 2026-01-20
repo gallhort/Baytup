@@ -569,21 +569,19 @@ function SearchPageContent() {
       {/* Abritel-style Top Bar with Horizontal Filters */}
       <div className="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0">
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          {/* Results count */}
-          <div className="py-3 border-b border-gray-100">
-            <div className="text-sm text-gray-700">
+          {/* Results count - Abritel style: "18 logements • Ville" */}
+          <div className="py-3">
+            <div className="text-base font-normal text-gray-900">
               {loading ? (
-                <span className="inline-block w-48 h-4 bg-gray-200 rounded animate-pulse" />
+                <span className="inline-block w-48 h-5 bg-gray-200 rounded animate-pulse" />
               ) : (
                 <>
-                  <span className="font-bold text-gray-900 text-lg">{listingsToDisplay.length}</span>
-                  <span className="ml-2">
-                    {listingsToDisplay.length > 1 ? 'logements' : 'logement'}
-                  </span>
+                  <span className="font-semibold">{listingsToDisplay.length}</span>
+                  {' '}{listingsToDisplay.length > 1 ? 'logements' : 'logement'}
                   {filters.location && (
-                    <span className="text-gray-600">
-                      {' '}• {filters.location.split(',')[0]}
-                    </span>
+                    <>
+                      {' '}• <span className="font-normal">{filters.location.split(',')[0]}</span>
+                    </>
                   )}
                 </>
               )}
@@ -602,12 +600,12 @@ function SearchPageContent() {
         </div>
       </div>
 
-      {/* Abritel-style Split Screen Layout: 42% List + 58% Map (Fixed) */}
+      {/* Abritel-style Split Screen Layout: 35% List + 65% Map (Fixed) */}
       <div className="flex-1 overflow-hidden w-full flex">
-        {/* Left: Listings Panel (42% - Scrollable) */}
+        {/* Left: Listings Panel (35% - Scrollable) */}
         <div
           ref={listContainerRef}
-          className="w-full lg:w-[42%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
+          className="w-full lg:w-[35%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
         >
           <div className="px-4 sm:px-6 lg:px-8 py-6">
             {error && (
@@ -618,13 +616,15 @@ function SearchPageContent() {
 
             {loading && listingsToDisplay.length === 0 ? (
               <div className="space-y-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 flex h-[180px]">
-                    <div className="w-[200px] sm:w-[240px] bg-gray-200 animate-pulse" />
-                    <div className="flex-1 p-4 space-y-3">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[160px]">
+                    <div className="w-[130px] lg:w-[140px] bg-gray-200 animate-pulse" />
+                    <div className="flex-1 p-3 space-y-2">
+                      <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
                       <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
-                      <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
                       <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
+                      <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3" />
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2 mt-auto" />
                     </div>
                   </div>
                 ))}
@@ -672,8 +672,8 @@ function SearchPageContent() {
           </div>
         </div>
 
-        {/* Right: Map Panel (58% - Fixed, hidden on mobile) */}
-        <div className="hidden lg:block lg:w-[58%] flex-shrink-0 h-full relative bg-gray-100">
+        {/* Right: Map Panel (65% - Fixed, hidden on mobile) */}
+        <div className="hidden lg:block lg:w-[65%] flex-shrink-0 h-full relative bg-gray-100">
           <div className="h-full w-full">
             <LeafletMapView
               listings={listings}

@@ -41,13 +41,15 @@ export default function SearchResults({
   if (loading) {
     return (
       <div className="space-y-4">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 flex h-[180px]">
-            <div className="w-[200px] sm:w-[240px] bg-gray-200 animate-pulse" />
-            <div className="flex-1 p-4 space-y-3">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[160px]">
+            <div className="w-[130px] lg:w-[140px] bg-gray-200 animate-pulse" />
+            <div className="flex-1 p-3 space-y-2">
+              <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
               <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
-              <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
               <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
+              <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3" />
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2 mt-auto" />
             </div>
           </div>
         ))}
@@ -103,15 +105,15 @@ export default function SearchResults({
               onMouseEnter={() => onListingHover?.(listingId)}
               onMouseLeave={() => onListingHover?.(null)}
             >
-              {/* Card container - horizontal on all screens */}
-              <div className={`bg-white rounded-xl overflow-hidden transition-all duration-300 flex flex-col sm:flex-row h-auto sm:h-[180px] border ${
+              {/* Card container - Ultra compact like Abritel */}
+              <div className={`bg-white rounded-lg overflow-hidden transition-all duration-200 flex flex-col sm:flex-row h-auto sm:h-[160px] border ${
                 hoveredListing === listingId
-                  ? 'shadow-[0_8px_30px_rgba(0,0,0,0.15)] border-gray-300 scale-[1.01]'
-                  : 'shadow-sm hover:shadow-md border-gray-200'
+                  ? 'shadow-lg border-gray-400'
+                  : 'shadow-sm hover:shadow-md border-gray-200 hover:border-gray-300'
               }`}>
 
-                {/* Image Section - Left side on desktop, top on mobile */}
-                <div className="relative w-full sm:w-[200px] lg:w-[240px] h-48 sm:h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                {/* Image Section - Small like Abritel (120-140px) */}
+                <div className="relative w-full sm:w-[130px] lg:w-[140px] h-40 sm:h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                   <img
                     src={getListingImageUrl(listing, 0)}
                     alt={listing.title}
@@ -142,77 +144,70 @@ export default function SearchResults({
                   </div>
                 </div>
 
-                {/* Content Section - Right side */}
-                <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
-                  {/* Top section */}
-                  <div className="space-y-1.5">
-                    {/* Location (city) in small gray text */}
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <MapPin className="w-3 h-3" />
-                      <span className="truncate">
-                        {listing.address?.city || 'Ville'}{listing.address?.state ? `, ${listing.address.state}` : ''}
-                      </span>
+                {/* Content Section - Abritel exact layout */}
+                <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+                  {/* Top section - Compact */}
+                  <div className="space-y-1">
+                    {/* Arrondissement/Ville (small text) */}
+                    <div className="text-xs text-gray-600 truncate">
+                      {listing.address?.city || 'Ville'}
                     </div>
 
-                    {/* Title in bold */}
-                    <h3 className="font-bold text-gray-900 text-base lg:text-lg line-clamp-2 leading-tight">
+                    {/* Title (bold, 2 lines max) */}
+                    <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2">
                       {listing.title}
                     </h3>
 
-                    {/* Property type and details */}
-                    <div className="flex items-center gap-3 text-xs text-gray-600">
+                    {/* Property details (like Abritel: Type • Guests • Bedrooms • Bathrooms) */}
+                    <div className="text-xs text-gray-600 line-clamp-1">
                       {listing.category === 'stay' ? (
                         <>
-                          {listing.stayDetails?.bedrooms && (
-                            <div className="flex items-center gap-1">
-                              <Bed className="w-3.5 h-3.5" />
-                              <span>{listing.stayDetails.bedrooms} ch.</span>
-                            </div>
-                          )}
-                          {listing.stayDetails?.bathrooms && (
-                            <div className="flex items-center gap-1">
-                              <Bath className="w-3.5 h-3.5" />
-                              <span>{listing.stayDetails.bathrooms} sdb</span>
-                            </div>
-                          )}
-                          {listing.stayDetails?.area && (
-                            <span>{listing.stayDetails.area}m²</span>
-                          )}
+                          Appartement • {listing.stayDetails?.bedrooms || 1} {listing.stayDetails?.bedrooms === 1 ? 'chambre' : 'chambres'}
+                          {listing.stayDetails?.bathrooms && ` • ${listing.stayDetails.bathrooms} salle${listing.stayDetails.bathrooms > 1 ? 's' : ''} de bain`}
                         </>
                       ) : (
-                        <div className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5" />
-                          <span>{listing.vehicleDetails?.seats || 4} places</span>
-                        </div>
+                        <>Véhicule • {listing.vehicleDetails?.seats || 4} places</>
                       )}
                     </div>
+
+                    {/* Badge "Hôte professionnel" */}
+                    {typeof listing.host === 'object' && listing.host.hostInfo?.superhost && (
+                      <div className="text-xs text-gray-700 font-medium mt-1">
+                        Hôte professionnel
+                      </div>
+                    )}
                   </div>
 
-                  {/* Bottom section - Rating badge and price */}
-                  <div className="flex items-end justify-between gap-4 mt-2">
-                    {/* Rating badge (Abritel style - green) */}
+                  {/* Bottom section - Rating + Price (Abritel layout) */}
+                  <div className="space-y-2 mt-2">
+                    {/* Rating badge - Between title and price */}
                     {ratingBadge && (
-                      <div className="flex items-center gap-2">
-                        <div className={`${ratingBadge.color} text-white px-2 py-1 rounded text-xs font-bold`}>
-                          {ratingBadge.label}
+                      <div className="flex items-center gap-1.5">
+                        <div className={`${ratingBadge.color} text-white px-1.5 py-0.5 rounded text-xs font-bold`}>
+                          {avgRating.toFixed(1)}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 fill-current text-gray-900" />
-                          <span className="text-sm font-bold text-gray-900">{avgRating.toFixed(1)}/10</span>
-                        </div>
-                        <span className="text-xs text-gray-500">({reviewCount} avis)</span>
+                        <span className="text-xs font-semibold text-gray-900">{ratingBadge.label}</span>
+                        <span className="text-xs text-gray-500">{reviewCount} avis</span>
                       </div>
                     )}
 
-                    {/* Price section - always visible, aligned right */}
-                    <div className="text-right flex-shrink-0">
-                      <div className="flex items-baseline gap-1 justify-end">
-                        <span className="font-bold text-xl lg:text-2xl text-gray-900">
+                    {/* Price section - Abritel style with strikethrough */}
+                    <div className="flex items-end justify-between">
+                      <div className="flex-1">
+                        {listing.pricing?.convertedPrice && listing.pricing.convertedPrice > (listing.pricing?.basePrice || 0) && (
+                          <div className="text-xs text-gray-500 line-through">
+                            {formatPrice(listing.pricing.convertedPrice, listing.pricing?.currency || 'DZD')}
+                          </div>
+                        )}
+                        <div className="font-bold text-base text-gray-900">
                           {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        par {listing.category === 'stay' ? 'nuit' : 'jour'}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          pour 1 nuit, 1 {listing.category === 'stay' ? 'appartement' : 'véhicule'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          taxes et frais compris
+                        </div>
                       </div>
                     </div>
                   </div>

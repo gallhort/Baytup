@@ -29,14 +29,14 @@ export default function HorizontalFilterChips({
     { value: 'rating', label: 'Meilleures notes' },
   ];
 
-  const currentSortLabel = sortOptions.find(opt => opt.value === sortValue)?.label || 'Trier par';
+  const currentSortLabel = sortOptions.find(opt => opt.value === sortValue)?.label || 'Recommandés';
 
   return (
     <div className="flex items-center gap-2 py-3 overflow-x-auto hide-scrollbar">
-      {/* Filtres button */}
+      {/* Filtres button (with hamburger icon like Abritel screenshot 2) */}
       <button
         onClick={onFiltersClick}
-        className={`flex items-center gap-2 px-4 py-2.5 rounded-full border-2 transition-all duration-200 whitespace-nowrap ${
+        className={`flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-200 whitespace-nowrap ${
           activeFiltersCount > 0
             ? 'border-gray-900 bg-gray-900 text-white'
             : 'border-gray-300 bg-white hover:border-gray-900'
@@ -51,13 +51,13 @@ export default function HorizontalFilterChips({
         )}
       </button>
 
-      {/* Trier par dropdown */}
+      {/* Recommandés dropdown (like Abritel screenshot 2) */}
       <div className="relative">
         <button
           onClick={() => setShowSortMenu(!showSortMenu)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full border-2 border-gray-300 bg-white hover:border-gray-900 transition-all duration-200 whitespace-nowrap"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-300 bg-white hover:border-gray-900 transition-all duration-200 whitespace-nowrap"
         >
-          <span className="font-medium">{currentSortLabel}</span>
+          <span className="font-medium text-sm">{currentSortLabel}</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${showSortMenu ? 'rotate-180' : ''}`} />
         </button>
 
