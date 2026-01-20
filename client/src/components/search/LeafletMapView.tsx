@@ -401,38 +401,7 @@ export default function LeafletMapView({
         })}
       </MapContainer>
 
-      {/* Listings Count Overlay */}
-      <div className="absolute top-4 left-4 z-[1000] pointer-events-none">
-        <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 p-4 min-w-[240px] pointer-events-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2.5 bg-gradient-to-br from-[#FF6B35] to-orange-600 rounded-xl shadow-lg">
-                <MapPin className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="text-xl font-bold text-gray-900">
-                  {processedListings.length}
-                </div>
-                <div className="text-xs text-gray-600 font-medium">
-                  {processedListings.length === 1 ? 'Property' : 'Properties'} found
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col space-y-1">
-              {processedListings.filter(l => l.category === 'stay').length > 0 && (
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded-lg text-xs font-bold">
-                  🏠 {processedListings.filter(l => l.category === 'stay').length}
-                </span>
-              )}
-              {processedListings.filter(l => l.category === 'vehicle').length > 0 && (
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold">
-                  🚗 {processedListings.filter(l => l.category === 'vehicle').length}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Listings Count removed - already shown above list */}
 
       {/* Map Style Selector */}
       <div className="absolute top-4 right-4 z-[1000]">
