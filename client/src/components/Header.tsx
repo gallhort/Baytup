@@ -490,6 +490,28 @@ const Header = React.memo(function Header({
     }
   }, [headerState.searchExpanded, headerState.isAnimating, scrollY, isAtTop]);
 
+  // ✅ NEW: Separate handler for mobile close button (always works)
+  const handleMobileClose = useCallback(() => {
+    if (headerState.searchExpanded && !headerState.isAnimating) {
+      setHeaderState(prev => ({
+        ...prev,
+        mode: scrollY > 80 ? 'scrolled' : 'default',
+        searchExpanded: false,
+        showCategories: isAtTop,
+        isAnimating: true
+      }));
+
+      // Unlock body scroll
+      document.body.style.overflow = '';
+      setActiveSearchField(null);
+
+      // Reset animation flag after transition
+      setTimeout(() => {
+        setHeaderState(prev => ({ ...prev, isAnimating: false }));
+      }, 300);
+    }
+  }, [headerState.searchExpanded, headerState.isAnimating, scrollY, isAtTop]);
+
   // Click away handlers
   useClickAway(searchRef, handleClickOutside);
   useClickAway(languageMenuRef, () => setIsLanguageMenuOpen(false));
@@ -1612,7 +1634,7 @@ const Header = React.memo(function Header({
                 )}
 
                 {/* Language/Globe Selector - Enhanced - Hidden on Mobile */}
-                <div className="hidden sm:block relative" ref={languageMenuRef}>
+                <div className="hidden sm:block" ref={languageMenuRef}>
                   <button
                     onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
                     className="p-2 sm:p-2.5 lg:p-3 rounded-full hover:bg-gray-50 transition-all duration-200 hover:scale-110"
@@ -1622,7 +1644,7 @@ const Header = React.memo(function Header({
                   </button>
 
                   {isLanguageMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 z-50 animate-in slide-in-from-top-2 duration-200">
+                    <div className="fixed right-4 top-16 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 z-[99999] animate-in slide-in-from-top-2 duration-200">
                       <div className="px-4 py-3 border-b border-gray-100">
                         <div className="text-sm font-semibold text-gray-900">{t.languageAndRegion}</div>
                       </div>
@@ -1868,8 +1890,9 @@ const Header = React.memo(function Header({
           <div className="h-full flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <button
-                onClick={handleClickOutside}
+                onClick={handleMobileClose}
                 className="p-2 rounded-full hover:bg-gray-50 transition-all duration-200 hover:scale-110"
+                aria-label="Close search"
               >
                 <X className="h-6 w-6 text-gray-700" />
               </button>

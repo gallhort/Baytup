@@ -212,23 +212,23 @@ export default function MapModal({
 
         {/* Enhanced Map Container */}
         <div className={`relative ${isFullscreen ? 'h-[calc(100vh-120px)]' : 'h-[calc(90vh-140px)]'}`}>
-          {/* Floating counter badge - FIXED WITH pointer-events-none */}
+          {/* Floating counter badge - Repositioned to avoid zoom buttons on mobile */}
           {currentMapBounds && (
-            <div className="absolute top-4 left-4 z-10 pointer-events-none">
-              <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 pointer-events-auto">
-                <div className="p-2 bg-gradient-to-br from-[#FF6B35] to-orange-600 rounded-xl">
-                  <MapPin className="w-4 h-4 text-white" />
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 sm:left-20 sm:translate-x-0 z-10 pointer-events-none">
+              <div className="bg-white/95 backdrop-blur-lg rounded-xl shadow-lg px-3 py-2 flex items-center gap-2 pointer-events-auto">
+                <div className="p-1 bg-gradient-to-br from-[#FF6B35] to-orange-600 rounded-lg">
+                  <MapPin className="w-3 h-3 text-white" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-base sm:text-lg font-bold text-gray-900 leading-none">
                     {visibleListingsCount}
                   </p>
-                  <p className="text-xs text-gray-600 -mt-1">
+                  <p className="text-[9px] sm:text-[10px] text-gray-600 whitespace-nowrap">
                     {visibleListingsCount === 1 ? ((t as any)?.mapDetails?.propertyFound || 'Property found') : ((t as any)?.mapDetails?.propertiesFound || 'Properties found')}
                   </p>
                 </div>
                 {visibleListingsCount === 0 && (
-                  <p className="text-xs text-orange-600 font-medium">
+                  <p className="text-[9px] sm:text-[10px] text-orange-600 font-medium">
                     {(t as any)?.map?.panZoom || 'Pan or zoom out'}
                   </p>
                 )}

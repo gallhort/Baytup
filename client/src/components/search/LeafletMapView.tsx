@@ -288,20 +288,20 @@ export default function LeafletMapView({
                 }
               }}
             >
-              <Popup maxWidth={400} minWidth={300}>
-                <div className="w-full bg-white rounded-xl overflow-hidden">
+              <Popup maxWidth={280} minWidth={240} className="leaflet-popup-mobile-friendly">
+                <div className="w-full bg-white rounded-lg overflow-hidden">
                   <Link
                     href={`/listing/${listing._id}`}
                     className="block hover:bg-gray-50/30 transition-all duration-300"
                   >
-                    {/* Image Section */}
+                    {/* Image Section - Compact */}
                     <div className="relative overflow-hidden">
                       <div className="aspect-video w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
                         <Image
                           src={getListingImageUrl(listing, 0)}
                           alt={listing.title}
-                          width={360}
-                          height={202}
+                          width={280}
+                          height={157}
                           className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
                           onError={(e) => {
                             e.currentTarget.src = '/placeholder.jpg';
@@ -309,89 +309,84 @@ export default function LeafletMapView({
                         />
                       </div>
 
-                      {/* Badges */}
-                      <div className="absolute top-3 left-3 flex flex-col space-y-2">
+                      {/* Compact Badges */}
+                      <div className="absolute top-2 left-2 flex flex-col space-y-1">
                         {listing.featured && (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg">
-                            <Star className="w-3 h-3 mr-1 fill-current" />
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg">
+                            <Star className="w-2.5 h-2.5 mr-0.5 fill-current" />
                             Featured
                           </span>
                         )}
                       </div>
 
-                      {/* Category Badge */}
-                      <div className="absolute top-3 right-3">
-                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg ${
+                      {/* Category Badge - Compact */}
+                      <div className="absolute top-2 right-2">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold text-white shadow-lg ${
                           listing.category === 'vehicle' ? 'bg-blue-600/90' : 'bg-green-600/90'
                         }`}>
-                          {listing.category === 'vehicle' ? '🚗 Vehicle' : '🏠 Stay'}
+                          {listing.category === 'vehicle' ? '🚗' : '🏠'}
                         </span>
                       </div>
                     </div>
 
-                    {/* Content Section */}
-                    <div className="space-y-4 p-4">
+                    {/* Content Section - Compact */}
+                    <div className="space-y-2 p-3">
                       {/* Title and Location */}
                       <div>
-                        <h4 className="font-bold text-gray-900 text-lg line-clamp-2 leading-tight mb-2">
+                        <h4 className="font-bold text-gray-900 text-sm line-clamp-1 leading-tight mb-1">
                           {listing.title}
                         </h4>
-                        <p className="text-gray-600 text-sm flex items-center">
-                          <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                          {listing.address?.city || 'Unknown City'}, {listing.address?.state || 'Algeria'}
+                        <p className="text-gray-600 text-xs flex items-center">
+                          <MapPin className="w-3 h-3 mr-1 text-gray-400" />
+                          {listing.address?.city || 'Unknown'}, {listing.address?.state || 'DZ'}
                         </p>
                       </div>
 
-                      {/* Stats Section */}
+                      {/* Stats Section - Compact */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-1">
-                          <div className="flex items-center space-x-1 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200">
-                            <Star className="w-4 h-4 fill-current text-yellow-500" />
-                            <span className="text-sm font-bold text-gray-900">
+                          <div className="flex items-center space-x-1 bg-yellow-50 px-2 py-1 rounded-full border border-yellow-200">
+                            <Star className="w-3 h-3 fill-current text-yellow-500" />
+                            <span className="text-xs font-bold text-gray-900">
                               {listing.stats?.averageRating?.toFixed(1) || '4.8'}
                             </span>
-                            {(listing.stats?.reviewCount > 0 || listing.stats?.totalReviews > 0) && (
-                              <span className="text-xs text-gray-600">
-                                ({listing.stats.reviewCount || listing.stats.totalReviews})
-                              </span>
-                            )}
                           </div>
                         </div>
 
-                        <div className="flex items-center space-x-3 text-xs text-gray-500">
+                        <div className="flex items-center space-x-2 text-[10px] text-gray-500">
                           <span className="flex items-center">
-                            <Eye className="w-3 h-3 mr-1" />
+                            <Eye className="w-3 h-3 mr-0.5" />
                             {listing.stats?.views || 0}
                           </span>
                         </div>
                       </div>
 
-                      {/* Property Details */}
+                      {/* Property Details - Compact */}
                       {listing.category === 'stay' && listing.stayDetails && (
-                        <div className="bg-gray-50 p-3 rounded-xl">
-                          <div className="flex items-center space-x-4 text-sm text-gray-700">
+                        <div className="bg-gray-50 p-2 rounded-lg">
+                          <div className="flex items-center space-x-3 text-xs text-gray-700">
                             {listing.stayDetails.bedrooms && (
                               <span className="flex items-center font-medium">
-                                🛏️ {listing.stayDetails.bedrooms} Beds
+                                🛏️ {listing.stayDetails.bedrooms}
                               </span>
                             )}
                             {listing.stayDetails.bathrooms && (
                               <span className="flex items-center font-medium">
-                                🚿 {listing.stayDetails.bathrooms} Baths
+                                🚿 {listing.stayDetails.bathrooms}
                               </span>
                             )}
                           </div>
                         </div>
                       )}
 
-                      {/* Price Section */}
-                      <div className="border-t border-gray-100 pt-4 mt-4">
+                      {/* Price Section - Compact */}
+                      <div className="border-t border-gray-100 pt-2 mt-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-baseline space-x-1">
-                            <span className="text-2xl font-bold text-gray-900">
+                            <span className="text-lg font-bold text-gray-900">
                               {formatPrice(listing)}
                             </span>
-                            <span className="text-gray-600 text-sm font-medium">
+                            <span className="text-gray-600 text-[10px] font-medium">
                               {listing.category === 'vehicle' ? '/jour' : '/nuit'}
                             </span>
                           </div>

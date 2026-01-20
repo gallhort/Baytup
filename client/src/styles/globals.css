@@ -2062,3 +2062,57 @@ select:focus-visible {
     transform: scale(1.1); /* Slightly larger for touch */
   }
 }
+
+/* ===================================
+   Leaflet Popup Mobile Optimizations
+   =================================== */
+
+/* Make popups more compact on mobile */
+@media (max-width: 640px) {
+  .leaflet-popup-content-wrapper {
+    border-radius: 12px !important;
+    padding: 0 !important;
+  }
+
+  .leaflet-popup-content {
+    margin: 0 !important;
+    min-width: 240px !important;
+    max-width: 280px !important;
+  }
+
+  .leaflet-popup-close-button {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 20px !important;
+    padding: 0 !important;
+    color: #374151 !important;
+    background: white !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    right: 8px !important;
+    top: 8px !important;
+  }
+
+  .leaflet-popup-close-button:hover {
+    background: #f3f4f6 !important;
+    color: #111827 !important;
+  }
+
+  .leaflet-popup-tip-container {
+    margin-top: -1px !important;
+  }
+}
+
+/* Desktop popup styling */
+@media (min-width: 641px) {
+  .leaflet-popup-content-wrapper {
+    border-radius: 16px !important;
+  }
+
+  .leaflet-popup-close-button {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 24px !important;
+    color: #374151 !important;
+  }
+}
