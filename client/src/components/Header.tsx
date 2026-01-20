@@ -1960,7 +1960,7 @@ const Header = React.memo(function Header({
 
       {/* Enhanced Mobile Search Modal */}
       {headerState.searchExpanded && (
-        <div className="lg:hidden fixed inset-0 bg-white z-50 animate-in slide-in-from-bottom duration-300">
+        <div className="lg:hidden fixed inset-0 bg-white z-[60] animate-in slide-in-from-bottom duration-300">
           <div className="h-full flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <button
