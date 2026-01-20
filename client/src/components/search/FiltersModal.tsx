@@ -190,7 +190,9 @@ export default function FiltersModal({
   };
 
   // Utiliser Portal pour rendre au-dessus de la carte Leaflet (comme le sélecteur de langue)
-  return isOpen && typeof document !== 'undefined' && createPortal(
+  if (!isOpen || typeof document === 'undefined') return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50"
       onClick={onClose}
