@@ -8,6 +8,7 @@ import HorizontalFilters from '@/components/search/HorizontalFilters';
 import HorizontalFilterChips from '@/components/search/HorizontalFilterChips';
 import FiltersModal from '@/components/search/FiltersModal';
 import SearchResults from '@/components/search/SearchResults';
+import AbritelSearchBar from '@/components/search/AbritelSearchBar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFeature } from '@/contexts/FeatureFlagsContext'; // ✅ Feature flags
@@ -566,6 +567,35 @@ function SearchPageContent() {
         <meta property="og:description" content={seoDescription} />
       </head>
 
+      {/* Abritel-style Search Bar */}
+      <AbritelSearchBar
+        location={filters.location}
+        checkIn={filters.checkIn}
+        checkOut={filters.checkOut}
+        guests={filters.guests}
+        onSearch={(data) => {
+          const newFilters = {
+            ...filters,
+            location: data.location,
+            checkIn: data.checkIn,
+            checkOut: data.checkOut,
+            guests: data.guests,
+            adults: data.guests,
+            children: 0
+          };
+          handleFilterChange(newFilters);
+        }}
+        onLocationChange={(location) => {
+          handleFilterChange({ ...filters, location });
+        }}
+        onDatesChange={(checkIn, checkOut) => {
+          handleFilterChange({ ...filters, checkIn, checkOut });
+        }}
+        onGuestsChange={(guests) => {
+          handleFilterChange({ ...filters, guests, adults: guests, children: 0 });
+        }}
+      />
+
       {/* Abritel-style Top Bar with Horizontal Filters */}
       <div className="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -687,6 +717,7 @@ function SearchPageContent() {
               center={mapCenter}
               zoom={12}
               selectedListing={selectedListing}
+              hoveredListing={hoveredListing}
               onListingSelect={handleListingSelect}
               onListingHover={handleListingHover}
               onVisibleListingsChange={handleVisibleListingsChange}

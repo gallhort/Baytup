@@ -23,6 +23,7 @@ interface LeafletMapViewProps {
   center?: [number, number];
   zoom?: number;
   selectedListing?: string | null;
+  hoveredListing?: string | null;
   onListingSelect?: (id: string) => void;
   onListingHover?: (id: string | null) => void;
   onMapBoundsChange?: (bounds: any) => void;
@@ -124,6 +125,54 @@ function MapBoundsHandler({ onBoundsChange }: { onBoundsChange?: (bounds: any) =
   return null;
 }
 
+// Composant pour gérer les listings visibles dans les bounds actuels
+function VisibleListingsHandler({
+  listings,
+  onVisibleListingsChange
+}: {
+  listings: any[];
+  onVisibleListingsChange?: (listings: any[]) => void;
+}) {
+  const map = useMap();
+  const lastVisibleIds = useRef<Set<string>>(new Set());
+
+  const updateVisibleListings = useCallback(() => {
+    if (!onVisibleListingsChange || listings.length === 0) return;
+
+    const bounds = map.getBounds();
+    const visibleListings = listings.filter(listing => {
+      const coords = listing.displayCoordinates || listing.address?.coordinates || listing.location?.coordinates;
+      if (!coords || !Array.isArray(coords) || coords.length < 2) return false;
+
+      const position = L.latLng(coords[0], coords[1]);
+      return bounds.contains(position);
+    });
+
+    // Only update if the set of visible listings has changed
+    const currentVisibleIds = new Set(visibleListings.map(l => l._id || l.id));
+    const hasChanged =
+      currentVisibleIds.size !== lastVisibleIds.current.size ||
+      Array.from(currentVisibleIds).some(id => !lastVisibleIds.current.has(id));
+
+    if (hasChanged) {
+      lastVisibleIds.current = currentVisibleIds;
+      onVisibleListingsChange(visibleListings);
+    }
+  }, [listings, onVisibleListingsChange, map]);
+
+  useMapEvents({
+    moveend: updateVisibleListings,
+    zoomend: updateVisibleListings,
+  });
+
+  // Update on initial mount and when listings change
+  useEffect(() => {
+    updateVisibleListings();
+  }, [updateVisibleListings]);
+
+  return null;
+}
+
 // Composant pour fit bounds automatiquement
 function AutoFitBounds({ listings, fitBounds }: { listings: any[]; fitBounds: boolean }) {
   const map = useMap();
@@ -151,6 +200,7 @@ export default function LeafletMapView({
   center = [36.7538, 3.0588],
   zoom = 10,
   selectedListing,
+  hoveredListing,
   onListingSelect,
   onListingHover,
   onMapBoundsChange,
@@ -167,6 +217,13 @@ export default function LeafletMapView({
   const [mapStyle, setMapStyle] = useState<keyof typeof MAP_STYLES>('voyager');
   const [showStyleSelector, setShowStyleSelector] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
+
+  // Synchronize internal hoveredMarkerId with external hoveredListing prop
+  useEffect(() => {
+    if (hoveredListing !== undefined) {
+      setHoveredMarkerId(hoveredListing);
+    }
+  }, [hoveredListing]);
 
   // Process listings with enhanced coordinate handling
   const processedListings = useMemo(() => {
@@ -257,6 +314,12 @@ export default function LeafletMapView({
 
         {/* Bounds handler */}
         <MapBoundsHandler onBoundsChange={onMapBoundsChange} />
+
+        {/* Visible listings handler */}
+        <VisibleListingsHandler
+          listings={processedListings}
+          onVisibleListingsChange={onVisibleListingsChange}
+        />
 
         {/* Auto fit bounds */}
         <AutoFitBounds listings={processedListings} fitBounds={fitBounds} />
