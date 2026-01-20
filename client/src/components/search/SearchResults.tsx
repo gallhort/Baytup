@@ -41,15 +41,21 @@ export default function SearchResults({
   if (loading) {
     return (
       <div className="space-y-4">
-        {[...Array(8)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[160px]">
-            <div className="w-[130px] lg:w-[140px] bg-gray-200 animate-pulse" />
-            <div className="flex-1 p-3 space-y-2">
-              <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
-              <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
-              <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3" />
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2 mt-auto" />
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[200px]">
+            <div className="w-[200px] lg:w-[240px] bg-gray-200 animate-pulse" />
+            <div className="flex-1 p-4 flex justify-between gap-4">
+              <div className="flex-1 space-y-3">
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5" />
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-3/5" />
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-2/5 mt-auto" />
+              </div>
+              <div className="w-32 space-y-2 flex flex-col items-end">
+                <div className="h-6 bg-gray-200 rounded animate-pulse w-24" />
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-16" />
+              </div>
             </div>
           </div>
         ))}
@@ -105,15 +111,15 @@ export default function SearchResults({
               onMouseEnter={() => onListingHover?.(listingId)}
               onMouseLeave={() => onListingHover?.(null)}
             >
-              {/* Card container - Ultra compact like Abritel */}
-              <div className={`bg-white rounded-lg overflow-hidden transition-all duration-200 flex flex-col sm:flex-row h-auto sm:h-[160px] border ${
+              {/* Card container - Abritel exact size */}
+              <div className={`bg-white rounded-lg overflow-hidden transition-all duration-200 flex flex-col sm:flex-row h-auto sm:h-[200px] border ${
                 hoveredListing === listingId
                   ? 'shadow-lg border-gray-400'
                   : 'shadow-sm hover:shadow-md border-gray-200 hover:border-gray-300'
               }`}>
 
-                {/* Image Section - Small like Abritel (120-140px) */}
-                <div className="relative w-full sm:w-[130px] lg:w-[140px] h-40 sm:h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                {/* Image Section - Larger like Abritel (200-240px) */}
+                <div className="relative w-full sm:w-[200px] lg:w-[240px] h-48 sm:h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                   <img
                     src={getListingImageUrl(listing, 0)}
                     alt={listing.title}
@@ -144,71 +150,80 @@ export default function SearchResults({
                   </div>
                 </div>
 
-                {/* Content Section - Abritel exact layout */}
-                <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
-                  {/* Top section - Compact */}
-                  <div className="space-y-1">
-                    {/* Arrondissement/Ville (small text) */}
-                    <div className="text-xs text-gray-600 truncate">
-                      {listing.address?.city || 'Ville'}
-                    </div>
+                {/* Content Section - Abritel layout: LEFT content + RIGHT price */}
+                <div className="flex-1 p-4 flex justify-between gap-4 min-w-0">
+                  {/* LEFT: Main content (ville, titre, détails, badge) */}
+                  <div className="flex-1 flex flex-col justify-between min-w-0">
+                    <div className="space-y-1.5">
+                      {/* Arrondissement/Ville */}
+                      <div className="text-xs text-gray-600 truncate">
+                        {listing.address?.city || 'Ville'}
+                      </div>
 
-                    {/* Title (bold, 2 lines max) */}
-                    <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2">
-                      {listing.title}
-                    </h3>
+                      {/* Title (bold, 2 lines) */}
+                      <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2">
+                        {listing.title}
+                      </h3>
 
-                    {/* Property details (like Abritel: Type • Guests • Bedrooms • Bathrooms) */}
-                    <div className="text-xs text-gray-600 line-clamp-1">
-                      {listing.category === 'stay' ? (
-                        <>
-                          Appartement • {listing.stayDetails?.bedrooms || 1} {listing.stayDetails?.bedrooms === 1 ? 'chambre' : 'chambres'}
-                          {listing.stayDetails?.bathrooms && ` • ${listing.stayDetails.bathrooms} salle${listing.stayDetails.bathrooms > 1 ? 's' : ''} de bain`}
-                        </>
-                      ) : (
-                        <>Véhicule • {listing.vehicleDetails?.seats || 4} places</>
+                      {/* Property details */}
+                      <div className="text-sm text-gray-600 line-clamp-1">
+                        {listing.category === 'stay' ? (
+                          <>
+                            Appartement • {listing.stayDetails?.bedrooms || 1} {listing.stayDetails?.bedrooms === 1 ? 'chambre' : 'chambres'}
+                            {listing.stayDetails?.bathrooms && ` • ${listing.stayDetails.bathrooms} salle${listing.stayDetails.bathrooms > 1 ? 's' : ''} de bain`}
+                          </>
+                        ) : (
+                          <>Véhicule • {listing.vehicleDetails?.seats || 4} places</>
+                        )}
+                      </div>
+
+                      {/* Badge "Hôte professionnel" */}
+                      {typeof listing.host === 'object' && listing.host.hostInfo?.superhost && (
+                        <div className="text-xs text-gray-700 font-medium mt-1">
+                          Hôte professionnel
+                        </div>
                       )}
                     </div>
 
-                    {/* Badge "Hôte professionnel" */}
-                    {typeof listing.host === 'object' && listing.host.hostInfo?.superhost && (
-                      <div className="text-xs text-gray-700 font-medium mt-1">
-                        Hôte professionnel
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Bottom section - Rating + Price (Abritel layout) */}
-                  <div className="space-y-2 mt-2">
-                    {/* Rating badge - Between title and price */}
+                    {/* Rating badge at bottom */}
                     {ratingBadge && (
-                      <div className="flex items-center gap-1.5">
-                        <div className={`${ratingBadge.color} text-white px-1.5 py-0.5 rounded text-xs font-bold`}>
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <div className={`${ratingBadge.color} text-white px-2 py-0.5 rounded text-xs font-bold`}>
                           {avgRating.toFixed(1)}
                         </div>
                         <span className="text-xs font-semibold text-gray-900">{ratingBadge.label}</span>
                         <span className="text-xs text-gray-500">{reviewCount} avis</span>
                       </div>
                     )}
+                  </div>
 
-                    {/* Price section - Abritel style with strikethrough */}
-                    <div className="flex items-end justify-between">
-                      <div className="flex-1">
-                        {listing.pricing?.convertedPrice && listing.pricing.convertedPrice > (listing.pricing?.basePrice || 0) && (
-                          <div className="text-xs text-gray-500 line-through">
-                            {formatPrice(listing.pricing.convertedPrice, listing.pricing?.currency || 'DZD')}
-                          </div>
-                        )}
-                        <div className="font-bold text-base text-gray-900">
-                          {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')}
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          pour 1 nuit, 1 {listing.category === 'stay' ? 'appartement' : 'véhicule'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          taxes et frais compris
-                        </div>
+                  {/* RIGHT: Price section */}
+                  <div className="flex flex-col items-end justify-end text-right flex-shrink-0">
+                    {/* Prix barré si discount */}
+                    {listing.pricing?.convertedPrice && listing.pricing.convertedPrice > (listing.pricing?.basePrice || 0) && (
+                      <div className="text-sm text-gray-500 line-through">
+                        {formatPrice(listing.pricing.convertedPrice, listing.pricing?.currency || 'DZD')}
                       </div>
+                    )}
+
+                    {/* Prix principal (GROS) */}
+                    <div className="font-bold text-xl text-gray-900">
+                      {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')}
+                    </div>
+
+                    {/* "pour X nuits, 1 appartement" */}
+                    <div className="text-xs text-gray-600 mt-0.5">
+                      pour 1 nuit, 1 {listing.category === 'stay' ? 'appartement' : 'véhicule'}
+                    </div>
+
+                    {/* "X € par nuit" */}
+                    <div className="text-xs text-gray-600">
+                      {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')} par nuit
+                    </div>
+
+                    {/* "taxes et frais compris" */}
+                    <div className="text-xs text-gray-500">
+                      taxes et frais compris
                     </div>
                   </div>
                 </div>

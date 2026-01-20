@@ -600,12 +600,12 @@ function SearchPageContent() {
         </div>
       </div>
 
-      {/* Abritel-style Split Screen Layout: 35% List + 65% Map (Fixed) */}
+      {/* Abritel-style Split Screen Layout: 40% List + 60% Map (Fixed) */}
       <div className="flex-1 overflow-hidden w-full flex">
-        {/* Left: Listings Panel (35% - Scrollable) */}
+        {/* Left: Listings Panel (40% - Scrollable) */}
         <div
           ref={listContainerRef}
-          className="w-full lg:w-[35%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
+          className="w-full lg:w-[40%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
         >
           <div className="px-4 sm:px-6 lg:px-8 py-6">
             {error && (
@@ -616,15 +616,21 @@ function SearchPageContent() {
 
             {loading && listingsToDisplay.length === 0 ? (
               <div className="space-y-4">
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[160px]">
-                    <div className="w-[130px] lg:w-[140px] bg-gray-200 animate-pulse" />
-                    <div className="flex-1 p-3 space-y-2">
-                      <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
-                      <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
-                      <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
-                      <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3" />
-                      <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2 mt-auto" />
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[200px]">
+                    <div className="w-[200px] lg:w-[240px] bg-gray-200 animate-pulse" />
+                    <div className="flex-1 p-4 flex justify-between gap-4">
+                      <div className="flex-1 space-y-3">
+                        <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
+                        <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5" />
+                        <div className="h-3 bg-gray-200 rounded animate-pulse w-3/5" />
+                        <div className="h-3 bg-gray-200 rounded animate-pulse w-2/5 mt-auto" />
+                      </div>
+                      <div className="w-32 space-y-2 flex flex-col items-end">
+                        <div className="h-6 bg-gray-200 rounded animate-pulse w-24" />
+                        <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                        <div className="h-3 bg-gray-200 rounded animate-pulse w-16" />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -672,8 +678,8 @@ function SearchPageContent() {
           </div>
         </div>
 
-        {/* Right: Map Panel (65% - Fixed, hidden on mobile) */}
-        <div className="hidden lg:block lg:w-[65%] flex-shrink-0 h-full relative bg-gray-100">
+        {/* Right: Map Panel (60% - Fixed, hidden on mobile) */}
+        <div className="hidden lg:block lg:w-[60%] flex-shrink-0 h-full relative bg-gray-100">
           <div className="h-full w-full">
             <LeafletMapView
               listings={listings}
