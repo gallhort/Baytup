@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Search, MapPin, Calendar, Users, ChevronDown, X } from 'lucide-react';
-import { useClickAway } from 'react-use';
 
 interface AbritelSearchBarProps {
   location?: string;
@@ -294,17 +293,27 @@ export default function AbritelSearchBar({
   const datesDropdownRef = useRef<HTMLDivElement>(null);
   const guestsDropdownRef = useRef<HTMLDivElement>(null);
 
-  useClickAway(locationDropdownRef, () => {
-    if (activeField === 'location') setActiveField(null);
-  });
+  // Custom click away handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (activeField === 'location' && locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) {
+        setActiveField(null);
+      }
+      if (activeField === 'dates' && datesDropdownRef.current && !datesDropdownRef.current.contains(event.target as Node)) {
+        setActiveField(null);
+      }
+      if (activeField === 'guests' && guestsDropdownRef.current && !guestsDropdownRef.current.contains(event.target as Node)) {
+        setActiveField(null);
+      }
+    };
 
-  useClickAway(datesDropdownRef, () => {
-    if (activeField === 'dates') setActiveField(null);
-  });
-
-  useClickAway(guestsDropdownRef, () => {
-    if (activeField === 'guests') setActiveField(null);
-  });
+    if (activeField) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [activeField]);
 
   const formatDateRange = () => {
     if (!localCheckIn || !localCheckOut) return 'Sélectionner des dates';
