@@ -8,8 +8,8 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 export default function HeaderWrapper() {
-  const { state, setLanguage, setCurrency, logout } = useApp();
-  const { language, setLanguage: setLanguageContext, currency, setCurrency: setCurrencyContext } = useLanguage();
+  const { state, logout } = useApp();
+  const { language, setLanguage, currency, setCurrency } = useLanguage();
   const { unreadCount, notifications: socketNotifications } = useSocket();
   const router = useRouter();
 
@@ -57,7 +57,6 @@ export default function HeaderWrapper() {
   };
 
   const handleLanguageChange = (lang: 'en' | 'fr' | 'ar') => {
-    setLanguageContext(lang);
     setLanguage(lang);
     toast.success(
       lang === 'ar' ? 'تم تغيير اللغة بنجاح' :
@@ -75,7 +74,6 @@ export default function HeaderWrapper() {
   };
 
   const handleCurrencyChange = (curr: 'DZD' | 'EUR') => {
-    setCurrencyContext(curr);
     setCurrency(curr);
     const message = language === 'ar'
       ? `تم تغيير العملة إلى ${curr}`
