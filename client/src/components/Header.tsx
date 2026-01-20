@@ -370,7 +370,6 @@ const Header = React.memo(function Header({
   const [activeSearchField, setActiveSearchField] = useState<string | null>(null);
   const [currentActiveCategory, setCurrentActiveCategory] = useState(currentCategory || 'stays');
   const [activeSearchTab, setActiveSearchTab] = useState('stays');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
@@ -406,7 +405,6 @@ const Header = React.memo(function Header({
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // ✅ FEATURE FLAG: Forcer 'stays' si vehicles désactivé
   useEffect(() => {
@@ -493,7 +491,6 @@ const Header = React.memo(function Header({
   useClickAway(languageMenuRef, () => setIsLanguageMenuOpen(false));
   useClickAway(userMenuRef, () => setIsUserMenuOpen(false));
   useClickAway(notificationMenuRef, () => setIsNotificationMenuOpen(false));
-  useClickAway(mobileMenuRef, () => setIsMobileMenuOpen(false));
 
   // Enhanced scroll behavior with smooth state transitions - throttled with useRef
   const lastUpdateTime = useRef(0);
@@ -1875,19 +1872,77 @@ const Header = React.memo(function Header({
                           </button>
                         </>
                       )}
+
+                      {/* Mobile-only: Categories & Language/Currency Selector */}
+                      <div className="sm:hidden">
+                        <div className="border-t border-gray-100 my-2" />
+
+                        {/* Search Categories */}
+                        {searchTabs.map((tab) => (
+                          <Link
+                            key={tab.key}
+                            href={`/search?category=${tab.key}`}
+                            className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            <tab.icon className="h-4 w-4" />
+                            <span>{tab.label}</span>
+                          </Link>
+                        ))}
+
+                        <div className="border-t border-gray-100 my-2" />
+
+                        {/* Language Selector */}
+                        <div className="px-4 py-2">
+                          <div className="text-xs font-semibold text-gray-500 mb-2">{t.languageAndRegion}</div>
+                          {languages.map((lang) => (
+                            <button
+                              key={lang.code}
+                              onClick={() => {
+                                onLanguageChange?.(lang.code as 'en' | 'fr' | 'ar');
+                                setIsUserMenuOpen(false);
+                              }}
+                              className={`w-full flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors ${
+                                language === lang.code ? 'bg-orange-50 border border-[#FF6B35]' : ''
+                              }`}
+                            >
+                              <span className="text-lg">{lang.flag}</span>
+                              <span className="text-sm text-gray-700">{lang.name}</span>
+                              {language === lang.code && (
+                                <div className="ml-auto w-2 h-2 bg-[#FF6B35] rounded-full" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="border-t border-gray-100 my-2" />
+
+                        {/* Currency Selector */}
+                        <div className="px-4 py-2">
+                          <div className="text-xs font-semibold text-gray-500 mb-2">{t.currency}</div>
+                          {currencies.map((curr) => (
+                            <button
+                              key={curr.code}
+                              onClick={() => {
+                                onCurrencyChange?.(curr.code as 'DZD' | 'EUR');
+                                setIsUserMenuOpen(false);
+                              }}
+                              className={`w-full flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors ${
+                                currency === curr.code ? 'bg-orange-50 border border-[#FF6B35]' : ''
+                              }`}
+                            >
+                              <span className="text-sm font-medium">{curr.code}</span>
+                              <span className="text-sm text-gray-600">{curr.symbol}</span>
+                              {currency === curr.code && (
+                                <div className="ml-auto w-2 h-2 bg-[#FF6B35] rounded-full" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
-
-                {/* Mobile Menu Button - Visible on Mobile and Small Tablets */}
-                <button
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="md:hidden p-1.5 sm:p-2 rounded-md text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:scale-110 touch-optimized"
-                  aria-label={t.menu}
-                  aria-expanded={isMobileMenuOpen}
-                >
-                  {isMobileMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
-                </button>
               </div>
             </div>
           </div>
@@ -1902,66 +1957,6 @@ const Header = React.memo(function Header({
         />
       )}
 
-      {/* Enhanced Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div
-          ref={mobileMenuRef}
-          className="lg:hidden fixed inset-y-0 right-0 w-80 sm:w-96 bg-white shadow-2xl z-50 animate-in slide-in-from-right duration-300"
-        >
-          <div className="h-full overflow-y-auto">
-            <div className="px-6 py-6 border-b border-gray-100">
-              <div className="flex items-center justify-between">
-                <div className="text-lg font-semibold text-gray-900">{t.menu}</div>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 rounded-full hover:bg-gray-50 transition-all duration-200 hover:scale-110"
-                >
-                  <X className="h-5 w-5 text-gray-500" />
-                </button>
-              </div>
-            </div>
-
-            <div className="px-6 py-6 space-y-1">
-              {searchTabs.map((tab) => (
-                <Link
-                  key={tab.key}
-                  href={`/search?category=${tab.key}`}
-                  className="flex items-center space-x-3 py-4 text-gray-700 hover:text-gray-900 transition-all duration-200 border-b border-gray-50 hover:bg-gray-50 rounded-lg px-4 hover:scale-105"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <tab.icon className="h-5 w-5" />
-                  <span className="font-medium">{tab.label}</span>
-                </Link>
-              ))}
-
-              <div className="pt-2">
-                <Link
-                  href="/search"
-                  className="flex items-center space-x-3 py-4 text-orange-600 hover:text-orange-700 transition-all duration-200 border-b border-gray-50 hover:bg-orange-50 rounded-lg px-4 hover:scale-105"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <Search className="h-5 w-5" />
-                  <span className="font-medium">{t.advancedSearch}</span>
-                </Link>
-              </div>
-
-              {/* Only show Become a Host in mobile menu for non-logged-in users or guest users */}
-              {(!user || (user && user.role === 'guest')) && (
-                <div className="pt-4">
-                  <Link
-                    href="/become-host"
-                    className="block py-4 text-gray-700 hover:text-gray-900 font-medium transition-all duration-200 hover:bg-gray-50 rounded-lg px-4 hover:scale-105"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {t.becomeHost}
-                  </Link>
-                </div>
-              )}
-
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Enhanced Mobile Search Modal */}
       {headerState.searchExpanded && (
