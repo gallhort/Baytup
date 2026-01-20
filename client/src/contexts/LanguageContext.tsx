@@ -18,8 +18,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('baytup-language') as Language;
-    const savedCurrency = localStorage.getItem('baytup-currency') as 'DZD' | 'EUR';
+    const savedLanguage = localStorage.getItem('baytup_language') as Language;
+    const savedCurrency = localStorage.getItem('baytup_currency') as 'DZD' | 'EUR';
 
     if (savedLanguage && ['en', 'fr', 'ar'].includes(savedLanguage)) {
       setLanguageState(savedLanguage);
@@ -38,12 +38,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('baytup-language', lang);
+    localStorage.setItem('baytup_language', lang);
   };
 
   const setCurrency = (curr: 'DZD' | 'EUR') => {
     setCurrencyState(curr);
-    localStorage.setItem('baytup-currency', curr);
+    localStorage.setItem('baytup_currency', curr);
   };
 
   return (
