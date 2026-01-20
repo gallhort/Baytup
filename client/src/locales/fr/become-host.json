@@ -1,0 +1,93 @@
+{
+  "hero": {
+    "title": "Devenez Hôte",
+    "subtitle": "Partagez votre espace ou votre véhicule et commencez à gagner avec la plateforme de partage leader en Algérie"
+  },
+  "benefits": {
+    "shareSpace": {
+      "title": "Partagez Votre Espace",
+      "description": "Louez votre maison, appartement ou chambre à des voyageurs du monde entier"
+    },
+    "shareVehicle": {
+      "title": "Partagez Votre Véhicule",
+      "description": "Laissez d'autres louer votre voiture lorsque vous ne l'utilisez pas et gagnez un revenu supplémentaire"
+    },
+    "earnMoney": {
+      "title": "Gagnez de l'Argent",
+      "description": "Fixez vos propres prix et gagnez de l'argent avec vos biens inutilisés"
+    }
+  },
+  "howItWorks": {
+    "title": "Comment Ça Marche",
+    "step1": {
+      "title": "Inscrivez-vous",
+      "description": "Créez votre compte hôte en quelques minutes"
+    },
+    "step2": {
+      "title": "Listez Votre Propriété",
+      "description": "Ajoutez des photos et des détails sur votre espace ou véhicule"
+    },
+    "step3": {
+      "title": "Recevez des Réservations",
+      "description": "Recevez et gérez les demandes de réservation"
+    },
+    "step4": {
+      "title": "Gagnez de l'Argent",
+      "description": "Soyez payé en toute sécurité via notre plateforme"
+    }
+  },
+  "whyHost": {
+    "title": "Pourquoi Héberger avec Baytup?",
+    "securePayments": {
+      "title": "Paiements Sécurisés",
+      "description": "Soyez payé à temps, à chaque fois, avec notre système de paiement sécurisé"
+    },
+    "support": {
+      "title": "Support 24/7",
+      "description": "Notre équipe de support dédiée est toujours là pour vous aider"
+    },
+    "protection": {
+      "title": "Protection des Hôtes",
+      "description": "Couverture d'assurance complète pour votre tranquillité d'esprit"
+    },
+    "flexible": {
+      "title": "Hébergement Flexible",
+      "description": "Vous êtes aux commandes - fixez vos propres prix et disponibilités"
+    }
+  },
+  "cta": {
+    "title": "Prêt à Commencer?",
+    "subtitle": "Rejoignez des milliers d'hôtes qui gagnent déjà sur Baytup",
+    "button": "Commencez à Héberger Aujourd'hui",
+    "processing": "Traitement...",
+    "accountNote": "Vous devrez créer un compte pour commencer à héberger"
+  },
+  "faq": {
+    "title": "Questions Fréquemment Posées",
+    "q1": {
+      "question": "Combien puis-je gagner en tant qu'hôte?",
+      "answer": "Vos gains dépendent du type de propriété, de l'emplacement et de la disponibilité. De nombreux hôtes gagnent un revenu supplémentaire significatif."
+    },
+    "q2": {
+      "question": "Ma propriété est-elle protégée?",
+      "answer": "Oui! Nous fournissons une assurance de protection des hôtes qui couvre les dommages matériels et la responsabilité."
+    },
+    "q3": {
+      "question": "Comment suis-je payé?",
+      "answer": "Les paiements sont traités en toute sécurité via notre plateforme et transférés sur votre compte bancaire après chaque réservation réussie."
+    },
+    "q4": {
+      "question": "Puis-je choisir mes invités?",
+      "answer": "Oui! Vous pouvez examiner les demandes de réservation et les profils des invités avant d'accepter toute réservation."
+    }
+  },
+  "messages": {
+    "alreadyHaveApplication": "Vous avez déjà une candidature d'hôte en cours",
+    "applicationCreated": "Candidature d'hôte créée! Redirection vers le formulaire de candidature...",
+    "pleaseSignIn": "Veuillez vous connecter pour continuer",
+    "redirectingToExisting": "Redirection vers votre candidature existante...",
+    "failedToCreate": "Échec de la création de la candidature d'hôte. Veuillez réessayer.",
+    "signInRequired": "Veuillez créer un compte ou vous connecter pour commencer à héberger",
+    "welcomeHost": "Bienvenue! Configurons votre compte d'hôte"
+  }
+}

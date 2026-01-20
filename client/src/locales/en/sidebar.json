@@ -1,0 +1,40 @@
+{
+  "menuItems": {
+    "common": {
+      "dashboard": "Dashboard",
+      "notifications": "Notifications",
+      "messages": "Messages",
+      "settings": "Settings"
+    },
+    "admin": {
+      "users": "Users",
+      "hostApplications": "Host Applications",
+      "allListings": "All Listings",
+      "bookings": "Bookings",
+      "payouts": "Payouts"
+    },
+    "host": {
+      "myListings": "My Listings",
+      "bookings": "Bookings",
+      "reviews": "Reviews",
+      "earnings": "Earnings"
+    },
+    "guest": {
+      "myBookings": "My Bookings",
+      "saved": "Saved",
+      "travelHistory": "Travel History",
+      "myReviews": "My Reviews",
+      "explore": "Explore"
+    }
+  },
+  "actions": {
+    "logout": "Logout",
+    "toggleMenu": "Toggle Menu",
+    "closeMenu": "Close Menu",
+    "openMenu": "Open Menu"
+  },
+  "messages": {
+    "loggedOut": "Logged out successfully",
+    "loginRequired": "Please log in to access dashboard"
+  }
+}

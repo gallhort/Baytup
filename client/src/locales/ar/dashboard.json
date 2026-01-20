@@ -1,0 +1,69 @@
+{
+  "loading": {
+    "message": "جاري تحميل لوحة التحكم...",
+    "spinner": "جاري التحميل..."
+  },
+  "common": {
+    "loading": "جارٍ تحميل لوحة التحكم...",
+    "noData": "لا توجد بيانات متاحة",
+    "retry": "إعادة المحاولة",
+    "refresh": "تحديث",
+    "refreshing": "جارٍ التحديث...",
+    "edit": "تعديل",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "close": "إغلاق",
+    "delete": "حذف",
+    "viewAll": "عرض الكل",
+    "seeMore": "عرض المزيد",
+    "back": "رجوع",
+    "export": "تصدير",
+    "generate": "إنشاء"
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "overview": "نظرة عامة",
+    "listings": "الإعلانات",
+    "bookings": "الحجوزات",
+    "reviews": "التقييمات",
+    "messages": "الرسائل",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "reports": "التقارير"
+  },
+  "status": {
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "pending": "قيد الانتظار",
+    "confirmed": "مؤكد",
+    "cancelled": "ملغى",
+    "completed": "مكتمل",
+    "approved": "موافق عليه",
+    "rejected": "مرفوض",
+    "paused": "متوقف مؤقتاً"
+  },
+  "currency": {
+    "dzd": "دج",
+    "perNight": "لكل ليلة",
+    "perDay": "لكل يوم",
+    "perWeek": "لكل أسبوع",
+    "perMonth": "لكل شهر",
+    "total": "المجموع",
+    "avg": "معدل"
+  },
+  "time": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "thisMonth": "هذا الشهر",
+    "lastWeek": "الأسبوع الماضي",
+    "lastMonth": "الشهر الماضي",
+    "lastQuarter": "الربع الماضي",
+    "lastYear": "العام الماضي"
+  },
+  "empty": {
+    "noDataYet": "لا توجد بيانات بعد",
+    "startNow": "ابدأ الآن",
+    "noResults": "لم يتم العثور على نتائج"
+  }
+}

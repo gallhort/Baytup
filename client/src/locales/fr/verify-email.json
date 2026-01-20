@@ -1,0 +1,40 @@
+{
+  "title": "Vérifiez votre e-mail",
+  "subtitle": "Nous avons envoyé un lien de vérification à",
+  "instructions": {
+    "title": "Vérifiez votre boîte de réception",
+    "description": "Cliquez sur le lien de vérification dans l'e-mail pour activer votre compte. Le lien expirera dans 24 heures."
+  },
+  "resend": {
+    "question": "Vous n'avez pas reçu l'e-mail ?",
+    "button": "Renvoyer l'e-mail de vérification",
+    "sending": "Envoi..."
+  },
+  "emailInput": {
+    "label": "Entrez votre adresse e-mail",
+    "placeholder": "votre@email.com",
+    "send": "Envoyer"
+  },
+  "success": {
+    "emailSent": "E-mail de vérification envoyé avec succès !"
+  },
+  "errors": {
+    "emailRequired": "L'adresse e-mail est requise",
+    "resendFailed": "Échec du renvoi de l'e-mail de vérification"
+  },
+  "tips": {
+    "title": "L'e-mail n'apparaît pas ?",
+    "checkSpam": "Vérifiez votre dossier spam ou courrier indésirable",
+    "checkEmail": "Assurez-vous d'avoir entré la bonne adresse e-mail",
+    "wait": "Attendez quelques minutes pour que l'e-mail arrive",
+    "addContact": "Ajoutez contact@baytup.fr à vos contacts e-mail"
+  },
+  "benefits": {
+    "title": "Pourquoi vérifier votre e-mail ?",
+    "security": "Sécurisez votre compte et activez la récupération du mot de passe",
+    "notifications": "Recevez des notifications importantes sur les réservations et l'hébergement",
+    "updates": "Recevez des mises à jour sur les nouvelles fonctionnalités et les offres spéciales",
+    "trust": "Établissez la confiance avec les autres utilisateurs de la plateforme"
+  },
+  "backToLogin": "Retour à la connexion"
+}

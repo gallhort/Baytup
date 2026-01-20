@@ -1,0 +1,113 @@
+{
+  "header": {
+    "title": "Gestion des Paiements",
+    "subtitle": "Gérer les demandes de paiement des hôtes"
+  },
+  "stats": {
+    "total": "Total des Demandes",
+    "pending": "En Attente",
+    "processing": "En Traitement",
+    "completed": "Terminé",
+    "rejected": "Rejeté"
+  },
+  "filters": {
+    "searchPlaceholder": "Rechercher par nom d'hôte, email ou banque...",
+    "allStatus": "Tous les Statuts",
+    "pending": "En Attente",
+    "processing": "En Traitement",
+    "completed": "Terminé",
+    "rejected": "Rejeté",
+    "clearFilters": "Effacer les Filtres"
+  },
+  "table": {
+    "host": "Hôte",
+    "amount": "Montant",
+    "bankAccount": "Compte Bancaire",
+    "requested": "Demandé",
+    "status": "Statut",
+    "actions": "Actions",
+    "net": "Net",
+    "completed": "Terminé"
+  },
+  "actions": {
+    "viewDetails": "Voir les Détails",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "complete": "Marquer comme Terminé"
+  },
+  "status": {
+    "completed": "Terminé",
+    "processing": "En Traitement",
+    "pending": "En Attente",
+    "rejected": "Rejeté",
+    "cancelled": "Annulé"
+  },
+  "emptyState": {
+    "title": "Aucune Demande de Paiement",
+    "message": "Aucune demande de paiement ne correspond à vos filtres."
+  },
+  "pagination": {
+    "page": "Page",
+    "of": "sur"
+  },
+  "modal": {
+    "host": "Hôte",
+    "amount": "Montant",
+    "bank": "Banque",
+    "adminNotes": "Notes de l'Admin",
+    "optional": "facultatif",
+    "adminNotesPlaceholder": "Ajouter des notes visibles pour l'hôte...",
+    "cancel": "Annuler",
+    "processing": "Traitement en cours...",
+    "approve": {
+      "title": "Approuver le Paiement",
+      "button": "Approuver le Paiement"
+    },
+    "reject": {
+      "title": "Rejeter le Paiement",
+      "button": "Rejeter le Paiement",
+      "reasonLabel": "Raison du Rejet",
+      "reasonPlaceholder": "Fournir une raison pour le rejet..."
+    },
+    "complete": {
+      "title": "Terminer le Paiement",
+      "button": "Marquer comme Terminé",
+      "transactionIdLabel": "ID de Transaction",
+      "transactionIdPlaceholder": "Entrer l'ID de transaction..."
+    }
+  },
+  "details": {
+    "title": "Détails du Paiement",
+    "payoutAmount": "Montant du Paiement",
+    "requestedAmount": "Montant Demandé",
+    "platformFee": "Frais de Plateforme",
+    "processingFee": "Frais de Traitement",
+    "finalAmount": "Montant Final",
+    "bankAccount": "Détails du Compte Bancaire",
+    "bankName": "Nom de la Banque",
+    "accountHolder": "Titulaire du Compte",
+    "accountNumber": "Numéro de Compte",
+    "swiftCode": "Code SWIFT",
+    "timeline": "Chronologie",
+    "requested": "Demandé",
+    "processed": "Traité",
+    "completed": "Terminé",
+    "hostNotes": "Notes de l'Hôte",
+    "adminNotes": "Notes de l'Admin",
+    "rejectionReason": "Raison du Rejet",
+    "transactionId": "ID de Transaction"
+  },
+  "validation": {
+    "rejectionReasonRequired": "Veuillez fournir une raison de rejet",
+    "transactionIdRequired": "Veuillez fournir un ID de transaction"
+  },
+  "toast": {
+    "loadFailed": "Échec du chargement des paiements",
+    "updateSuccess": "Paiement mis à jour avec succès",
+    "updateFailed": "Échec de la mise à jour du paiement"
+  },
+  "errors": {
+    "adminOnly": "Accès administrateur requis"
+  },
+  "loading": "Chargement des paiements..."
+}

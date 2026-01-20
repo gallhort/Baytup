@@ -1,0 +1,109 @@
+{
+  "header": {
+    "title": "جميع القوائم",
+    "subtitle": "إدارة جميع قوائم العقارات والمركبات"
+  },
+  "stats": {
+    "total": "الإجمالي",
+    "active": "نشطة",
+    "inactive": "غير نشطة",
+    "pending": "قيد الانتظار",
+    "featured": "مميزة",
+    "stays": "إقامات",
+    "vehicles": "مركبات"
+  },
+  "filters": {
+    "searchPlaceholder": "البحث بالعنوان أو الموقع أو الوصف...",
+    "category": {
+      "label": "الفئة",
+      "all": "جميع الفئات",
+      "stays": "إقامات",
+      "vehicles": "مركبات"
+    },
+    "status": {
+      "label": "الحالة",
+      "all": "جميع الحالات",
+      "active": "نشطة",
+      "inactive": "غير نشطة",
+      "pending": "قيد الانتظار",
+      "rejected": "مرفوضة"
+    }
+  },
+  "card": {
+    "featured": "مميزة",
+    "viewDetails": "عرض التفاصيل",
+    "delete": "حذف",
+    "deactivate": "تعطيل",
+    "activate": "تفعيل",
+    "unfeature": "إلغاء التمييز",
+    "feature": "تمييز"
+  },
+  "status": {
+    "active": "نشطة",
+    "inactive": "غير نشطة",
+    "pending": "قيد الانتظار",
+    "rejected": "مرفوضة"
+  },
+  "pagination": {
+    "previous": "السابق",
+    "next": "التالي",
+    "showing": "عرض",
+    "to": "إلى",
+    "of": "من",
+    "results": "نتيجة"
+  },
+  "viewModal": {
+    "title": "تفاصيل القائمة",
+    "close": "إغلاق",
+    "sections": {
+      "images": "الصور",
+      "basicInfo": "المعلومات الأساسية",
+      "description": "الوصف",
+      "host": "المضيف",
+      "stats": "الإحصائيات"
+    },
+    "fields": {
+      "title": "العنوان",
+      "category": "الفئة",
+      "subcategory": "الفئة الفرعية",
+      "status": "الحالة",
+      "price": "السعر",
+      "location": "الموقع",
+      "description": "الوصف",
+      "host": "المضيف",
+      "views": "المشاهدات",
+      "favorites": "المفضلة",
+      "bookings": "الحجوزات",
+      "rating": "التقييم",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "reviews": "تقييمات"
+    }
+  },
+  "deleteModal": {
+    "title": "حذف القائمة",
+    "confirmMessage": "هل أنت متأكد من حذف",
+    "warningMessage": "هذا الإجراء لا رجعة فيه.",
+    "cancel": "إلغاء",
+    "confirm": "حذف القائمة"
+  },
+  "toast": {
+    "accessDeniedAdmin": "تم رفض الوصول. المسؤولون فقط.",
+    "accessDenied": "تم رفض الوصول",
+    "failedToLoad": "فشل تحميل القوائم",
+    "deleteSuccess": "تم حذف القائمة بنجاح",
+    "deleteFailed": "فشل حذف القائمة",
+    "activated": "تم تفعيل القائمة",
+    "deactivated": "تم تعطيل القائمة",
+    "statusUpdateFailed": "فشل تحديث الحالة",
+    "featured": "تم تمييز القائمة",
+    "unfeatured": "تم إلغاء تمييز القائمة",
+    "featuredUpdateFailed": "فشل تحديث حالة التمييز",
+    "loading": "جاري تحميل القوائم..."
+  },
+  "pricing": {
+    "perNight": "لليلة الواحدة",
+    "perHour": "للساعة",
+    "perDay": "لليوم الواحد"
+  }
+}

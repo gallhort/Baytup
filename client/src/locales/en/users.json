@@ -1,0 +1,151 @@
+{
+  "header": {
+    "title": "User Management",
+    "subtitle": "Manage all users in the system",
+    "addButton": "Add New User"
+  },
+  "stats": {
+    "totalUsers": "Total Users",
+    "guests": "Guests",
+    "hosts": "Hosts",
+    "admins": "Admins",
+    "active": "Active",
+    "blocked": "Blocked"
+  },
+  "filters": {
+    "searchPlaceholder": "Search by name or email...",
+    "allRoles": "All Roles",
+    "allStatus": "All Status",
+    "roleGuest": "Guests",
+    "roleHost": "Hosts",
+    "roleAdmin": "Admins",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "statusBlocked": "Blocked"
+  },
+  "table": {
+    "headers": {
+      "user": "User",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "joined": "Joined",
+      "actions": "Actions"
+    },
+    "content": {
+      "verified": "Verified",
+      "notVerified": "Not Verified",
+      "guest": "Guest",
+      "host": "Host",
+      "admin": "Admin",
+      "active": "Active",
+      "inactive": "Inactive",
+      "blocked": "Blocked"
+    }
+  },
+  "actions": {
+    "viewDetails": "View Details",
+    "editUser": "Edit User",
+    "resetPassword": "Reset Password",
+    "blockUser": "Block User",
+    "unblockUser": "Unblock User",
+    "deleteUser": "Delete User"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "results": "results"
+  },
+  "modal": {
+    "createTitle": "Create New User",
+    "editTitle": "Edit User",
+    "viewTitle": "User Details",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "password": "Password",
+    "phone": "Phone",
+    "role": "Role",
+    "dateOfBirth": "Date of Birth",
+    "gender": "Gender",
+    "selectGender": "Select Gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "city": "City",
+    "state": "State",
+    "country": "Country",
+    "statistics": "Statistics",
+    "totalBookings": "Total Bookings",
+    "totalListings": "Total Listings",
+    "totalReviews": "Total Reviews",
+    "averageRating": "Average Rating",
+    "na": "N/A",
+    "close": "Close",
+    "cancel": "Cancel",
+    "createUser": "Create User",
+    "saveChanges": "Save Changes",
+    "firstNameRequired": "First Name *",
+    "lastNameRequired": "Last Name *",
+    "emailRequired": "Email *",
+    "passwordRequired": "Password *",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "blocked": "Blocked",
+    "guest": "Guest",
+    "host": "Host",
+    "admin": "Admin",
+    "joined": "Joined"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "resetPasswordFor": "Reset password for:",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "newPasswordPlaceholder": "Enter new password (min 6 characters)",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "resetButton": "Reset Password"
+  },
+  "blockUser": {
+    "title": "Block User",
+    "message": "You are about to block:",
+    "reasonLabel": "Reason for blocking",
+    "reasonPlaceholder": "Enter reason for blocking this user...",
+    "blockButton": "Block User"
+  },
+  "deleteUser": {
+    "title": "Delete User",
+    "message": "Are you sure you want to delete",
+    "warning": "This action cannot be undone.",
+    "deleteButton": "Delete User"
+  },
+  "toast": {
+    "loadingUsers": "Loading users...",
+    "accessDenied": "Access denied. Admin only.",
+    "failedToLoad": "Failed to load users",
+    "userCreated": "User created successfully",
+    "failedToCreate": "Failed to create user",
+    "userUpdated": "User updated successfully",
+    "failedToUpdate": "Failed to update user",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordMismatch": "Passwords do not match",
+    "passwordReset": "Password reset successfully",
+    "failedToReset": "Failed to reset password",
+    "provideBlockReason": "Please provide a reason for blocking",
+    "userBlocked": "User blocked successfully",
+    "failedToBlock": "Failed to block user",
+    "userUnblocked": "User unblocked successfully",
+    "failedToUnblock": "Failed to unblock user",
+    "userDeleted": "User deleted successfully",
+    "failedToDelete": "Failed to delete user",
+    "roleUpdated": "User role updated to",
+    "failedToUpdateRole": "Failed to update role",
+    "emailVerified": "Email verified successfully",
+    "failedToVerify": "Failed to verify email"
+  }
+}

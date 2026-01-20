@@ -1,0 +1,72 @@
+{
+  "modal": {
+    "title": "Confirm your booking",
+    "subtitle": "Review your trip details before booking"
+  },
+  "sections": {
+    "yourTrip": "Your trip",
+    "priceDetails": "Price details",
+    "specialRequests": "Special requests",
+    "termsAndConditions": "Terms and Conditions",
+    "importantInfo": "Important Information"
+  },
+  "labels": {
+    "dates": "Dates",
+    "guests": "Guests",
+    "checkInCheckOut": "Check-in & Check-out",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "before": "Before",
+    "cleaningFee": "Cleaning fee",
+    "serviceFee": "Service fee (10%)",
+    "taxes": "Taxes (5%)",
+    "total": "Total (DZD)",
+    "totalAmount": "Total"
+  },
+  "guests": {
+    "adult": "adult",
+    "adults": "adults",
+    "child": "child",
+    "children": "children",
+    "infant": "infant",
+    "infants": "infants"
+  },
+  "time": {
+    "night": "night",
+    "nights": "nights"
+  },
+  "form": {
+    "specialRequestsLabel": "Special requests (optional)",
+    "specialRequestsPlaceholder": "Any special requests or requirements? Let the host know...",
+    "characterCount": "{{count}}/500 characters",
+    "termsAgreement": "I agree to the",
+    "termsOfService": "Terms of Service",
+    "and": "and",
+    "cancellationPolicy": "Cancellation Policy"
+  },
+  "payment": {
+    "securePaymentTitle": "Secure payment with Slick Pay",
+    "securePaymentDescription": "You'll be redirected to Slick Pay to complete your payment securely. Your booking will be confirmed once payment is processed.",
+    "paymentUrlError": "Payment URL not received"
+  },
+  "buttons": {
+    "cancel": "Cancel",
+    "confirmAndPay": "Confirm & Pay",
+    "requestAndPay": "Request & Pay",
+    "processing": "Processing..."
+  },
+  "errors": {
+    "title": "Booking Error",
+    "acceptTerms": "Please accept the terms and conditions",
+    "selectDates": "Please select check-in and check-out dates",
+    "loginRequired": "Please log in to make a booking",
+    "bookingFailed": "Failed to create booking",
+    "bookingFailedRetry": "Failed to create booking. Please try again.",
+    "genericError": "An error occurred. Please try again."
+  },
+  "pricing": {
+    "perNight": "{{price}} × {{nights}} night",
+    "perNights": "{{price}} × {{nights}} nights",
+    "breakdown": "Price breakdown"
+  }
+}

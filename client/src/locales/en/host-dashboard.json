@@ -1,0 +1,180 @@
+{
+  "loading": {
+    "message": "Loading dashboard..."
+  },
+  "errors": {
+    "noData": "No data available",
+    "loadFailed": "Failed to load dashboard data"
+  },
+  "header": {
+    "title": "Host Dashboard",
+    "subtitle": "Manage your listings and track performance",
+    "editProfile": "Edit"
+  },
+  "stats": {
+    "activeListings": {
+      "label": "Active Listings"
+    },
+    "totalListings": {
+      "total": "total"
+    },
+    "totalBookings": {
+      "label": "Total Bookings",
+      "active": "active"
+    },
+    "totalRevenue": {
+      "label": "Total Revenue",
+      "currency": "DZD",
+      "avg": "avg"
+    },
+    "averageRating": {
+      "label": "Average Rating",
+      "views": "views"
+    }
+  },
+  "tabs": {
+    "overview": "Overview",
+    "listings": "Listings",
+    "bookings": "Bookings",
+    "reviews": "Reviews"
+  },
+  "charts": {
+    "revenue": {
+      "title": "Revenue Trend",
+      "subtitle": "Monthly earnings overview",
+      "label": "Monthly Revenue (DZD)",
+      "yAxisLabel": "DZD"
+    },
+    "performance": {
+      "title": "Listing Performance",
+      "subtitle": "Top 5 listings by views & bookings",
+      "viewsLabel": "Views",
+      "bookingsLabel": "Bookings"
+    }
+  },
+  "sections": {
+    "upcomingBookings": {
+      "title": "Upcoming Bookings",
+      "subtitle": "Next scheduled reservations"
+    },
+    "myListings": {
+      "title": "My Listings",
+      "subtitle": "Manage your property listings"
+    },
+    "allBookings": {
+      "title": "All Bookings",
+      "subtitle": "View and manage reservations"
+    },
+    "recentReviews": {
+      "title": "Recent Reviews",
+      "subtitle": "Guest feedback on your listings"
+    }
+  },
+  "bookings": {
+    "guest": "Guest",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "nights": "nights",
+    "night": "night",
+    "totalPrice": "Total Price",
+    "status": {
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "dateRange": "to"
+  },
+  "listings": {
+    "category": "Category",
+    "subcategory": "Subcategory",
+    "views": "Views",
+    "bookings": "bookings",
+    "booking": "booking",
+    "rating": "Rating",
+    "price": "Price",
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "draft": "Draft",
+      "archived": "Archived"
+    },
+    "actions": {
+      "edit": "Edit",
+      "pause": "Pause",
+      "activate": "Activate",
+      "delete": "Delete"
+    }
+  },
+  "reviews": {
+    "title": "Reviews",
+    "subtitle": "Guest feedback",
+    "rating": "Rating",
+    "comment": "Comment",
+    "reviewer": "Reviewer",
+    "listing": "Listing",
+    "date": "Date",
+    "noComment": "No comment provided"
+  },
+  "actions": {
+    "addNewListing": "Add New Listing",
+    "createFirstListing": "Create Your First Listing",
+    "viewAll": "View All",
+    "viewDetails": "View Details",
+    "manage": "Manage"
+  },
+  "emptyStates": {
+    "noUpcomingBookings": "No upcoming bookings",
+    "noListings": "No listings yet",
+    "noBookings": "No bookings yet",
+    "noReviews": "No reviews yet",
+    "createListing": "Create your first listing to start hosting",
+    "waitingForBookings": "Your bookings will appear here once guests make reservations"
+  },
+  "messages": {
+    "listingPaused": "Listing paused successfully",
+    "listingActivated": "Listing activated successfully",
+    "listingActionFailed": "Failed to update listing status",
+    "listingDeleted": "Listing deleted successfully",
+    "listingDeleteFailed": "Failed to delete listing"
+  },
+  "currency": {
+    "dzd": "DZD",
+    "eur": "EUR",
+    "usd": "USD"
+  },
+  "time": {
+    "days": "days",
+    "day": "day",
+    "months": "months",
+    "month": "month",
+    "years": "years",
+    "year": "year"
+  },
+  "filters": {
+    "all": "All",
+    "active": "Active",
+    "paused": "Paused",
+    "archived": "Archived",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "cancelled": "Cancelled"
+  },
+  "performance": {
+    "title": "Performance Metrics",
+    "viewsToBookingRatio": "Views to Booking Ratio",
+    "conversionRate": "Conversion Rate",
+    "occupancyRate": "Occupancy Rate",
+    "responseRate": "Response Rate",
+    "responseTime": "Response Time"
+  },
+  "overview": {
+    "title": "Overview",
+    "summary": "Dashboard Summary",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "trend": "Trend",
+    "increase": "Increase",
+    "decrease": "Decrease"
+  }
+}

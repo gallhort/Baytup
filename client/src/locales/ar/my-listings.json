@@ -1,0 +1,200 @@
+{
+  "loading": {
+    "message": "جاري تحميل إعلاناتك..."
+  },
+  "messages": {
+    "error": {
+      "failed": "فشل تحميل الإعلانات. يرجى المحاولة مرة أخرى.",
+      "updateFailed": "فشل تحديث الإعلان. يرجى المحاولة مرة أخرى.",
+      "deleteFailed": "فشل حذف الإعلان. يرجى المحاولة مرة أخرى.",
+      "statusFailed": "فشل تحديث الحالة. يرجى المحاولة مرة أخرى.",
+      "duplicateFailed": "فشل نسخ الإعلان. يرجى المحاولة مرة أخرى."
+    },
+    "success": {
+      "updated": "تم تحديث الإعلان بنجاح!",
+      "deleted": "تم حذف الإعلان بنجاح!",
+      "statusChanged": "تم تحديث حالة الإعلان بنجاح!",
+      "duplicated": "تم نسخ الإعلان بنجاح!"
+    }
+  },
+  "header": {
+    "title": "إعلاناتي",
+    "subtitle": "إدارة وتتبع إعلانات العقارات والمركبات الخاصة بك",
+    "createButton": "إنشاء إعلان جديد"
+  },
+  "stats": {
+    "totalListings": "إجمالي الإعلانات",
+    "active": "نشط",
+    "totalViews": "إجمالي المشاهدات",
+    "totalBookings": "إجمالي الحجوزات",
+    "views": "المشاهدات",
+    "bookings": "الحجوزات"
+  },
+  "filters": {
+    "search": "بحث",
+    "searchPlaceholder": "البحث في الإعلانات بالعنوان أو الموقع...",
+    "status": "الحالة",
+    "allStatus": "جميع الحالات",
+    "statusActive": "نشط",
+    "statusPaused": "متوقف مؤقتاً",
+    "statusPending": "قيد الانتظار",
+    "statusInactive": "غير نشط",
+    "category": "الفئة",
+    "allCategories": "جميع الفئات",
+    "categoryStays": "إقامات",
+    "categoryVehicles": "مركبات"
+  },
+  "table": {
+    "headers": {
+      "listing": "الإعلان",
+      "category": "الفئة",
+      "price": "السعر",
+      "stats": "الإحصائيات",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "empty": {
+      "message": "لم يتم العثور على إعلانات. ابدأ بإنشاء إعلانك الأول!",
+      "action": "إنشاء إعلانك الأول"
+    }
+  },
+  "pricing": {
+    "perNight": "لكل ليلة"
+  },
+  "badges": {
+    "featured": "مميز"
+  },
+  "actions": {
+    "viewDetails": "عرض التفاصيل",
+    "edit": "تعديل",
+    "duplicate": "نسخ",
+    "pause": "إيقاف مؤقت",
+    "activate": "تفعيل",
+    "delete": "حذف"
+  },
+  "viewModal": {
+    "title": "تفاصيل الإعلان",
+    "closeButton": "إغلاق",
+    "basicInfo": {
+      "title": "المعلومات الأساسية",
+      "titleLabel": "العنوان",
+      "categoryType": "الفئة",
+      "description": "الوصف",
+      "status": "الحالة",
+      "slug": "معرف الرابط"
+    },
+    "location": {
+      "title": "الموقع",
+      "street": "عنوان الشارع",
+      "city": "المدينة",
+      "state": "الولاية/المحافظة",
+      "postalCode": "الرمز البريدي",
+      "country": "البلد",
+      "coordinates": "الإحداثيات"
+    },
+    "stayDetails": {
+      "title": "تفاصيل العقار",
+      "propertyType": "نوع العقار",
+      "bedrooms": "غرف النوم",
+      "bathrooms": "الحمامات",
+      "area": "المساحة",
+      "floor": "الطابق",
+      "furnished": "مفروش",
+      "amenities": "المرافق"
+    },
+    "vehicleDetails": {
+      "title": "تفاصيل المركبة",
+      "vehicleType": "نوع المركبة",
+      "make": "الصانع",
+      "model": "الطراز",
+      "year": "السنة",
+      "transmission": "ناقل الحركة",
+      "fuelType": "نوع الوقود",
+      "seats": "المقاعد",
+      "features": "المميزات"
+    },
+    "pricing": {
+      "title": "التسعير",
+      "basePrice": "السعر الأساسي",
+      "per": "لكل",
+      "cleaningFee": "رسوم التنظيف",
+      "serviceFee": "رسوم الخدمة",
+      "securityDeposit": "التأمين"
+    },
+    "availability": {
+      "title": "التوفر وقواعد الحجز",
+      "instantBook": "الحجز الفوري",
+      "yes": "نعم",
+      "no": "لا",
+      "minStay": "الحد الأدنى للإقامة",
+      "maxStay": "الحد الأقصى للإقامة",
+      "advanceNotice": "الإشعار المسبق",
+      "preparationTime": "وقت التحضير",
+      "checkInTime": "وقت تسجيل الوصول",
+      "checkOutTime": "وقت المغادرة"
+    },
+    "rules": {
+      "title": "قواعد المنزل",
+      "smoking": "التدخين",
+      "pets": "الحيوانات الأليفة",
+      "parties": "الحفلات/الفعاليات",
+      "children": "الأطفال",
+      "allowed": "مسموح",
+      "notAllowed": "غير مسموح",
+      "additionalRules": "قواعد إضافية"
+    },
+    "images": {
+      "title": "الصور",
+      "primary": "رئيسية"
+    },
+    "statistics": {
+      "title": "الإحصائيات",
+      "totalViews": "إجمالي المشاهدات",
+      "favorites": "المفضلة",
+      "bookings": "الحجوزات",
+      "totalRevenue": "إجمالي الإيرادات",
+      "averageRating": "متوسط التقييم",
+      "reviewCount": "المراجعات"
+    },
+    "timestamps": {
+      "title": "التواريخ",
+      "createdAt": "تاريخ الإنشاء",
+      "lastUpdated": "آخر تحديث"
+    }
+  },
+  "editModal": {
+    "title": "تعديل الإعلان",
+    "titleLabel": "العنوان",
+    "description": "الوصف",
+    "basePrice": "السعر الأساسي",
+    "status": "الحالة",
+    "statusActive": "نشط",
+    "statusPaused": "متوقف مؤقتاً",
+    "statusInactive": "غير نشط",
+    "cancelButton": "إلغاء",
+    "saveButton": "حفظ التغييرات"
+  },
+  "deleteModal": {
+    "title": "حذف الإعلان",
+    "message": "هل أنت متأكد من رغبتك في حذف هذا الإعلان؟",
+    "warning": "لا يمكن التراجع عن هذا الإجراء. سيتم إزالة جميع البيانات والحجوزات والمراجعات المرتبطة نهائياً.",
+    "cancelButton": "إلغاء",
+    "deleteButton": "حذف الإعلان"
+  },
+  "statusModal": {
+    "title": "تغيير حالة الإعلان",
+    "message": "تغيير الحالة",
+    "to": "إلى",
+    "reasonLabel": "السبب (اختياري)",
+    "reasonPlaceholder": "قدم سبباً لتغيير الحالة...",
+    "cancelButton": "إلغاء",
+    "confirmButton": "تأكيد التغيير"
+  },
+  "duplicateModal": {
+    "title": "نسخ الإعلان",
+    "message": "إنشاء نسخة من هذا الإعلان؟",
+    "info": "سيتم إنشاء إعلان جديد بنفس التفاصيل. يمكنك تعديله لاحقاً.",
+    "cancelButton": "إلغاء",
+    "duplicateButton": "نسخ الإعلان"
+  }
+}

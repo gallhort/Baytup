@@ -1,0 +1,156 @@
+{
+  "loading": {
+    "map": "جاري تحميل الخريطة...",
+    "listing": "جاري تحميل الإعلان..."
+  },
+  "errors": {
+    "notFound": "الإعلان غير موجود",
+    "notFoundDescription": "الإعلان الذي تبحث عنه غير موجود.",
+    "browseListings": "تصفح الإعلانات",
+    "fetchError": "فشل في جلب تفاصيل الإعلان",
+    "loadError": "فشل في تحميل الإعلان",
+    "selectDates": "يرجى تحديد تواريخ تسجيل الوصول والمغادرة"
+  },
+  "header": {
+    "share": "مشاركة",
+    "copied": "تم النسخ!",
+    "save": "حفظ"
+  },
+  "share": {
+    "property": "اطلع على هذا العقار على Baytup",
+    "vehicle": "اطلع على هذه السيارة على Baytup"
+  },
+  "imageGallery": {
+    "allPhotos": "جميع الصور",
+    "showAll": "عرض جميع الصور ({count})"
+  },
+  "title": {
+    "new": "جديد",
+    "reviews": "تقييم",
+    "superhost": "مضيف متميز"
+  },
+  "host": {
+    "propertyHostedBy": "عقار مستضاف من قبل",
+    "vehicleHostedBy": "مركبة مقدمة من قبل",
+    "bedroom": "غرفة نوم",
+    "bedrooms": "غرف نوم",
+    "bathroom": "حمام",
+    "bathrooms": "حمامات",
+    "type": "النوع",
+    "makeAndModel": "الماركة والطراز",
+    "year": "السنة",
+    "seats": "المقاعد",
+    "seatsValue": "مقعد",
+    "transmission": "ناقل الحركة",
+    "fuelType": "نوع الوقود",
+    "responseRate": "معدل الاستجابة",
+    "responseTime": "وقت الاستجابة",
+    "hostSince": "مضيف منذ",
+    "reviews": "التقييمات"
+  },
+  "description": {
+    "aboutPlace": "حول هذا المكان",
+    "aboutVehicle": "حول هذه المركبة"
+  },
+  "amenities": {
+    "title": "المرافق",
+    "featuresTitle": "المميزات",
+    "noAmenities": "لا توجد مرافق مدرجة",
+    "showLess": "عرض أقل",
+    "showAll": "عرض جميع المرافق ({count})",
+    "showAllFeatures": "عرض جميع المميزات ({count})",
+    "wifi": "واي فاي",
+    "parking": "موقف سيارات مجاني",
+    "pool": "مسبح",
+    "gym": "صالة رياضية",
+    "garden": "حديقة",
+    "terrace": "شرفة",
+    "elevator": "مصعد",
+    "security": "أمن 24/7",
+    "ac": "تكييف هواء",
+    "heating": "تدفئة",
+    "kitchen": "مطبخ",
+    "balcony": "شرفة",
+    "tv": "تلفاز",
+    "washer": "غسالة",
+    "beachAccess": "وصول للشاطئ",
+    "mountainView": "إطلالة جبلية",
+    "gps": "نظام ملاحة GPS",
+    "bluetooth": "بلوتوث",
+    "sunroof": "فتحة سقف",
+    "backupCamera": "كاميرا خلفية",
+    "cruiseControl": "مثبت سرعة",
+    "heatedSeats": "مقاعد مدفأة",
+    "wifiHotspot": "نقطة اتصال واي فاي",
+    "childSeat": "مقعد أطفال",
+    "skiRack": "حامل تزلج",
+    "bikeRack": "حامل دراجات"
+  },
+  "vehicleTypes": {
+    "car": "سيارة",
+    "motorcycle": "دراجة نارية",
+    "truck": "شاحنة",
+    "van": "فان",
+    "suv": "دفع رباعي",
+    "bus": "حافلة",
+    "bicycle": "دراجة هوائية",
+    "scooter": "سكوتر",
+    "boat": "قارب"
+  },
+  "transmission": {
+    "manual": "يدوي",
+    "automatic": "أوتوماتيك"
+  },
+  "fuelTypes": {
+    "gasoline": "بنزين",
+    "diesel": "ديزل",
+    "electric": "كهربائي",
+    "hybrid": "هجين"
+  },
+  "houseRules": {
+    "title": "قواعد المنزل",
+    "smokingAllowed": "التدخين مسموح",
+    "noSmoking": "ممنوع التدخين",
+    "petsAllowed": "الحيوانات الأليفة مسموح بها",
+    "noPets": "ممنوع اصطحاب الحيوانات الأليفة",
+    "partiesAllowed": "الحفلات مسموح بها",
+    "noPartiesOrEvents": "ممنوع إقامة الحفلات أو الفعاليات",
+    "childrenWelcome": "الأطفال مرحب بهم",
+    "notSuitableForChildren": "غير مناسب للأطفال",
+    "checkIn": "تسجيل الوصول:",
+    "checkOut": "المغادرة: قبل"
+  },
+  "reviews": {
+    "title": "تقييم",
+    "user": "مستخدم",
+    "recently": "مؤخراً",
+    "showLess": "عرض أقل",
+    "showAll": "عرض جميع التقييمات ({count})"
+  },
+  "location": {
+    "title": "الموقع",
+    "exactLocation": "يتم توفير الموقع الدقيق بعد الحجز",
+    "exactLocationDescription": "سنشارك العنوان الدقيق بمجرد تأكيد حجزك"
+  },
+  "booking": {
+    "perNight": "ليلة",
+    "perDay": "يوم",
+    "reviews": "تقييم",
+    "checkIn": "تسجيل الوصول",
+    "checkout": "المغادرة",
+    "guests": "الضيوف",
+    "adults": "البالغون",
+    "children": "الأطفال",
+    "infants": "الرضع",
+    "reserve": "احجز",
+    "requestToBook": "طلب حجز",
+    "notChargedYet": "لن يتم خصم المبلغ بعد",
+    "night": "ليلة",
+    "nights": "ليالي",
+    "cleaningFee": "رسوم التنظيف",
+    "serviceFee": "رسوم الخدمة (10%)",
+    "taxes": "الضرائب (5%)",
+    "total": "المجموع",
+    "reportListing": "الإبلاغ عن هذا الإعلان"
+  }
+}

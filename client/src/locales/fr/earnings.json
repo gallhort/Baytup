@@ -1,0 +1,165 @@
+{
+  "header": {
+    "title": "Revenus",
+    "subtitle": "Suivez vos revenus et vos paiements",
+    "exportReport": "Exporter le Rapport"
+  },
+  "stats": {
+    "totalEarnings": "Revenus Totaux",
+    "monthlyEarnings": "Revenus Mensuels",
+    "available": "Disponible",
+    "pending": "En Attente",
+    "currentMonth": "Mois en cours",
+    "transaction": "transaction",
+    "transactions": "transactions",
+    "paidOut": "payées",
+    "pendingCount": "en attente"
+  },
+  "listingEarnings": {
+    "title": "Revenus par Annonce",
+    "totalEarned": "Total Gagné:",
+    "bookings": "Réservations:",
+    "avgPerBooking": "Moy. par Réservation:"
+  },
+  "filters": {
+    "searchPlaceholder": "Rechercher des annonces ou des invités...",
+    "allStatus": "Tous les Statuts",
+    "allListings": "Toutes les Annonces",
+    "statusOptions": {
+      "completed": "Terminé",
+      "paid": "Payé",
+      "pending": "En Attente",
+      "processing": "En Traitement"
+    },
+    "startDate": "Date de Début",
+    "endDate": "Date de Fin",
+    "clearFilters": "Effacer les Filtres"
+  },
+  "table": {
+    "headers": {
+      "listing": "Annonce",
+      "guest": "Invité",
+      "bookingDates": "Dates de Réservation",
+      "amountEarned": "Montant Gagné",
+      "platformFee": "Frais de Plateforme",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "subtotal": "Sous-total:",
+    "cleaning": "Ménage:",
+    "night": "nuit",
+    "nights": "nuits",
+    "paid": "Payé:",
+    "viewDetails": "Voir les Détails"
+  },
+  "status": {
+    "completed": "Terminé",
+    "paid": "Payé",
+    "pending": "En Attente",
+    "processing": "En Traitement",
+    "failed": "Échoué"
+  },
+  "emptyState": {
+    "title": "Aucun Revenu pour le Moment",
+    "message": "Vous n'avez pas encore reçu de paiements. Commencez à héberger pour gagner de l'argent !"
+  },
+  "pagination": {
+    "page": "Page",
+    "of": "sur"
+  },
+  "detailsModal": {
+    "title": "Détails de la Transaction",
+    "guestInformation": "Informations sur l'Invité",
+    "bookingPeriod": "Période de Réservation",
+    "checkIn": "Arrivée",
+    "checkOut": "Départ",
+    "night": "nuit",
+    "nights": "nuits",
+    "earningsBreakdown": "Répartition des Revenus",
+    "subtotal": "Sous-total",
+    "cleaningFee": "Frais de ménage",
+    "yourEarnings": "Vos Revenus",
+    "platformFees": "Frais de Plateforme",
+    "totalPlatformFee": "Frais de Plateforme Totaux",
+    "guestPaidTotal": "Total Payé par l'Invité",
+    "totalAmount": "Montant Total",
+    "payoutDate": "Date de Paiement:",
+    "payoutInfo": {
+      "title": "Informations sur le Paiement:",
+      "message": "Les revenus sont généralement traités et payés dans les 24 à 48 heures après l'arrivée de l'invité."
+    }
+  },
+  "loading": {
+    "earnings": "Chargement des revenus..."
+  },
+  "toast": {
+    "loadEarningsFailed": "Échec du chargement des données de revenus",
+    "loadTransactionsFailed": "Échec du chargement des transactions"
+  },
+  "payout": {
+    "withdraw": "Retirer",
+    "bankAccount": "Compte Bancaire",
+    "viewHistory": "Historique des Paiements",
+    "withdrawTitle": "Retirer les Revenus",
+    "bankAccountTitle": "Détails du Compte Bancaire",
+    "historyTitle": "Historique des Paiements",
+    "availableBalance": "Solde Disponible",
+    "withdrawAmount": "Montant du Retrait",
+    "minimumAmount": "Retrait minimum: 1000 DZD",
+    "notes": "Notes",
+    "optional": "facultatif",
+    "notesPlaceholder": "Ajoutez des notes pour l'administrateur...",
+    "bankAccountConfigured": "Compte bancaire configuré",
+    "noBankAccount": "Aucun compte bancaire configuré",
+    "addBankAccountFirst": "Veuillez d'abord ajouter les détails de votre compte bancaire",
+    "submitRequest": "Soumettre la Demande",
+    "processing": "Traitement en cours...",
+    "cancelButton": "Annuler",
+    "saveButton": "Enregistrer le Compte",
+    "bankNameLabel": "Nom de la Banque",
+    "bankNamePlaceholder": "ex: CPA, BNA, BEA",
+    "accountHolderLabel": "Titulaire du Compte",
+    "accountHolderPlaceholder": "Nom complet tel qu'il figure sur le compte bancaire",
+    "accountNumberLabel": "Numéro de Compte",
+    "accountNumberPlaceholder": "Numéro de compte",
+    "ribDigits": "20 chiffres",
+    "digits": "chiffres",
+    "swiftCodeLabel": "Code SWIFT/BIC",
+    "bankInfo": {
+      "title": "Important",
+      "message": "Veuillez fournir des informations bancaires exactes. Elles seront utilisées pour tous les paiements futurs."
+    },
+    "requested": "Demandé",
+    "completed": "Terminé",
+    "cancel": "Annuler",
+    "bankName": "Nom de la Banque",
+    "accountHolder": "Titulaire du Compte",
+    "accountNumber": "Numéro de Compte",
+    "transactionId": "ID de Transaction",
+    "yourNotes": "Vos Notes",
+    "adminNotes": "Notes de l'Admin",
+    "rejectionReason": "Raison du Rejet",
+    "status": {
+      "completed": "Terminé",
+      "processing": "En Traitement",
+      "pending": "En Attente",
+      "rejected": "Rejeté",
+      "cancelled": "Annulé"
+    },
+    "validation": {
+      "requiredFields": "Veuillez remplir tous les champs obligatoires",
+      "ribFormat": "Le RIB doit comporter exactement 20 chiffres",
+      "invalidAmount": "Veuillez entrer un montant valide",
+      "insufficientBalance": "Solde insuffisant",
+      "noBankAccount": "Veuillez d'abord ajouter les détails de votre compte bancaire"
+    },
+    "toast": {
+      "bankAccountSaved": "Compte bancaire enregistré avec succès",
+      "bankAccountFailed": "Échec de l'enregistrement du compte bancaire",
+      "withdrawSuccess": "Demande de retrait soumise avec succès",
+      "withdrawFailed": "Échec de la soumission de la demande de retrait",
+      "cancelSuccess": "Paiement annulé avec succès",
+      "cancelFailed": "Échec de l'annulation du paiement"
+    }
+  }
+}

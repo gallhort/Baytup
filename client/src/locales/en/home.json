@@ -1,0 +1,97 @@
+{
+  "hero": {
+    "title": "Find your perfect stay",
+    "subtitle": "Discover authentic Algerian hospitality from the Sahara to the Mediterranean",
+    "badge": "🇩🇿 Authentic Algerian Experience",
+    "exploreStays": "Explore Stays",
+    "rentVehicles": "Rent Vehicles",
+    "stats": {
+      "properties": "Properties",
+      "cities": "Cities",
+      "rating": "Rating",
+      "support": "Support",
+      "values": {
+        "properties": "1000+",
+        "cities": "50+",
+        "rating": "4.8★",
+        "support": "24/7"
+      }
+    }
+  },
+  "categories": {
+    "all": "All",
+    "stays": "Stays",
+    "vehicles": "Vehicles",
+    "descriptions": {
+      "all": "Browse all available properties",
+      "stays": "Comfortable accommodations across Algeria",
+      "vehicles": "Cars, bikes & more for your journey"
+    }
+  },
+  "sections": {
+    "categoryTitle": "What are you looking for?",
+    "categorySubtitle": "Choose from our curated selection of stays and vehicles across Algeria",
+    "featuredTitle": "Discover Amazing Properties",
+    "featuredSubtitle": "From traditional riads to modern apartments, luxury vehicles to adventure bikes - find your perfect match",
+    "destinationsTitle": "Explore Algeria",
+    "destinationsSubtitle": "From the Mediterranean coast to the Sahara desert, discover the diverse beauty of Algeria",
+    "exploreAllDestinations": "Explore All Destinations"
+  },
+  "badges": {
+    "featured": "Featured",
+    "superhost": "Superhost",
+    "guestFavorite": "Guest favorite"
+  },
+  "propertyDetails": {
+    "beds": "beds",
+    "bed": "bed",
+    "baths": "baths",
+    "bath": "bath"
+  },
+  "pricing": {
+    "night": "per night",
+    "day": "per day",
+    "total": "total before taxes"
+  },
+  "propertyCount": {
+    "zero": "0 properties",
+    "one": "1 property",
+    "other": "{count} properties",
+    "thousand": "{count}k+ properties"
+  },
+  "filters": {
+    "showing": "Showing",
+    "result": "result",
+    "results": "results",
+    "exploreCollection": "Explore our curated collection of",
+    "across": "across Algeria",
+    "inAlgeria": "in Algeria"
+  },
+  "emptyStates": {
+    "noPropertiesFound": "No properties found",
+    "noPropertiesMessage": "Try selecting a different category or check back later for new listings.",
+    "noPropertiesInMapArea": "No properties in this map area",
+    "noPropertiesInMapAreaMessage": "Try zooming out or panning the map to see more properties"
+  },
+  "actions": {
+    "showAllProperties": "Show All Properties",
+    "closeMapShowAll": "Close Map & Show All",
+    "resetFilter": "Reset Filter",
+    "showMap": "Show map",
+    "showMapWithCategory": "Show {category} on map"
+  },
+  "map": {
+    "title": "Explore Properties",
+    "showingInMapArea": "Showing {count} of {total} properties in map area",
+    "moveMapToExplore": "Move the map to explore more properties",
+    "mapBoundsActive": "Map bounds are active - close map to reset"
+  },
+  "loading": {
+    "map": "Loading map...",
+    "properties": "Loading properties..."
+  },
+  "location": {
+    "defaultCity": "City",
+    "defaultState": "State"
+  }
+}

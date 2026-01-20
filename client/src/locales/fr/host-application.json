@@ -1,0 +1,138 @@
+{
+  "header": {
+    "title": "Candidature d'Hôte",
+    "subtitle": "Complétez toutes les étapes pour soumettre votre candidature",
+    "progress": "Progression",
+    "step": "Étape"
+  },
+  "steps": {
+    "personalInfo": "Informations Personnelles",
+    "hostIntent": "Intention d'Hébergement",
+    "documents": "Documents",
+    "bankingInfo": "Informations Bancaires",
+    "emergencyContact": "Contact d'Urgence",
+    "agreements": "Conditions et Accords"
+  },
+  "personalInfo": {
+    "title": "Informations Personnelles",
+    "phone": "Numéro de Téléphone",
+    "phonePlaceholder": "+213 XXX XXX XXX",
+    "dateOfBirth": "Date de Naissance",
+    "nationalIdNumber": "Numéro de Carte d'Identité Nationale",
+    "nationalIdPlaceholder": "Entrez votre numéro de carte d'identité nationale",
+    "city": "Ville",
+    "cityPlaceholder": "Entrez votre ville",
+    "street": "Adresse Rue",
+    "streetPlaceholder": "Entrez votre adresse rue",
+    "state": "État/Province",
+    "statePlaceholder": "Entrez votre état ou province",
+    "postalCode": "Code Postal",
+    "postalCodePlaceholder": "Entrez le code postal"
+  },
+  "hostIntent": {
+    "title": "Intention d'Hébergement",
+    "propertyTypes": "Quel type de propriétés allez-vous lister?",
+    "vehicleTypes": "Quel type de véhicules allez-vous lister?",
+    "numberOfListings": "Combien d'annonces prévoyez-vous de créer?",
+    "experienceLevel": "Niveau d'Expérience",
+    "motivation": "Pourquoi voulez-vous devenir hôte?",
+    "motivationPlaceholder": "Parlez-nous de votre motivation pour devenir hôte...",
+    "characterCount": "caractères",
+    "propertyOptions": {
+      "apartment": "Appartement",
+      "house": "Maison",
+      "villa": "Villa",
+      "chalet": "Chalet",
+      "guesthouse": "Maison d'Hôtes",
+      "other": "Autre"
+    },
+    "vehicleOptions": {
+      "car": "Voiture",
+      "motorcycle": "Moto",
+      "van": "Fourgonnette",
+      "suv": "SUV",
+      "bike": "Vélo",
+      "other": "Autre"
+    },
+    "experienceLevels": {
+      "first_time": "Premier Hôte",
+      "experienced": "Hôte Expérimenté",
+      "professional": "Gestionnaire de Propriété Professionnel"
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "nationalIdFront": "Carte d'Identité Nationale (Recto)",
+    "nationalIdBack": "Carte d'Identité Nationale (Verso)",
+    "proofOfAddress": "Justificatif de Domicile (Optionnel)",
+    "uploaded": "Document téléchargé",
+    "replace": "Remplacer",
+    "clickToUpload": "Cliquez pour télécharger",
+    "clickToUploadOptional": "Cliquez pour télécharger (optionnel)",
+    "infoMessage": "Tous les documents doivent être clairs et lisibles. Nous acceptons les images (JPG, PNG) et les fichiers PDF."
+  },
+  "bankingInfo": {
+    "title": "Informations Bancaires",
+    "bankName": "Nom de la Banque",
+    "bankNamePlaceholder": "Entrez le nom de votre banque",
+    "accountHolderName": "Nom du Titulaire du Compte",
+    "accountHolderPlaceholder": "Nom complet tel qu'indiqué sur le compte bancaire",
+    "accountNumber": "Numéro de Compte",
+    "accountNumberPlaceholder": "Entrez le numéro de compte",
+    "rib": "RIB (Identifiant Bancaire)",
+    "ribPlaceholder": "Entrez le numéro RIB",
+    "swift": "Code SWIFT (Optionnel)",
+    "swiftPlaceholder": "Entrez le code SWIFT (pour les virements internationaux)",
+    "securityMessage": "Vos informations bancaires sont cryptées et sécurisées. Nous utiliserons ces informations pour transférer vos gains."
+  },
+  "emergencyContact": {
+    "title": "Contact d'Urgence",
+    "name": "Nom du Contact d'Urgence",
+    "namePlaceholder": "Nom complet du contact d'urgence",
+    "relationship": "Relation",
+    "relationshipPlaceholder": "ex: Conjoint, Parent, Frère/Sœur",
+    "phone": "Téléphone du Contact d'Urgence",
+    "phonePlaceholder": "+213 XXX XXX XXX",
+    "confidentialityMessage": "Ces informations ne seront utilisées qu'en cas d'urgence et resteront confidentielles."
+  },
+  "agreements": {
+    "title": "Conditions et Accords",
+    "terms": {
+      "title": "J'accepte les Conditions Générales",
+      "description": "En cochant cette case, vous acceptez les Conditions de Service de Baytup et reconnaissez les avoir lues et comprises."
+    },
+    "privacy": {
+      "title": "J'accepte la Politique de Confidentialité",
+      "description": "En cochant cette case, vous acceptez la Politique de Confidentialité de Baytup et consentez à la collecte et à l'utilisation de vos informations comme décrit."
+    },
+    "guidelines": {
+      "title": "J'accepte les Directives des Hôtes",
+      "description": "En cochant cette case, vous vous engagez à suivre les Directives des Hôtes de Baytup et à maintenir des normes élevées d'hospitalité."
+    },
+    "reviewMessage": "Une fois que vous aurez accepté tous les accords et soumis votre candidature, notre équipe l'examinera dans un délai de 2 à 3 jours ouvrables."
+  },
+  "actions": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "saveProgress": "Enregistrer la Progression",
+    "submitApplication": "Soumettre la Candidature"
+  },
+  "messages": {
+    "loading": "Chargement de la candidature...",
+    "failedToLoad": "Échec du chargement de la candidature",
+    "stepSaved": "enregistré avec succès",
+    "failedToSave": "Échec de l'enregistrement des informations",
+    "documentUploaded": "Document téléchargé avec succès",
+    "failedToUpload": "Échec du téléchargement du document",
+    "applicationSubmitted": "Candidature soumise avec succès! Nous l'examinerons et vous contacterons bientôt.",
+    "failedToSubmit": "Échec de la soumission de la candidature",
+    "pleaseSignIn": "Veuillez vous connecter pour accéder à la candidature d'hôte",
+    "pleaseWait": "Veuillez attendre le chargement de la candidature"
+  },
+  "noApplication": {
+    "title": "Commencez Votre Candidature d'Hôte",
+    "description": "Vous n'avez pas encore commencé de candidature d'hôte. Cliquez ci-dessous pour commencer votre parcours en tant qu'hôte Baytup.",
+    "startButton": "Commencer la Candidature"
+  },
+  "required": "*"
+}

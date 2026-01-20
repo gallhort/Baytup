@@ -1,0 +1,314 @@
+{
+  "header": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings and preferences",
+    "loading": "Loading settings..."
+  },
+  "tabs": {
+    "personal": "Personal Info",
+    "address": "Address",
+    "preferences": "Preferences",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "security": "Security",
+    "account": "Account"
+  },
+  "personal": {
+    "title": "Personal Information",
+    "avatar": {
+      "title": "Profile Picture",
+      "chooseImage": "Choose Image",
+      "upload": "Upload",
+      "uploading": "Uploading...",
+      "remove": "Remove",
+      "removing": "Removing...",
+      "sizeHint": "JPG, PNG or GIF. Max size 5MB"
+    },
+    "firstName": {
+      "label": "First Name",
+      "required": true
+    },
+    "lastName": {
+      "label": "Last Name",
+      "required": true
+    },
+    "email": {
+      "label": "Email",
+      "readonly": "(Read-only)",
+      "hint": "To change your email, use the Security tab"
+    },
+    "phone": {
+      "label": "Phone Number",
+      "placeholder": "+213 XXX XXX XXX"
+    },
+    "dateOfBirth": {
+      "label": "Date of Birth"
+    },
+    "gender": {
+      "label": "Gender",
+      "placeholder": "Select Gender",
+      "options": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      }
+    },
+    "bio": {
+      "label": "Bio",
+      "placeholder": "Tell us about yourself...",
+      "characters": "characters"
+    },
+    "buttons": {
+      "save": "Save Changes",
+      "saving": "Saving..."
+    }
+  },
+  "address": {
+    "title": "Address",
+    "street": {
+      "label": "Street Address"
+    },
+    "city": {
+      "label": "City"
+    },
+    "state": {
+      "label": "State/Province"
+    },
+    "postalCode": {
+      "label": "Postal Code"
+    },
+    "country": {
+      "label": "Country",
+      "options": {
+        "algeria": "Algeria",
+        "france": "France",
+        "tunisia": "Tunisia",
+        "morocco": "Morocco"
+      }
+    },
+    "buttons": {
+      "save": "Save Address",
+      "saving": "Saving..."
+    }
+  },
+  "preferences": {
+    "title": "Preferences",
+    "language": {
+      "label": "Language",
+      "options": {
+        "en": "English",
+        "fr": "Français",
+        "ar": "العربية"
+      }
+    },
+    "currency": {
+      "label": "Currency",
+      "options": {
+        "dzd": "DZD - Algerian Dinar",
+        "eur": "EUR - Euro"
+      }
+    },
+    "theme": {
+      "label": "Theme",
+      "options": {
+        "light": "Light",
+        "dark": "Dark"
+      }
+    },
+    "buttons": {
+      "save": "Save Preferences",
+      "saving": "Saving..."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "email": {
+      "title": "Email Notifications",
+      "bookingUpdates": {
+        "label": "Booking Updates",
+        "description": "Receive emails about your booking status"
+      },
+      "messages": {
+        "label": "Messages",
+        "description": "Get notified when you receive new messages"
+      },
+      "promotions": {
+        "label": "Promotions",
+        "description": "Special offers and discounts"
+      },
+      "newsletter": {
+        "label": "Newsletter",
+        "description": "Monthly newsletter with tips and updates"
+      }
+    },
+    "push": {
+      "title": "Push Notifications",
+      "bookingUpdates": {
+        "label": "Booking Updates",
+        "description": "Get push notifications about bookings"
+      },
+      "messages": {
+        "label": "Messages",
+        "description": "Instant notifications for new messages"
+      },
+      "promotions": {
+        "label": "Promotions",
+        "description": "Special deals and offers"
+      }
+    },
+    "buttons": {
+      "save": "Save Notifications",
+      "saving": "Saving..."
+    }
+  },
+  "privacy": {
+    "title": "Privacy Settings",
+    "showEmail": {
+      "label": "Show Email on Profile",
+      "description": "Allow others to see your email address"
+    },
+    "showPhone": {
+      "label": "Show Phone on Profile",
+      "description": "Allow others to see your phone number"
+    },
+    "profileVisibility": {
+      "label": "Profile Visibility",
+      "options": {
+        "public": "Public - Anyone can see your profile",
+        "private": "Private - Only you can see your profile",
+        "contacts": "Contacts Only - Only people you've messaged"
+      }
+    },
+    "buttons": {
+      "save": "Save Privacy Settings",
+      "saving": "Saving..."
+    }
+  },
+  "security": {
+    "title": "Security",
+    "password": {
+      "title": "Change Password",
+      "currentPassword": {
+        "label": "Current Password"
+      },
+      "newPassword": {
+        "label": "New Password"
+      },
+      "confirmPassword": {
+        "label": "Confirm New Password"
+      },
+      "buttons": {
+        "save": "Change Password",
+        "saving": "Changing..."
+      }
+    },
+    "email": {
+      "title": "Change Email",
+      "currentEmail": "Current Email:",
+      "verified": "✓ Verified",
+      "notVerified": "✗ Not Verified",
+      "newEmail": {
+        "label": "New Email Address"
+      },
+      "password": {
+        "label": "Password"
+      },
+      "buttons": {
+        "save": "Change Email",
+        "saving": "Changing..."
+      }
+    }
+  },
+  "account": {
+    "title": "Account Management",
+    "info": {
+      "title": "Account Information",
+      "role": "Account Role",
+      "emailVerified": "Email Verified",
+      "status": "Account Status",
+      "memberSince": "Member Since",
+      "lastLogin": "Last Login",
+      "yes": "Yes",
+      "no": "No",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "deactivate": {
+      "title": "Deactivate Account",
+      "description": "Temporarily disable your account. You can reactivate it anytime by logging back in.",
+      "button": "Deactivate Account"
+    },
+    "delete": {
+      "title": "Delete Account",
+      "description": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "button": "Delete Account Permanently"
+    }
+  },
+  "modals": {
+    "deactivate": {
+      "title": "Deactivate Account",
+      "description": "Are you sure you want to deactivate your account? You can reactivate it anytime by logging back in.",
+      "cancel": "Cancel",
+      "confirm": "Deactivate",
+      "confirming": "Deactivating..."
+    },
+    "delete": {
+      "title": "Delete Account Permanently",
+      "description": "This action cannot be undone. All your data will be permanently deleted.",
+      "password": {
+        "label": "Password",
+        "required": true
+      },
+      "reason": {
+        "label": "Reason for leaving (Optional)",
+        "placeholder": "Help us improve..."
+      },
+      "cancel": "Cancel",
+      "confirm": "Delete Permanently",
+      "confirming": "Deleting..."
+    }
+  },
+  "messages": {
+    "success": {
+      "avatarUploaded": "Avatar uploaded successfully",
+      "avatarDeleted": "Avatar deleted successfully",
+      "personalInfoUpdated": "Personal information updated successfully",
+      "addressUpdated": "Address updated successfully",
+      "preferencesUpdated": "Preferences updated successfully",
+      "notificationsUpdated": "Notification settings updated successfully",
+      "privacyUpdated": "Privacy settings updated successfully",
+      "passwordChanged": "Password changed successfully",
+      "emailChanged": "Email changed successfully. Please verify your new email.",
+      "accountDeactivated": "Account deactivated successfully",
+      "accountDeleted": "Account deleted successfully"
+    },
+    "error": {
+      "pleaseLogin": "Please login to view settings",
+      "loadFailed": "Failed to load settings",
+      "imageSizeExceeded": "Image size should be less than 5MB",
+      "invalidImageType": "Please upload a valid image file (JPG, PNG, or GIF)",
+      "avatarUploadFailed": "Failed to upload avatar",
+      "avatarDeleteFailed": "Failed to delete avatar",
+      "personalInfoUpdateFailed": "Failed to update personal information",
+      "addressUpdateFailed": "Failed to update address",
+      "preferencesUpdateFailed": "Failed to update preferences",
+      "notificationsUpdateFailed": "Failed to update notifications",
+      "privacyUpdateFailed": "Failed to update privacy",
+      "passwordMismatch": "New passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordChangeFailed": "Failed to change password",
+      "invalidEmail": "Please enter a valid email address",
+      "emailChangeFailed": "Failed to change email",
+      "accountDeactivateFailed": "Failed to deactivate account",
+      "enterPassword": "Please enter your password",
+      "accountDeleteFailed": "Failed to delete account"
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "minLength": "Minimum {min} characters required",
+    "maxLength": "Maximum {max} characters allowed",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordMismatch": "Passwords do not match"
+  }
+}

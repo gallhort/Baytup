@@ -1,0 +1,155 @@
+{
+  "loading": {
+    "message": "Loading dashboard..."
+  },
+  "errors": {
+    "noData": "No data available",
+    "loadFailed": "Failed to load dashboard data"
+  },
+  "actions": {
+    "retry": "Retry",
+    "export": "Export",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "cancel": "Cancel",
+    "close": "Close",
+    "edit": "Edit"
+  },
+  "header": {
+    "title": "Admin Dashboard",
+    "subtitle": "Complete overview of Baytup platform"
+  },
+  "stats": {
+    "totalUsers": "Total Users",
+    "hosts": "Hosts",
+    "guests": "Guests",
+    "newThisMonth": "new this month",
+    "listings": "Listings",
+    "activeListings": "Active",
+    "pendingListings": "Pending",
+    "pendingApproval": "pending approval",
+    "bookings": "Bookings",
+    "activeBookings": "Active",
+    "completedBookings": "Completed",
+    "currentlyActive": "currently active",
+    "revenue": "Revenue",
+    "currency": "DZD",
+    "commission": "Commission",
+    "commissionEarned": "commission earned"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "addUser": "Add User",
+    "viewUsers": "View Users",
+    "listings": "Listings",
+    "applications": "Applications",
+    "bookings": "Bookings",
+    "reports": "Reports",
+    "exportData": "Export Data",
+    "settings": "Settings"
+  },
+  "charts": {
+    "revenueTrend": "Revenue Trend",
+    "last6Months": "Last 6 months performance",
+    "revenue": "Revenue (DZD)",
+    "categories": "Categories",
+    "listingsByCategory": "Listings by category",
+    "topCities": "Top Cities",
+    "mostPopularDestinations": "Most popular destinations",
+    "userGrowth": "User Growth",
+    "newUserRegistrations": "New user registrations in the last 30 days",
+    "newUsers": "New Users",
+    "listingsByCity": "Listings by City"
+  },
+  "tables": {
+    "topPerformingListings": "Top Performing Listings",
+    "bestRatedMostBooked": "Best rated and most booked",
+    "recentBookings": "Recent Bookings",
+    "latestReservations": "Latest reservations",
+    "viewAllListings": "View All Listings",
+    "viewAllBookings": "View All Bookings",
+    "bookingsCount": "bookings",
+    "perNight": "DZD/night"
+  },
+  "systemStatus": {
+    "title": "System Status",
+    "allSystemsOperational": "All systems operational",
+    "apiStatus": "API Status",
+    "database": "Database",
+    "paymentGateway": "Payment Gateway",
+    "active": "Active",
+    "connected": "Connected",
+    "online": "Online"
+  },
+  "quickStats": {
+    "title": "Quick Stats",
+    "platformMetrics": "Platform metrics",
+    "avgBookingValue": "Avg. Booking Value",
+    "featuredListings": "Featured Listings",
+    "cancelledBookings": "Cancelled Bookings"
+  },
+  "activity": {
+    "title": "Activity",
+    "recentPlatformActivity": "Recent platform activity",
+    "newReviews": "New Reviews",
+    "newBookingsToday": "New Bookings Today",
+    "newUsersToday": "New Users Today"
+  },
+  "modals": {
+    "quickCreateUser": {
+      "title": "Quick Create User",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "password": "Password",
+      "role": "Role",
+      "guest": "Guest",
+      "host": "Host",
+      "admin": "Admin",
+      "firstNamePlaceholder": "John",
+      "lastNamePlaceholder": "Doe",
+      "emailPlaceholder": "john.doe@example.com",
+      "passwordPlaceholder": "Min 6 characters",
+      "createUser": "Create User"
+    },
+    "generateReport": {
+      "title": "Generate Report",
+      "reportType": "Report Type",
+      "revenueReport": "Revenue Report",
+      "bookingsReport": "Bookings Report",
+      "usersReport": "Users Report",
+      "listingsReport": "Listings Report",
+      "dateRange": "Date Range",
+      "lastWeek": "Last Week",
+      "lastMonth": "Last Month",
+      "lastQuarter": "Last Quarter",
+      "lastYear": "Last Year",
+      "category": "Category",
+      "allCategories": "All Categories",
+      "property": "Property",
+      "vehicle": "Vehicle",
+      "generate": "Generate"
+    },
+    "exportData": {
+      "title": "Export Data",
+      "chooseFormat": "Choose export format:",
+      "csvFormat": "CSV Format",
+      "csvDescription": "Comma-separated values",
+      "excelFormat": "Excel Format",
+      "excelDescription": "Microsoft Excel workbook",
+      "pdfFormat": "PDF Format",
+      "pdfDescription": "Portable document format"
+    },
+    "details": {
+      "title": "Details"
+    }
+  },
+  "toast": {
+    "dashboardRefreshed": "Dashboard refreshed",
+    "userCreated": "User created successfully",
+    "userCreateFailed": "Failed to create user",
+    "reportGenerated": "Report generated successfully",
+    "dataExporting": "Exporting data as {format}...",
+    "loadFailed": "Failed to load dashboard data"
+  }
+}

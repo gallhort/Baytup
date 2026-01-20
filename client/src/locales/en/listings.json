@@ -1,0 +1,109 @@
+{
+  "header": {
+    "title": "All Listings",
+    "subtitle": "Manage all property and vehicle listings"
+  },
+  "stats": {
+    "total": "Total",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "featured": "Featured",
+    "stays": "Stays",
+    "vehicles": "Vehicles"
+  },
+  "filters": {
+    "searchPlaceholder": "Search by title, location, or description...",
+    "category": {
+      "label": "Category",
+      "all": "All Categories",
+      "stays": "Stays",
+      "vehicles": "Vehicles"
+    },
+    "status": {
+      "label": "Status",
+      "all": "All Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    }
+  },
+  "card": {
+    "featured": "Featured",
+    "viewDetails": "View Details",
+    "delete": "Delete",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "unfeature": "Unfeature",
+    "feature": "Feature"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "rejected": "Rejected"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "results": "results"
+  },
+  "viewModal": {
+    "title": "Listing Details",
+    "close": "Close",
+    "sections": {
+      "images": "Images",
+      "basicInfo": "Basic Information",
+      "description": "Description",
+      "host": "Host",
+      "stats": "Statistics"
+    },
+    "fields": {
+      "title": "Title",
+      "category": "Category",
+      "subcategory": "Subcategory",
+      "status": "Status",
+      "price": "Price",
+      "location": "Location",
+      "description": "Description",
+      "host": "Host",
+      "views": "Views",
+      "favorites": "Favorites",
+      "bookings": "Bookings",
+      "rating": "Rating",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "reviews": "reviews"
+    }
+  },
+  "deleteModal": {
+    "title": "Delete Listing",
+    "confirmMessage": "Are you sure you want to delete",
+    "warningMessage": "This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Delete Listing"
+  },
+  "toast": {
+    "accessDeniedAdmin": "Access denied. Admin only.",
+    "accessDenied": "Access denied",
+    "failedToLoad": "Failed to load listings",
+    "deleteSuccess": "Listing deleted successfully",
+    "deleteFailed": "Failed to delete listing",
+    "activated": "Listing activated",
+    "deactivated": "Listing deactivated",
+    "statusUpdateFailed": "Failed to update status",
+    "featured": "Listing featured",
+    "unfeatured": "Listing unfeatured",
+    "featuredUpdateFailed": "Failed to update featured status",
+    "loading": "Loading listings..."
+  },
+  "pricing": {
+    "perNight": "per night",
+    "perHour": "per hour",
+    "perDay": "per day"
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "header": {
+    "title": "Gestion des Utilisateurs",
+    "subtitle": "Gérer tous les utilisateurs du système",
+    "addButton": "Ajouter un Nouvel Utilisateur"
+  },
+  "stats": {
+    "totalUsers": "Total des Utilisateurs",
+    "guests": "Invités",
+    "hosts": "Hôtes",
+    "admins": "Administrateurs",
+    "active": "Actifs",
+    "blocked": "Bloqués"
+  },
+  "filters": {
+    "searchPlaceholder": "Rechercher par nom ou email...",
+    "allRoles": "Tous les Rôles",
+    "allStatus": "Tous les Statuts",
+    "roleGuest": "Invités",
+    "roleHost": "Hôtes",
+    "roleAdmin": "Administrateurs",
+    "statusActive": "Actif",
+    "statusInactive": "Inactif",
+    "statusBlocked": "Bloqué"
+  },
+  "table": {
+    "headers": {
+      "user": "Utilisateur",
+      "email": "Email",
+      "role": "Rôle",
+      "status": "Statut",
+      "joined": "Inscrit",
+      "actions": "Actions"
+    },
+    "content": {
+      "verified": "Vérifié",
+      "notVerified": "Non Vérifié",
+      "guest": "Invité",
+      "host": "Hôte",
+      "admin": "Administrateur",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "blocked": "Bloqué"
+    }
+  },
+  "actions": {
+    "viewDetails": "Voir les Détails",
+    "editUser": "Modifier l'Utilisateur",
+    "resetPassword": "Réinitialiser le Mot de Passe",
+    "blockUser": "Bloquer l'Utilisateur",
+    "unblockUser": "Débloquer l'Utilisateur",
+    "deleteUser": "Supprimer l'Utilisateur"
+  },
+  "pagination": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "showing": "Affichage de",
+    "to": "à",
+    "of": "sur",
+    "results": "résultats"
+  },
+  "modal": {
+    "createTitle": "Créer un Nouvel Utilisateur",
+    "editTitle": "Modifier l'Utilisateur",
+    "viewTitle": "Détails de l'Utilisateur",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "Email",
+    "password": "Mot de Passe",
+    "phone": "Téléphone",
+    "role": "Rôle",
+    "dateOfBirth": "Date de Naissance",
+    "gender": "Genre",
+    "selectGender": "Sélectionner le Genre",
+    "male": "Homme",
+    "female": "Femme",
+    "other": "Autre",
+    "city": "Ville",
+    "state": "Région",
+    "country": "Pays",
+    "statistics": "Statistiques",
+    "totalBookings": "Total des Réservations",
+    "totalListings": "Total des Annonces",
+    "totalReviews": "Total des Avis",
+    "averageRating": "Note Moyenne",
+    "na": "N/D",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "createUser": "Créer l'Utilisateur",
+    "saveChanges": "Enregistrer les Modifications",
+    "firstNameRequired": "Prénom *",
+    "lastNameRequired": "Nom *",
+    "emailRequired": "Email *",
+    "passwordRequired": "Mot de Passe *",
+    "status": "Statut",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "blocked": "Bloqué",
+    "guest": "Invité",
+    "host": "Hôte",
+    "admin": "Admin",
+    "joined": "Inscrit"
+  },
+  "resetPassword": {
+    "title": "Réinitialiser le Mot de Passe",
+    "resetPasswordFor": "Réinitialiser le mot de passe pour :",
+    "newPassword": "Nouveau Mot de Passe",
+    "confirmPassword": "Confirmer le Mot de Passe",
+    "newPasswordPlaceholder": "Entrez un nouveau mot de passe (min 6 caractères)",
+    "confirmPasswordPlaceholder": "Confirmez le nouveau mot de passe",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "resetButton": "Réinitialiser le Mot de Passe"
+  },
+  "blockUser": {
+    "title": "Bloquer l'Utilisateur",
+    "message": "Vous êtes sur le point de bloquer :",
+    "reasonLabel": "Raison du blocage",
+    "reasonPlaceholder": "Entrez la raison du blocage de cet utilisateur...",
+    "blockButton": "Bloquer l'Utilisateur"
+  },
+  "deleteUser": {
+    "title": "Supprimer l'Utilisateur",
+    "message": "Êtes-vous sûr de vouloir supprimer",
+    "warning": "Cette action ne peut pas être annulée.",
+    "deleteButton": "Supprimer l'Utilisateur"
+  },
+  "toast": {
+    "loadingUsers": "Chargement des utilisateurs...",
+    "accessDenied": "Accès refusé. Administrateur uniquement.",
+    "failedToLoad": "Échec du chargement des utilisateurs",
+    "userCreated": "Utilisateur créé avec succès",
+    "failedToCreate": "Échec de la création de l'utilisateur",
+    "userUpdated": "Utilisateur mis à jour avec succès",
+    "failedToUpdate": "Échec de la mise à jour de l'utilisateur",
+    "passwordMinLength": "Le mot de passe doit contenir au moins 6 caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "passwordReset": "Mot de passe réinitialisé avec succès",
+    "failedToReset": "Échec de la réinitialisation du mot de passe",
+    "provideBlockReason": "Veuillez fournir une raison pour le blocage",
+    "userBlocked": "Utilisateur bloqué avec succès",
+    "failedToBlock": "Échec du blocage de l'utilisateur",
+    "userUnblocked": "Utilisateur débloqué avec succès",
+    "failedToUnblock": "Échec du déblocage de l'utilisateur",
+    "userDeleted": "Utilisateur supprimé avec succès",
+    "failedToDelete": "Échec de la suppression de l'utilisateur",
+    "roleUpdated": "Rôle de l'utilisateur mis à jour à",
+    "failedToUpdateRole": "Échec de la mise à jour du rôle",
+    "emailVerified": "Email vérifié avec succès",
+    "failedToVerify": "Échec de la vérification de l'email"
+  }
+}

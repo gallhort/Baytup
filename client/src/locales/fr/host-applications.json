@@ -1,0 +1,159 @@
+{
+  "header": {
+    "title": "Candidatures d'Hôtes",
+    "subtitle": "Gérer toutes les candidatures d'hôtes"
+  },
+  "stats": {
+    "total": "Total",
+    "pending": "En Attente",
+    "underReview": "En Examen",
+    "approved": "Approuvé",
+    "rejected": "Rejeté",
+    "resubmit": "Resoumettre"
+  },
+  "filters": {
+    "filterByStatus": "Filtrer par Statut",
+    "allStatus": "Tous les Statuts",
+    "pending": "En Attente",
+    "underReview": "En Examen",
+    "approved": "Approuvé",
+    "rejected": "Rejeté",
+    "resubmissionRequired": "Resoumission Requise"
+  },
+  "table": {
+    "headers": {
+      "applicant": "Candidat",
+      "contact": "Contact",
+      "status": "Statut",
+      "completion": "Achèvement",
+      "submitted": "Soumis",
+      "actions": "Actions"
+    },
+    "content": {
+      "notSubmitted": "Non soumis",
+      "na": "N/A",
+      "unknown": "Inconnu",
+      "user": "Utilisateur"
+    }
+  },
+  "status": {
+    "pending": "En Attente",
+    "underReview": "En Examen",
+    "approved": "Approuvé",
+    "rejected": "Rejeté",
+    "resubmissionRequired": "Resoumission Requise"
+  },
+  "actions": {
+    "viewDetails": "Voir les Détails",
+    "editApplication": "Modifier la Candidature",
+    "changeStatus": "Changer le Statut",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "requestResubmission": "Demander une Resoumission",
+    "delete": "Supprimer"
+  },
+  "pagination": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "showing": "Affichage",
+    "to": "à",
+    "of": "sur",
+    "results": "résultats"
+  },
+  "viewModal": {
+    "title": "Détails de la Candidature",
+    "applicantInfo": "Informations sur le Candidat",
+    "personalInfo": "Informations Personnelles",
+    "hostIntent": "Intention d'Hôte",
+    "bankingInfo": "Informations Bancaires",
+    "name": "Nom",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "nationalId": "ID National",
+    "dateOfBirth": "Date de Naissance",
+    "city": "Ville",
+    "propertyTypes": "Types de Propriété",
+    "vehicleTypes": "Types de Véhicule",
+    "expectedListings": "Annonces Attendues",
+    "experienceLevel": "Niveau d'Expérience",
+    "motivation": "Motivation",
+    "none": "Aucun",
+    "bankName": "Nom de la Banque",
+    "accountHolder": "Titulaire du Compte",
+    "rib": "RIB",
+    "close": "Fermer"
+  },
+  "editModal": {
+    "title": "Modifier la Candidature",
+    "phone": "Téléphone",
+    "city": "Ville",
+    "nationalIdNumber": "Numéro d'ID National",
+    "numberOfListings": "Nombre d'Annonces",
+    "bankName": "Nom de la Banque",
+    "rib": "RIB",
+    "cancel": "Annuler",
+    "saveChanges": "Enregistrer les Modifications"
+  },
+  "approveModal": {
+    "title": "Approuver la Candidature",
+    "message": "Êtes-vous sûr de vouloir approuver cette candidature ? Cela mettra à niveau l'utilisateur au statut d'hôte.",
+    "cancel": "Annuler",
+    "approve": "Approuver"
+  },
+  "rejectModal": {
+    "title": "Rejeter la Candidature",
+    "message": "Veuillez fournir une raison pour rejeter cette candidature :",
+    "placeholder": "Entrez la raison du rejet...",
+    "cancel": "Annuler",
+    "reject": "Rejeter"
+  },
+  "resubmitModal": {
+    "title": "Demander une Resoumission",
+    "message": "Veuillez fournir des notes sur ce qui doit être corrigé :",
+    "placeholder": "Entrez les notes de resoumission...",
+    "cancel": "Annuler",
+    "requestResubmission": "Demander une Resoumission"
+  },
+  "deleteModal": {
+    "title": "Supprimer la Candidature",
+    "message": "Êtes-vous sûr de vouloir supprimer cette candidature ? Cette action ne peut pas être annulée.",
+    "cancel": "Annuler",
+    "delete": "Supprimer"
+  },
+  "statusModal": {
+    "title": "Changer le Statut de la Candidature",
+    "currentStatus": "Statut Actuel :",
+    "applicant": "Candidat :",
+    "newStatus": "Nouveau Statut",
+    "pending": "En Attente",
+    "underReview": "En Examen",
+    "approved": "Approuvé (Invité → Hôte)",
+    "rejected": "Rejeté",
+    "resubmissionRequired": "Resoumission Requise",
+    "approvalWarning": "⚠️ Cela mettra à niveau l'utilisateur au statut d'hôte !",
+    "rejectionNote": "Note : Envisagez d'utiliser le bouton Rejeter pour ajouter une raison.",
+    "resubmitNote": "Note : Envisagez d'utiliser le bouton Demander une Resoumission pour ajouter des notes.",
+    "cancel": "Annuler",
+    "updateStatus": "Mettre à Jour le Statut"
+  },
+  "toast": {
+    "loadingApplications": "Chargement des candidatures...",
+    "accessDenied": "Accès refusé. Admin uniquement.",
+    "failedToLoad": "Échec du chargement des candidatures",
+    "applicationApproved": "Candidature approuvée avec succès",
+    "failedToApprove": "Échec de l'approbation de la candidature",
+    "provideRejectionReason": "Veuillez fournir une raison de rejet",
+    "applicationRejected": "Candidature rejetée",
+    "failedToReject": "Échec du rejet de la candidature",
+    "provideResubmitNotes": "Veuillez fournir des notes de resoumission",
+    "resubmissionRequested": "Resoumission demandée",
+    "failedToRequestResubmission": "Échec de la demande de resoumission",
+    "applicationDeleted": "Candidature supprimée avec succès",
+    "failedToDelete": "Échec de la suppression de la candidature",
+    "applicationUpdated": "Candidature mise à jour avec succès",
+    "failedToUpdate": "Échec de la mise à jour de la candidature",
+    "selectStatus": "Veuillez sélectionner un statut",
+    "statusUpdated": "Statut mis à jour avec succès",
+    "failedToChangeStatus": "Échec du changement de statut"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "header": {
+    "title": "إدارة المدفوعات",
+    "subtitle": "إدارة طلبات الدفع للمضيفين"
+  },
+  "stats": {
+    "total": "إجمالي الطلبات",
+    "pending": "قيد الانتظار",
+    "processing": "قيد المعالجة",
+    "completed": "مكتمل",
+    "rejected": "مرفوض"
+  },
+  "filters": {
+    "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني أو البنك...",
+    "allStatus": "جميع الحالات",
+    "pending": "قيد الانتظار",
+    "processing": "قيد المعالجة",
+    "completed": "مكتمل",
+    "rejected": "مرفوض",
+    "clearFilters": "مسح الفلاتر"
+  },
+  "table": {
+    "host": "المضيف",
+    "amount": "المبلغ",
+    "bankAccount": "الحساب البنكي",
+    "requested": "تاريخ الطلب",
+    "status": "الحالة",
+    "actions": "الإجراءات",
+    "net": "الصافي",
+    "completed": "مكتمل"
+  },
+  "actions": {
+    "viewDetails": "عرض التفاصيل",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "complete": "وضع علامة مكتمل"
+  },
+  "status": {
+    "completed": "مكتمل",
+    "processing": "قيد المعالجة",
+    "pending": "قيد الانتظار",
+    "rejected": "مرفوض",
+    "cancelled": "ملغى"
+  },
+  "emptyState": {
+    "title": "لا توجد طلبات دفع",
+    "message": "لا توجد طلبات دفع تطابق الفلاتر الخاصة بك."
+  },
+  "pagination": {
+    "page": "الصفحة",
+    "of": "من"
+  },
+  "modal": {
+    "host": "المضيف",
+    "amount": "المبلغ",
+    "bank": "البنك",
+    "adminNotes": "ملاحظات المسؤول",
+    "optional": "اختياري",
+    "adminNotesPlaceholder": "أضف ملاحظات مرئية للمضيف...",
+    "cancel": "إلغاء",
+    "processing": "جاري المعالجة...",
+    "approve": {
+      "title": "الموافقة على الدفع",
+      "button": "الموافقة على الدفع"
+    },
+    "reject": {
+      "title": "رفض الدفع",
+      "button": "رفض الدفع",
+      "reasonLabel": "سبب الرفض",
+      "reasonPlaceholder": "قدم سببًا للرفض..."
+    },
+    "complete": {
+      "title": "إكمال الدفع",
+      "button": "وضع علامة مكتمل",
+      "transactionIdLabel": "معرف المعاملة",
+      "transactionIdPlaceholder": "أدخل معرف المعاملة..."
+    }
+  },
+  "details": {
+    "title": "تفاصيل الدفع",
+    "payoutAmount": "مبلغ الدفع",
+    "requestedAmount": "المبلغ المطلوب",
+    "platformFee": "رسوم المنصة",
+    "processingFee": "رسوم المعالجة",
+    "finalAmount": "المبلغ النهائي",
+    "bankAccount": "تفاصيل الحساب البنكي",
+    "bankName": "اسم البنك",
+    "accountHolder": "صاحب الحساب",
+    "accountNumber": "رقم الحساب",
+    "swiftCode": "رمز SWIFT",
+    "timeline": "الجدول الزمني",
+    "requested": "تم الطلب",
+    "processed": "تمت المعالجة",
+    "completed": "مكتمل",
+    "hostNotes": "ملاحظات المضيف",
+    "adminNotes": "ملاحظات المسؤول",
+    "rejectionReason": "سبب الرفض",
+    "transactionId": "معرف المعاملة"
+  },
+  "validation": {
+    "rejectionReasonRequired": "يرجى تقديم سبب الرفض",
+    "transactionIdRequired": "يرجى تقديم معرف المعاملة"
+  },
+  "toast": {
+    "loadFailed": "فشل تحميل المدفوعات",
+    "updateSuccess": "تم تحديث الدفع بنجاح",
+    "updateFailed": "فشل تحديث الدفع"
+  },
+  "errors": {
+    "adminOnly": "يتطلب وصول المسؤول"
+  },
+  "loading": "جاري تحميل المدفوعات..."
+}

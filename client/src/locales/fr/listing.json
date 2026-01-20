@@ -1,0 +1,156 @@
+{
+  "loading": {
+    "map": "Chargement de la carte...",
+    "listing": "Chargement de l'annonce..."
+  },
+  "errors": {
+    "notFound": "Annonce introuvable",
+    "notFoundDescription": "L'annonce que vous recherchez n'existe pas.",
+    "browseListings": "Parcourir les annonces",
+    "fetchError": "Échec de la récupération des détails de l'annonce",
+    "loadError": "Échec du chargement de l'annonce",
+    "selectDates": "Veuillez sélectionner les dates d'arrivée et de départ"
+  },
+  "header": {
+    "share": "Partager",
+    "copied": "Copié!",
+    "save": "Enregistrer"
+  },
+  "share": {
+    "property": "Découvrez cette propriété sur Baytup",
+    "vehicle": "Découvrez ce véhicule sur Baytup"
+  },
+  "imageGallery": {
+    "allPhotos": "Toutes les photos",
+    "showAll": "Afficher les {count} photos"
+  },
+  "title": {
+    "new": "Nouveau",
+    "reviews": "avis",
+    "superhost": "Superhôte"
+  },
+  "host": {
+    "propertyHostedBy": "Propriété hébergée par",
+    "vehicleHostedBy": "Véhicule proposé par",
+    "bedroom": "chambre",
+    "bedrooms": "chambres",
+    "bathroom": "salle de bain",
+    "bathrooms": "salles de bain",
+    "type": "Type",
+    "makeAndModel": "Marque et modèle",
+    "year": "Année",
+    "seats": "Places",
+    "seatsValue": "places",
+    "transmission": "Transmission",
+    "fuelType": "Type de carburant",
+    "responseRate": "Taux de réponse",
+    "responseTime": "Temps de réponse",
+    "hostSince": "Hôte depuis",
+    "reviews": "Avis"
+  },
+  "description": {
+    "aboutPlace": "À propos de ce logement",
+    "aboutVehicle": "À propos de ce véhicule"
+  },
+  "amenities": {
+    "title": "Équipements",
+    "featuresTitle": "Caractéristiques",
+    "noAmenities": "Aucun équipement listé",
+    "showLess": "Afficher moins",
+    "showAll": "Afficher les {count} équipements",
+    "showAllFeatures": "Afficher les {count} caractéristiques",
+    "wifi": "WiFi",
+    "parking": "Parking gratuit",
+    "pool": "Piscine",
+    "gym": "Salle de sport",
+    "garden": "Jardin",
+    "terrace": "Terrasse",
+    "elevator": "Ascenseur",
+    "security": "Sécurité 24h/24",
+    "ac": "Climatisation",
+    "heating": "Chauffage",
+    "kitchen": "Cuisine",
+    "balcony": "Balcon",
+    "tv": "TV",
+    "washer": "Lave-linge",
+    "beachAccess": "Accès plage",
+    "mountainView": "Vue sur montagne",
+    "gps": "Navigation GPS",
+    "bluetooth": "Bluetooth",
+    "sunroof": "Toit ouvrant",
+    "backupCamera": "Caméra de recul",
+    "cruiseControl": "Régulateur de vitesse",
+    "heatedSeats": "Sièges chauffants",
+    "wifiHotspot": "Point d'accès WiFi",
+    "childSeat": "Siège enfant",
+    "skiRack": "Porte-skis",
+    "bikeRack": "Porte-vélos"
+  },
+  "vehicleTypes": {
+    "car": "Voiture",
+    "motorcycle": "Moto",
+    "truck": "Camion",
+    "van": "Fourgon",
+    "suv": "SUV",
+    "bus": "Bus",
+    "bicycle": "Vélo",
+    "scooter": "Scooter",
+    "boat": "Bateau"
+  },
+  "transmission": {
+    "manual": "Manuelle",
+    "automatic": "Automatique"
+  },
+  "fuelTypes": {
+    "gasoline": "Essence",
+    "diesel": "Diesel",
+    "electric": "Électrique",
+    "hybrid": "Hybride"
+  },
+  "houseRules": {
+    "title": "Règlement intérieur",
+    "smokingAllowed": "Fumeurs acceptés",
+    "noSmoking": "Non-fumeurs",
+    "petsAllowed": "Animaux acceptés",
+    "noPets": "Animaux non admis",
+    "partiesAllowed": "Fêtes autorisées",
+    "noPartiesOrEvents": "Pas de fêtes ni d'événements",
+    "childrenWelcome": "Enfants bienvenus",
+    "notSuitableForChildren": "Non adapté aux enfants",
+    "checkIn": "Arrivée:",
+    "checkOut": "Départ: Avant"
+  },
+  "reviews": {
+    "title": "avis",
+    "user": "Utilisateur",
+    "recently": "Récemment",
+    "showLess": "Afficher moins",
+    "showAll": "Afficher les {count} avis"
+  },
+  "location": {
+    "title": "Emplacement",
+    "exactLocation": "Adresse exacte fournie après réservation",
+    "exactLocationDescription": "Nous partagerons l'adresse précise une fois votre réservation confirmée"
+  },
+  "booking": {
+    "perNight": "nuit",
+    "perDay": "jour",
+    "reviews": "avis",
+    "checkIn": "ARRIVÉE",
+    "checkout": "DÉPART",
+    "guests": "VOYAGEURS",
+    "adults": "Adultes",
+    "children": "Enfants",
+    "infants": "Bébés",
+    "reserve": "Réserver",
+    "requestToBook": "Demander à réserver",
+    "notChargedYet": "Vous ne serez pas encore débité",
+    "night": "nuit",
+    "nights": "nuits",
+    "cleaningFee": "Frais de ménage",
+    "serviceFee": "Frais de service (10%)",
+    "taxes": "Taxes (5%)",
+    "total": "Total",
+    "reportListing": "Signaler cette annonce"
+  }
+}

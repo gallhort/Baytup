@@ -1,0 +1,159 @@
+{
+  "header": {
+    "title": "Host Applications",
+    "subtitle": "Manage all host applications"
+  },
+  "stats": {
+    "total": "Total",
+    "pending": "Pending",
+    "underReview": "Under Review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "resubmit": "Resubmit"
+  },
+  "filters": {
+    "filterByStatus": "Filter by Status",
+    "allStatus": "All Status",
+    "pending": "Pending",
+    "underReview": "Under Review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "resubmissionRequired": "Resubmission Required"
+  },
+  "table": {
+    "headers": {
+      "applicant": "Applicant",
+      "contact": "Contact",
+      "status": "Status",
+      "completion": "Completion",
+      "submitted": "Submitted",
+      "actions": "Actions"
+    },
+    "content": {
+      "notSubmitted": "Not submitted",
+      "na": "N/A",
+      "unknown": "Unknown",
+      "user": "User"
+    }
+  },
+  "status": {
+    "pending": "Pending",
+    "underReview": "Under Review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "resubmissionRequired": "Resubmission Required"
+  },
+  "actions": {
+    "viewDetails": "View Details",
+    "editApplication": "Edit Application",
+    "changeStatus": "Change Status",
+    "approve": "Approve",
+    "reject": "Reject",
+    "requestResubmission": "Request Resubmission",
+    "delete": "Delete"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "results": "results"
+  },
+  "viewModal": {
+    "title": "Application Details",
+    "applicantInfo": "Applicant Information",
+    "personalInfo": "Personal Information",
+    "hostIntent": "Host Intent",
+    "bankingInfo": "Banking Information",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "nationalId": "National ID",
+    "dateOfBirth": "Date of Birth",
+    "city": "City",
+    "propertyTypes": "Property Types",
+    "vehicleTypes": "Vehicle Types",
+    "expectedListings": "Expected Listings",
+    "experienceLevel": "Experience Level",
+    "motivation": "Motivation",
+    "none": "None",
+    "bankName": "Bank Name",
+    "accountHolder": "Account Holder",
+    "rib": "RIB",
+    "close": "Close"
+  },
+  "editModal": {
+    "title": "Edit Application",
+    "phone": "Phone",
+    "city": "City",
+    "nationalIdNumber": "National ID Number",
+    "numberOfListings": "Number of Listings",
+    "bankName": "Bank Name",
+    "rib": "RIB",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes"
+  },
+  "approveModal": {
+    "title": "Approve Application",
+    "message": "Are you sure you want to approve this application? This will upgrade the user to host status.",
+    "cancel": "Cancel",
+    "approve": "Approve"
+  },
+  "rejectModal": {
+    "title": "Reject Application",
+    "message": "Please provide a reason for rejecting this application:",
+    "placeholder": "Enter rejection reason...",
+    "cancel": "Cancel",
+    "reject": "Reject"
+  },
+  "resubmitModal": {
+    "title": "Request Resubmission",
+    "message": "Please provide notes for what needs to be corrected:",
+    "placeholder": "Enter resubmission notes...",
+    "cancel": "Cancel",
+    "requestResubmission": "Request Resubmission"
+  },
+  "deleteModal": {
+    "title": "Delete Application",
+    "message": "Are you sure you want to delete this application? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "statusModal": {
+    "title": "Change Application Status",
+    "currentStatus": "Current Status:",
+    "applicant": "Applicant:",
+    "newStatus": "New Status",
+    "pending": "Pending",
+    "underReview": "Under Review",
+    "approved": "Approved (Guest → Host)",
+    "rejected": "Rejected",
+    "resubmissionRequired": "Resubmission Required",
+    "approvalWarning": "⚠️ This will upgrade the user to host status!",
+    "rejectionNote": "Note: Consider using the Reject button to add a reason.",
+    "resubmitNote": "Note: Consider using the Request Resubmission button to add notes.",
+    "cancel": "Cancel",
+    "updateStatus": "Update Status"
+  },
+  "toast": {
+    "loadingApplications": "Loading applications...",
+    "accessDenied": "Access denied. Admin only.",
+    "failedToLoad": "Failed to load applications",
+    "applicationApproved": "Application approved successfully",
+    "failedToApprove": "Failed to approve application",
+    "provideRejectionReason": "Please provide a rejection reason",
+    "applicationRejected": "Application rejected",
+    "failedToReject": "Failed to reject application",
+    "provideResubmitNotes": "Please provide resubmission notes",
+    "resubmissionRequested": "Resubmission requested",
+    "failedToRequestResubmission": "Failed to request resubmission",
+    "applicationDeleted": "Application deleted successfully",
+    "failedToDelete": "Failed to delete application",
+    "applicationUpdated": "Application updated successfully",
+    "failedToUpdate": "Failed to update application",
+    "selectStatus": "Please select a status",
+    "statusUpdated": "Status updated successfully",
+    "failedToChangeStatus": "Failed to change status"
+  }
+}

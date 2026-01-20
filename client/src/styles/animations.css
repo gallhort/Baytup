@@ -1,0 +1,494 @@
+/* Enhanced Animations for Baytup Search Page */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes gradient-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Animation Classes */
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s ease-out;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.5s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.4s ease-out;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    to right,
+    #f6f7f8 0%,
+    #edeef1 20%,
+    #f6f7f8 40%,
+    #f6f7f8 100%
+  );
+  background-size: 800px 104px;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-gradient-flow {
+  animation: gradient-flow 3s ease infinite;
+  background-size: 400% 400%;
+}
+
+/* Hover Effects */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Algerian-inspired gradients */
+.gradient-algerian {
+  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 25%, #C1272D 50%, #8B0000 75%, #2E7D32 100%);
+}
+
+.gradient-sahara {
+  background: linear-gradient(135deg, #FFD54F 0%, #FF8F00 25%, #FF6B35 50%, #D84315 75%, #8D6E63 100%);
+}
+
+.gradient-mediterranean {
+  background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 25%, #039BE5 50%, #0277BD 75%, #01579B 100%);
+}
+
+/* Cultural pattern overlays */
+.pattern-overlay {
+  position: relative;
+}
+
+.pattern-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(255, 107, 53, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 143, 0, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Responsive design enhancements */
+@media (max-width: 768px) {
+  .glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .price-marker {
+    padding: 6px 10px;
+    font-size: 11px;
+    border-radius: 16px;
+  }
+
+  .map-marker:hover {
+    transform: translate(-50%, -100%) scale(1.05);
+  }
+
+  .stagger-children > * {
+    animation-duration: 0.4s;
+  }
+}
+
+@media (max-width: 640px) {
+  .animate-fadeIn,
+  .animate-slideUp,
+  .animate-slideDown,
+  .animate-scaleIn {
+    animation-duration: 0.3s;
+  }
+
+  .hover-lift {
+    transition-duration: 0.2s;
+  }
+
+  .price-marker {
+    padding: 4px 8px;
+    font-size: 10px;
+    border-radius: 12px;
+  }
+
+  .cluster-marker {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}
+
+/* Responsive animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn,
+  .animate-slideUp,
+  .animate-slideDown,
+  .animate-scaleIn,
+  .animate-shimmer,
+  .animate-float,
+  .animate-pulse-soft,
+  .animate-gradient-flow {
+    animation: none;
+  }
+
+  .hover-lift:hover {
+    transform: none;
+  }
+
+  .map-marker:hover {
+    transform: translate(-50%, -100%);
+  }
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Card stagger animation */
+.stagger-children > * {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* Map marker styles */
+.map-marker {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.map-marker:hover {
+  transform: translate(-50%, -100%) scale(1.1);
+  z-index: 1000 !important;
+}
+
+.price-marker {
+  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  border: 2px solid white;
+  position: relative;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.price-marker:after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #FF6B35;
+}
+
+.price-marker.vehicle {
+  background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%);
+  box-shadow: 0 4px 12px rgba(79, 195, 247, 0.3);
+}
+
+.price-marker.vehicle:after {
+  border-top-color: #4FC3F7;
+}
+
+.price-marker.active {
+  background: linear-gradient(135deg, #C1272D 0%, #8B0000 100%);
+  transform: scale(1.2);
+  box-shadow: 0 6px 20px rgba(193, 39, 45, 0.4);
+  z-index: 1000;
+}
+
+.price-marker.active:after {
+  border-top-color: #C1272D;
+}
+
+.cluster-marker {
+  background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+  border: 3px solid white;
+}
+
+/* Enhanced map marker animations */
+.map-marker.active .price-marker {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.map-marker.clustered .cluster-marker {
+  animation: pulse-soft 1.5s ease-in-out infinite;
+}
+
+/* Enhanced Algerian Cultural Elements */
+.cultural-accent {
+  position: relative;
+}
+
+.cultural-accent::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #FF6B35, #F7931E, #C1272D, #2E7D32);
+  background-size: 400% 400%;
+  border-radius: inherit;
+  z-index: -1;
+  animation: gradient-flow 4s ease infinite;
+  opacity: 0.6;
+}
+
+.berber-pattern {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 20%),
+    radial-gradient(circle at 80% 80%, rgba(247, 147, 30, 0.08) 0%, transparent 20%),
+    radial-gradient(circle at 40% 60%, rgba(193, 39, 45, 0.06) 0%, transparent 20%);
+  background-size: 60px 60px, 80px 80px, 40px 40px;
+  background-position: 0 0, 30px 30px, 10px 50px;
+}
+
+.atlas-gradient {
+  background: linear-gradient(
+    135deg,
+    #FF6B35 0%,
+    #F7931E 15%,
+    #FFD54F 30%,
+    #C1272D 45%,
+    #8B0000 60%,
+    #2E7D32 75%,
+    #4FC3F7 90%,
+    #FF6B35 100%
+  );
+  background-size: 200% 200%;
+  animation: gradient-flow 6s ease infinite;
+}
+
+.sahara-texture {
+  background-image:
+    linear-gradient(45deg, transparent 40%, rgba(255, 213, 79, 0.03) 50%, transparent 60%),
+    linear-gradient(-45deg, transparent 40%, rgba(255, 143, 0, 0.03) 50%, transparent 60%);
+  background-size: 20px 20px;
+}
+
+.mediterranean-wave {
+  background: linear-gradient(
+    45deg,
+    rgba(79, 195, 247, 0.1) 0%,
+    rgba(41, 182, 246, 0.08) 25%,
+    rgba(3, 155, 229, 0.06) 50%,
+    rgba(2, 119, 189, 0.04) 75%,
+    rgba(1, 87, 155, 0.02) 100%
+  );
+  background-size: 40px 40px;
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Traditional geometric patterns */
+.geometric-border {
+  border-image: linear-gradient(45deg, #FF6B35, #F7931E, #C1272D, #2E7D32) 1;
+  border-width: 2px;
+  border-style: solid;
+}
+
+.geometric-pattern::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(45deg, rgba(255, 107, 53, 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(247, 147, 30, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(193, 39, 45, 0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(46, 125, 50, 0.05) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Cultural color harmonies */
+.harmony-warm {
+  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFD54F 100%);
+}
+
+.harmony-earth {
+  background: linear-gradient(135deg, #8D6E63 0%, #A0926B 50%, #8B7355 100%);
+}
+
+.harmony-heritage {
+  background: linear-gradient(135deg, #C1272D 0%, #8B0000 50%, #2E7D32 100%);
+}
+
+/* Enhanced hover states with cultural flair */
+.cultural-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.cultural-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.cultural-hover:hover::before {
+  left: 100%;
+}
+
+/* Traditional textile-inspired animations */
+@keyframes textile-weave {
+  0%, 100% {
+    background-position: 0% 0%, 50% 50%;
+  }
+  25% {
+    background-position: 100% 0%, 0% 50%;
+  }
+  50% {
+    background-position: 100% 100%, 0% 0%;
+  }
+  75% {
+    background-position: 0% 100%, 50% 0%;
+  }
+}
+
+.textile-pattern {
+  background-image:
+    linear-gradient(45deg, rgba(255, 107, 53, 0.1) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(247, 147, 30, 0.1) 25%, transparent 25%);
+  background-size: 20px 20px;
+  animation: textile-weave 8s linear infinite;
+}

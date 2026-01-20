@@ -1,0 +1,30 @@
+{
+  "title": "Notifications",
+  "unreadNotification": "unread notification",
+  "unreadNotifications": "unread notifications",
+  "noUnread": "No unread notifications",
+  "markAllRead": "Mark all as read",
+  "filterByStatus": "Filter by status",
+  "filterByType": "Filter by type",
+  "all": "All",
+  "unread": "Unread",
+  "read": "Read",
+  "allTypes": "All types",
+  "loading": "Loading notifications...",
+  "noNotificationsTitle": "No notifications",
+  "noUnreadNotifications": "You have no unread notifications",
+  "noReadNotifications": "You have no read notifications",
+  "noNotificationsMessage": "You have no notifications at this time",
+  "viewDetails": "View Details",
+  "markRead": "Mark as read",
+  "delete": "Delete",
+  "urgent": "Urgent",
+  "high": "High",
+  "success": {
+    "allMarkedRead": "All notifications marked as read",
+    "deleted": "Notification deleted"
+  },
+  "errors": {
+    "fetchFailed": "Failed to load notifications"
+  }
+}

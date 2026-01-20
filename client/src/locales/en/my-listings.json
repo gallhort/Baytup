@@ -1,0 +1,200 @@
+{
+  "loading": {
+    "message": "Loading your listings..."
+  },
+  "messages": {
+    "error": {
+      "failed": "Failed to load listings. Please try again.",
+      "updateFailed": "Failed to update listing. Please try again.",
+      "deleteFailed": "Failed to delete listing. Please try again.",
+      "statusFailed": "Failed to update status. Please try again.",
+      "duplicateFailed": "Failed to duplicate listing. Please try again."
+    },
+    "success": {
+      "updated": "Listing updated successfully!",
+      "deleted": "Listing deleted successfully!",
+      "statusChanged": "Listing status updated successfully!",
+      "duplicated": "Listing duplicated successfully!"
+    }
+  },
+  "header": {
+    "title": "My Listings",
+    "subtitle": "Manage and track your property and vehicle listings",
+    "createButton": "Create New Listing"
+  },
+  "stats": {
+    "totalListings": "Total Listings",
+    "active": "Active",
+    "totalViews": "Total Views",
+    "totalBookings": "Total Bookings",
+    "views": "views",
+    "bookings": "bookings"
+  },
+  "filters": {
+    "search": "Search",
+    "searchPlaceholder": "Search by title, description, or city...",
+    "status": "Status",
+    "allStatus": "All Status",
+    "statusActive": "Active",
+    "statusPaused": "Paused",
+    "statusPending": "Pending",
+    "statusInactive": "Inactive",
+    "category": "Category",
+    "allCategories": "All Categories",
+    "categoryStays": "Stays",
+    "categoryVehicles": "Vehicles"
+  },
+  "table": {
+    "headers": {
+      "listing": "Listing",
+      "category": "Category",
+      "price": "Price",
+      "stats": "Stats",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "empty": {
+      "message": "No listings found",
+      "action": "Create Your First Listing"
+    }
+  },
+  "pricing": {
+    "perNight": "per night"
+  },
+  "badges": {
+    "featured": "Featured"
+  },
+  "actions": {
+    "viewDetails": "View Details",
+    "edit": "Edit",
+    "duplicate": "Duplicate",
+    "pause": "Pause",
+    "activate": "Activate",
+    "delete": "Delete"
+  },
+  "viewModal": {
+    "title": "Listing Details",
+    "closeButton": "Close",
+    "basicInfo": {
+      "title": "Basic Information",
+      "titleLabel": "Title",
+      "categoryType": "Category / Type",
+      "description": "Description",
+      "status": "Status",
+      "slug": "Slug"
+    },
+    "location": {
+      "title": "Location",
+      "street": "Street",
+      "city": "City",
+      "state": "State / Province",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "coordinates": "Coordinates"
+    },
+    "stayDetails": {
+      "title": "Stay Details",
+      "propertyType": "Property Type",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "area": "Area (m²)",
+      "floor": "Floor",
+      "furnished": "Furnished",
+      "amenities": "Amenities"
+    },
+    "vehicleDetails": {
+      "title": "Vehicle Details",
+      "vehicleType": "Vehicle Type",
+      "make": "Make",
+      "model": "Model",
+      "year": "Year",
+      "transmission": "Transmission",
+      "fuelType": "Fuel Type",
+      "seats": "Seats",
+      "features": "Features"
+    },
+    "pricing": {
+      "title": "Pricing",
+      "basePrice": "Base Price",
+      "per": "per",
+      "cleaningFee": "Cleaning Fee",
+      "serviceFee": "Service Fee",
+      "securityDeposit": "Security Deposit"
+    },
+    "availability": {
+      "title": "Availability & Booking",
+      "instantBook": "Instant Book",
+      "yes": "Yes",
+      "no": "No",
+      "minStay": "Min Stay (nights)",
+      "maxStay": "Max Stay (nights)",
+      "advanceNotice": "Advance Notice (hours)",
+      "preparationTime": "Preparation Time (hours)",
+      "checkInTime": "Check-in Time",
+      "checkOutTime": "Check-out Time"
+    },
+    "rules": {
+      "title": "House Rules",
+      "smoking": "Smoking",
+      "pets": "Pets",
+      "parties": "Parties",
+      "children": "Children",
+      "allowed": "Allowed",
+      "notAllowed": "Not Allowed",
+      "additionalRules": "Additional Rules"
+    },
+    "images": {
+      "title": "Images",
+      "primary": "Primary"
+    },
+    "statistics": {
+      "title": "Statistics",
+      "totalViews": "Total Views",
+      "favorites": "Favorites",
+      "bookings": "Bookings",
+      "totalRevenue": "Total Revenue",
+      "averageRating": "Average Rating",
+      "reviewCount": "Review Count"
+    },
+    "timestamps": {
+      "title": "Timestamps",
+      "createdAt": "Created At",
+      "lastUpdated": "Last Updated"
+    }
+  },
+  "editModal": {
+    "title": "Edit Listing",
+    "titleLabel": "Title",
+    "description": "Description",
+    "basePrice": "Base Price (DZD)",
+    "status": "Status",
+    "statusActive": "Active",
+    "statusPaused": "Paused",
+    "statusInactive": "Inactive",
+    "cancelButton": "Cancel",
+    "saveButton": "Save Changes"
+  },
+  "deleteModal": {
+    "title": "Delete Listing",
+    "message": "Are you sure you want to delete",
+    "warning": "This action cannot be undone.",
+    "cancelButton": "Cancel",
+    "deleteButton": "Delete"
+  },
+  "statusModal": {
+    "title": "Change Status",
+    "message": "Change status of",
+    "to": "to",
+    "reasonLabel": "Reason (optional)",
+    "reasonPlaceholder": "Enter reason for status change...",
+    "cancelButton": "Cancel",
+    "confirmButton": "Confirm"
+  },
+  "duplicateModal": {
+    "title": "Duplicate Listing",
+    "message": "Create a duplicate of",
+    "info": "You can edit it after creation.",
+    "cancelButton": "Cancel",
+    "duplicateButton": "Duplicate"
+  }
+}

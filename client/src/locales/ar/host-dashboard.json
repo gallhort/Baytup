@@ -1,0 +1,180 @@
+{
+  "loading": {
+    "message": "جاري تحميل لوحة التحكم..."
+  },
+  "errors": {
+    "noData": "لا توجد بيانات متاحة",
+    "loadFailed": "فشل تحميل بيانات لوحة التحكم"
+  },
+  "header": {
+    "title": "لوحة تحكم المضيف",
+    "subtitle": "إدارة إعلاناتك وتتبع الأداء",
+    "editProfile": "تعديل"
+  },
+  "stats": {
+    "activeListings": {
+      "label": "الإعلانات النشطة"
+    },
+    "totalListings": {
+      "total": "الإجمالي"
+    },
+    "totalBookings": {
+      "label": "إجمالي الحجوزات",
+      "active": "نشطة"
+    },
+    "totalRevenue": {
+      "label": "إجمالي الإيرادات",
+      "currency": "دج",
+      "avg": "متوسط"
+    },
+    "averageRating": {
+      "label": "متوسط التقييم",
+      "views": "مشاهدات"
+    }
+  },
+  "tabs": {
+    "overview": "نظرة عامة",
+    "listings": "الإعلانات",
+    "bookings": "الحجوزات",
+    "reviews": "التقييمات"
+  },
+  "charts": {
+    "revenue": {
+      "title": "اتجاه الإيرادات",
+      "subtitle": "نظرة عامة على الأرباح الشهرية",
+      "label": "الإيرادات الشهرية (دج)",
+      "yAxisLabel": "دج"
+    },
+    "performance": {
+      "title": "أداء الإعلانات",
+      "subtitle": "أفضل 5 إعلانات حسب المشاهدات والحجوزات",
+      "viewsLabel": "المشاهدات",
+      "bookingsLabel": "الحجوزات"
+    }
+  },
+  "sections": {
+    "upcomingBookings": {
+      "title": "الحجوزات القادمة",
+      "subtitle": "الحجوزات المجدولة القادمة"
+    },
+    "myListings": {
+      "title": "إعلاناتي",
+      "subtitle": "إدارة إعلانات الممتلكات الخاصة بك"
+    },
+    "allBookings": {
+      "title": "جميع الحجوزات",
+      "subtitle": "عرض وإدارة الحجوزات"
+    },
+    "recentReviews": {
+      "title": "التقييمات الأخيرة",
+      "subtitle": "آراء الضيوف حول إعلاناتك"
+    }
+  },
+  "bookings": {
+    "guest": "الضيف",
+    "checkIn": "تسجيل الوصول",
+    "checkOut": "تسجيل المغادرة",
+    "nights": "ليالي",
+    "night": "ليلة",
+    "totalPrice": "السعر الإجمالي",
+    "status": {
+      "confirmed": "مؤكدة",
+      "pending": "قيد الانتظار",
+      "cancelled": "ملغاة",
+      "completed": "مكتملة"
+    },
+    "dateRange": "إلى"
+  },
+  "listings": {
+    "category": "الفئة",
+    "subcategory": "الفئة الفرعية",
+    "views": "المشاهدات",
+    "bookings": "حجوزات",
+    "booking": "حجز",
+    "rating": "التقييم",
+    "price": "السعر",
+    "status": {
+      "active": "نشط",
+      "paused": "متوقف مؤقتاً",
+      "draft": "مسودة",
+      "archived": "مؤرشف"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "pause": "إيقاف مؤقت",
+      "activate": "تفعيل",
+      "delete": "حذف"
+    }
+  },
+  "reviews": {
+    "title": "التقييمات",
+    "subtitle": "آراء الضيوف",
+    "rating": "التقييم",
+    "comment": "التعليق",
+    "reviewer": "المقيّم",
+    "listing": "الإعلان",
+    "date": "التاريخ",
+    "noComment": "لم يتم تقديم تعليق"
+  },
+  "actions": {
+    "addNewListing": "إضافة إعلان جديد",
+    "createFirstListing": "أنشئ أول إعلان لك",
+    "viewAll": "عرض الكل",
+    "viewDetails": "عرض التفاصيل",
+    "manage": "إدارة"
+  },
+  "emptyStates": {
+    "noUpcomingBookings": "لا توجد حجوزات قادمة",
+    "noListings": "لا توجد إعلانات بعد",
+    "noBookings": "لا توجد حجوزات بعد",
+    "noReviews": "لا توجد تقييمات بعد",
+    "createListing": "أنشئ إعلانك الأول لبدء الاستضافة",
+    "waitingForBookings": "ستظهر حجوزاتك هنا بمجرد قيام الضيوف بإجراء الحجوزات"
+  },
+  "messages": {
+    "listingPaused": "تم إيقاف الإعلان مؤقتاً بنجاح",
+    "listingActivated": "تم تفعيل الإعلان بنجاح",
+    "listingActionFailed": "فشل تحديث حالة الإعلان",
+    "listingDeleted": "تم حذف الإعلان بنجاح",
+    "listingDeleteFailed": "فشل حذف الإعلان"
+  },
+  "currency": {
+    "dzd": "دج",
+    "eur": "يورو",
+    "usd": "دولار"
+  },
+  "time": {
+    "days": "أيام",
+    "day": "يوم",
+    "months": "أشهر",
+    "month": "شهر",
+    "years": "سنوات",
+    "year": "سنة"
+  },
+  "filters": {
+    "all": "الكل",
+    "active": "نشط",
+    "paused": "متوقف مؤقتاً",
+    "archived": "مؤرشف",
+    "confirmed": "مؤكدة",
+    "pending": "قيد الانتظار",
+    "cancelled": "ملغاة"
+  },
+  "performance": {
+    "title": "مقاييس الأداء",
+    "viewsToBookingRatio": "نسبة المشاهدات إلى الحجوزات",
+    "conversionRate": "معدل التحويل",
+    "occupancyRate": "معدل الإشغال",
+    "responseRate": "معدل الاستجابة",
+    "responseTime": "وقت الاستجابة"
+  },
+  "overview": {
+    "title": "نظرة عامة",
+    "summary": "ملخص لوحة التحكم",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "trend": "الاتجاه",
+    "increase": "زيادة",
+    "decrease": "انخفاض"
+  }
+}

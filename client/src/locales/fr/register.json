@@ -1,0 +1,83 @@
+{
+  "title": "Rejoignez Baytup",
+  "subtitle": "Créez votre compte pour commencer à explorer",
+  "infoMessage": {
+    "title": "Rejoignez en tant qu'invité",
+    "description": "Commencez par créer votre compte. Vous souhaitez répertorier votre propriété ou véhicule ? Vous pouvez demander à devenir hôte après l'inscription !"
+  },
+  "roleSelection": {
+    "label": "Je veux :",
+    "rent": {
+      "title": "Louer",
+      "description": "Trouver propriétés et véhicules"
+    },
+    "host": {
+      "title": "Hôte",
+      "description": "Lister votre propriété/véhicule"
+    }
+  },
+  "form": {
+    "firstName": {
+      "label": "Prénom",
+      "placeholder": "Prénom",
+      "required": "Le prénom est obligatoire",
+      "minLength": "Le prénom doit contenir au moins 2 caractères"
+    },
+    "lastName": {
+      "label": "Nom de famille",
+      "placeholder": "Nom de famille",
+      "required": "Le nom de famille est obligatoire",
+      "minLength": "Le nom de famille doit contenir au moins 2 caractères"
+    },
+    "email": {
+      "label": "Adresse e-mail",
+      "placeholder": "Saisissez votre e-mail",
+      "required": "L'e-mail est obligatoire",
+      "invalid": "Veuillez saisir une adresse e-mail valide"
+    },
+    "password": {
+      "label": "Mot de passe",
+      "placeholder": "Créez un mot de passe",
+      "required": "Le mot de passe est obligatoire",
+      "minLength": "Le mot de passe doit contenir au moins 6 caractères"
+    },
+    "terms": {
+      "text": "J'accepte les",
+      "termsOfService": "Conditions d'utilisation",
+      "and": "et la",
+      "privacyPolicy": "Politique de confidentialité"
+    },
+    "createAccount": "Créer un compte {role}",
+    "creatingAccount": "Création du compte...",
+    "orContinueWith": "Ou continuer avec"
+  },
+  "errors": {
+    "emailExists": "Un compte avec cet e-mail existe déjà",
+    "validation": "Veuillez vérifier vos données et réessayer",
+    "registrationFailed": "Échec de l'inscription",
+    "googleRegistrationFailed": "Échec de l'inscription Google"
+  },
+  "success": {
+    "registrationSuccess": "Inscription réussie !",
+    "googleRegistrationSuccess": "Inscription Google réussie !"
+  },
+  "signIn": {
+    "text": "Vous avez déjà un compte ?",
+    "link": "Se connecter"
+  },
+  "hero": {
+    "title": "Rejoignez Baytup Aujourd'hui",
+    "description": "Rejoignez le premier marché de location d'Algérie. Explorez des propriétés et véhicules incroyables, ou devenez hôte et gagnez un revenu supplémentaire !",
+    "host": {
+      "description": "Commencez à gagner en listant vos propriétés et véhicules sur la première plateforme de location d'Algérie."
+    },
+    "guest": {
+      "description": "Découvrez des propriétés et véhicules uniques à travers l'Algérie. Votre prochaine aventure vous attend !"
+    },
+    "stats": {
+      "support": "Support",
+      "securePayments": "Paiements",
+      "payments": "Sécurisés"
+    }
+  }
+}

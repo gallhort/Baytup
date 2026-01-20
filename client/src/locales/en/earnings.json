@@ -1,0 +1,165 @@
+{
+  "header": {
+    "title": "Earnings",
+    "subtitle": "Track your revenue and payouts",
+    "exportReport": "Export Report"
+  },
+  "stats": {
+    "totalEarnings": "Total Earnings",
+    "monthlyEarnings": "Monthly Earnings",
+    "available": "Available",
+    "pending": "Pending",
+    "currentMonth": "Current month",
+    "transaction": "transaction",
+    "transactions": "transactions",
+    "paidOut": "paid out",
+    "pendingCount": "pending"
+  },
+  "listingEarnings": {
+    "title": "Earnings by Listing",
+    "totalEarned": "Total Earned:",
+    "bookings": "Bookings:",
+    "avgPerBooking": "Avg per Booking:"
+  },
+  "filters": {
+    "searchPlaceholder": "Search listings or guests...",
+    "allStatus": "All Status",
+    "allListings": "All Listings",
+    "statusOptions": {
+      "completed": "Completed",
+      "paid": "Paid",
+      "pending": "Pending",
+      "processing": "Processing"
+    },
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "clearFilters": "Clear Filters"
+  },
+  "table": {
+    "headers": {
+      "listing": "Listing",
+      "guest": "Guest",
+      "bookingDates": "Booking Dates",
+      "amountEarned": "Amount Earned",
+      "platformFee": "Platform Fee",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "subtotal": "Subtotal:",
+    "cleaning": "Cleaning:",
+    "night": "night",
+    "nights": "nights",
+    "paid": "Paid:",
+    "viewDetails": "View Details"
+  },
+  "status": {
+    "completed": "Completed",
+    "paid": "Paid",
+    "pending": "Pending",
+    "processing": "Processing",
+    "failed": "Failed"
+  },
+  "emptyState": {
+    "title": "No Earnings Yet",
+    "message": "You haven't received any payments yet. Start hosting to earn money!"
+  },
+  "pagination": {
+    "page": "Page",
+    "of": "of"
+  },
+  "detailsModal": {
+    "title": "Transaction Details",
+    "guestInformation": "Guest Information",
+    "bookingPeriod": "Booking Period",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "night": "night",
+    "nights": "nights",
+    "earningsBreakdown": "Earnings Breakdown",
+    "subtotal": "Subtotal",
+    "cleaningFee": "Cleaning fee",
+    "yourEarnings": "Your Earnings",
+    "platformFees": "Platform Fees",
+    "totalPlatformFee": "Total Platform Fee",
+    "guestPaidTotal": "Guest Paid Total",
+    "totalAmount": "Total Amount",
+    "payoutDate": "Payout Date:",
+    "payoutInfo": {
+      "title": "Payout Information:",
+      "message": "Earnings are typically processed and paid out within 24-48 hours after the guest checks in."
+    }
+  },
+  "loading": {
+    "earnings": "Loading earnings..."
+  },
+  "toast": {
+    "loadEarningsFailed": "Failed to load earnings data",
+    "loadTransactionsFailed": "Failed to load transactions"
+  },
+  "payout": {
+    "withdraw": "Withdraw",
+    "bankAccount": "Bank Account",
+    "viewHistory": "Payout History",
+    "withdrawTitle": "Withdraw Earnings",
+    "bankAccountTitle": "Bank Account Details",
+    "historyTitle": "Payout History",
+    "availableBalance": "Available Balance",
+    "withdrawAmount": "Withdrawal Amount",
+    "minimumAmount": "Minimum withdrawal: 1000 DZD",
+    "notes": "Notes",
+    "optional": "optional",
+    "notesPlaceholder": "Add any notes for the admin...",
+    "bankAccountConfigured": "Bank account configured",
+    "noBankAccount": "No bank account configured",
+    "addBankAccountFirst": "Please add your bank account details first",
+    "submitRequest": "Submit Request",
+    "processing": "Processing...",
+    "cancelButton": "Cancel",
+    "saveButton": "Save Bank Account",
+    "bankNameLabel": "Bank Name",
+    "bankNamePlaceholder": "e.g., CPA, BNA, BEA",
+    "accountHolderLabel": "Account Holder Name",
+    "accountHolderPlaceholder": "Full name as on bank account",
+    "accountNumberLabel": "Account Number",
+    "accountNumberPlaceholder": "Account number",
+    "ribDigits": "20 digits",
+    "digits": "digits",
+    "swiftCodeLabel": "SWIFT/BIC Code",
+    "bankInfo": {
+      "title": "Important",
+      "message": "Please provide accurate bank account information. This will be used for all future payouts."
+    },
+    "requested": "Requested",
+    "completed": "Completed",
+    "cancel": "Cancel",
+    "bankName": "Bank Name",
+    "accountHolder": "Account Holder",
+    "accountNumber": "Account Number",
+    "transactionId": "Transaction ID",
+    "yourNotes": "Your Notes",
+    "adminNotes": "Admin Notes",
+    "rejectionReason": "Rejection Reason",
+    "status": {
+      "completed": "Completed",
+      "processing": "Processing",
+      "pending": "Pending",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "validation": {
+      "requiredFields": "Please fill all required fields",
+      "ribFormat": "RIB must be exactly 20 digits",
+      "invalidAmount": "Please enter a valid amount",
+      "insufficientBalance": "Insufficient balance",
+      "noBankAccount": "Please add your bank account details first"
+    },
+    "toast": {
+      "bankAccountSaved": "Bank account saved successfully",
+      "bankAccountFailed": "Failed to save bank account",
+      "withdrawSuccess": "Withdrawal request submitted successfully",
+      "withdrawFailed": "Failed to submit withdrawal request",
+      "cancelSuccess": "Payout cancelled successfully",
+      "cancelFailed": "Failed to cancel payout"
+    }
+  }
+}

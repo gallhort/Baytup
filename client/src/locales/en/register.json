@@ -1,0 +1,83 @@
+{
+  "title": "Join Baytup",
+  "subtitle": "Create your account to start exploring",
+  "infoMessage": {
+    "title": "Join as a Guest",
+    "description": "Start by creating your account. Want to list your property or vehicle? You can apply to become a host after registration!"
+  },
+  "roleSelection": {
+    "label": "I want to:",
+    "rent": {
+      "title": "Rent",
+      "description": "Find properties & vehicles"
+    },
+    "host": {
+      "title": "Host",
+      "description": "List your property/vehicle"
+    }
+  },
+  "form": {
+    "firstName": {
+      "label": "First name",
+      "placeholder": "First name",
+      "required": "First name is required",
+      "minLength": "First name must be at least 2 characters"
+    },
+    "lastName": {
+      "label": "Last name",
+      "placeholder": "Last name",
+      "required": "Last name is required",
+      "minLength": "Last name must be at least 2 characters"
+    },
+    "email": {
+      "label": "Email address",
+      "placeholder": "Enter your email",
+      "required": "Email is required",
+      "invalid": "Please enter a valid email address"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Create a password",
+      "required": "Password is required",
+      "minLength": "Password must be at least 6 characters"
+    },
+    "terms": {
+      "text": "I agree to the",
+      "termsOfService": "Terms of Service",
+      "and": "and",
+      "privacyPolicy": "Privacy Policy"
+    },
+    "createAccount": "Create {role} account",
+    "creatingAccount": "Creating account...",
+    "orContinueWith": "Or continue with"
+  },
+  "errors": {
+    "emailExists": "An account with this email already exists",
+    "validation": "Please check your form data and try again",
+    "registrationFailed": "Registration failed",
+    "googleRegistrationFailed": "Google registration failed"
+  },
+  "success": {
+    "registrationSuccess": "Registration successful!",
+    "googleRegistrationSuccess": "Google registration successful!"
+  },
+  "signIn": {
+    "text": "Already have an account?",
+    "link": "Sign in"
+  },
+  "hero": {
+    "title": "Join Baytup Today",
+    "description": "Join Algeria's premier rental marketplace. Explore amazing properties and vehicles, or become a host and earn extra income!",
+    "host": {
+      "description": "Start earning by listing your properties and vehicles on Algeria's premier rental platform."
+    },
+    "guest": {
+      "description": "Discover unique properties and vehicles across Algeria. Your next adventure awaits!"
+    },
+    "stats": {
+      "support": "Support",
+      "securePayments": "Secure",
+      "payments": "Payments"
+    }
+  }
+}

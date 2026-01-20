@@ -1,0 +1,314 @@
+{
+  "header": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة إعدادات وتفضيلات حسابك",
+    "loading": "جاري تحميل الإعدادات..."
+  },
+  "tabs": {
+    "personal": "المعلومات الشخصية",
+    "address": "العنوان",
+    "preferences": "التفضيلات",
+    "notifications": "الإشعارات",
+    "privacy": "الخصوصية",
+    "security": "الأمان",
+    "account": "الحساب"
+  },
+  "personal": {
+    "title": "المعلومات الشخصية",
+    "avatar": {
+      "title": "صورة الملف الشخصي",
+      "chooseImage": "اختر صورة",
+      "upload": "رفع",
+      "uploading": "جاري الرفع...",
+      "remove": "حذف",
+      "removing": "جاري الحذف...",
+      "sizeHint": "JPG أو PNG أو GIF. الحجم الأقصى 5 ميغابايت"
+    },
+    "firstName": {
+      "label": "الاسم الأول",
+      "required": true
+    },
+    "lastName": {
+      "label": "اسم العائلة",
+      "required": true
+    },
+    "email": {
+      "label": "البريد الإلكتروني",
+      "readonly": "(للقراءة فقط)",
+      "hint": "لتغيير بريدك الإلكتروني، استخدم قسم الأمان"
+    },
+    "phone": {
+      "label": "رقم الهاتف",
+      "placeholder": "+213 XXX XXX XXX"
+    },
+    "dateOfBirth": {
+      "label": "تاريخ الميلاد"
+    },
+    "gender": {
+      "label": "الجنس",
+      "placeholder": "اختر الجنس",
+      "options": {
+        "male": "ذكر",
+        "female": "أنثى",
+        "other": "آخر"
+      }
+    },
+    "bio": {
+      "label": "نبذة",
+      "placeholder": "أخبرنا عن نفسك...",
+      "characters": "حرف"
+    },
+    "buttons": {
+      "save": "حفظ التغييرات",
+      "saving": "جاري الحفظ..."
+    }
+  },
+  "address": {
+    "title": "العنوان",
+    "street": {
+      "label": "عنوان الشارع"
+    },
+    "city": {
+      "label": "المدينة"
+    },
+    "state": {
+      "label": "الولاية/المقاطعة"
+    },
+    "postalCode": {
+      "label": "الرمز البريدي"
+    },
+    "country": {
+      "label": "البلد",
+      "options": {
+        "algeria": "الجزائر",
+        "france": "فرنسا",
+        "tunisia": "تونس",
+        "morocco": "المغرب"
+      }
+    },
+    "buttons": {
+      "save": "حفظ العنوان",
+      "saving": "جاري الحفظ..."
+    }
+  },
+  "preferences": {
+    "title": "التفضيلات",
+    "language": {
+      "label": "اللغة",
+      "options": {
+        "en": "English",
+        "fr": "Français",
+        "ar": "العربية"
+      }
+    },
+    "currency": {
+      "label": "العملة",
+      "options": {
+        "dzd": "DZD - الدينار الجزائري",
+        "eur": "EUR - اليورو"
+      }
+    },
+    "theme": {
+      "label": "المظهر",
+      "options": {
+        "light": "فاتح",
+        "dark": "داكن"
+      }
+    },
+    "buttons": {
+      "save": "حفظ التفضيلات",
+      "saving": "جاري الحفظ..."
+    }
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "email": {
+      "title": "إشعارات البريد الإلكتروني",
+      "bookingUpdates": {
+        "label": "تحديثات الحجز",
+        "description": "تلقي رسائل بريد إلكتروني حول حالة حجوزاتك"
+      },
+      "messages": {
+        "label": "الرسائل",
+        "description": "احصل على إشعار عند تلقي رسائل جديدة"
+      },
+      "promotions": {
+        "label": "العروض الترويجية",
+        "description": "عروض خاصة وخصومات"
+      },
+      "newsletter": {
+        "label": "النشرة الإخبارية",
+        "description": "نشرة إخبارية شهرية مع نصائح وتحديثات"
+      }
+    },
+    "push": {
+      "title": "الإشعارات الفورية",
+      "bookingUpdates": {
+        "label": "تحديثات الحجز",
+        "description": "احصل على إشعارات فورية حول الحجوزات"
+      },
+      "messages": {
+        "label": "الرسائل",
+        "description": "إشعارات فورية للرسائل الجديدة"
+      },
+      "promotions": {
+        "label": "العروض الترويجية",
+        "description": "صفقات وعروض خاصة"
+      }
+    },
+    "buttons": {
+      "save": "حفظ الإشعارات",
+      "saving": "جاري الحفظ..."
+    }
+  },
+  "privacy": {
+    "title": "إعدادات الخصوصية",
+    "showEmail": {
+      "label": "إظهار البريد الإلكتروني على الملف الشخصي",
+      "description": "السماح للآخرين برؤية عنوان بريدك الإلكتروني"
+    },
+    "showPhone": {
+      "label": "إظهار الهاتف على الملف الشخصي",
+      "description": "السماح للآخرين برؤية رقم هاتفك"
+    },
+    "profileVisibility": {
+      "label": "رؤية الملف الشخصي",
+      "options": {
+        "public": "عام - يمكن لأي شخص رؤية ملفك الشخصي",
+        "private": "خاص - أنت فقط يمكنك رؤية ملفك الشخصي",
+        "contacts": "جهات الاتصال فقط - فقط الأشخاص الذين تراسلهم"
+      }
+    },
+    "buttons": {
+      "save": "حفظ إعدادات الخصوصية",
+      "saving": "جاري الحفظ..."
+    }
+  },
+  "security": {
+    "title": "الأمان",
+    "password": {
+      "title": "تغيير كلمة المرور",
+      "currentPassword": {
+        "label": "كلمة المرور الحالية"
+      },
+      "newPassword": {
+        "label": "كلمة المرور الجديدة"
+      },
+      "confirmPassword": {
+        "label": "تأكيد كلمة المرور الجديدة"
+      },
+      "buttons": {
+        "save": "تغيير كلمة المرور",
+        "saving": "جاري التغيير..."
+      }
+    },
+    "email": {
+      "title": "تغيير البريد الإلكتروني",
+      "currentEmail": "البريد الإلكتروني الحالي:",
+      "verified": "✓ مُتحقق منه",
+      "notVerified": "✗ غير مُتحقق منه",
+      "newEmail": {
+        "label": "عنوان البريد الإلكتروني الجديد"
+      },
+      "password": {
+        "label": "كلمة المرور"
+      },
+      "buttons": {
+        "save": "تغيير البريد الإلكتروني",
+        "saving": "جاري التغيير..."
+      }
+    }
+  },
+  "account": {
+    "title": "إدارة الحساب",
+    "info": {
+      "title": "معلومات الحساب",
+      "role": "دور الحساب",
+      "emailVerified": "البريد الإلكتروني مُتحقق منه",
+      "status": "حالة الحساب",
+      "memberSince": "عضو منذ",
+      "lastLogin": "آخر تسجيل دخول",
+      "yes": "نعم",
+      "no": "لا",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "deactivate": {
+      "title": "تعطيل الحساب",
+      "description": "قم بتعطيل حسابك مؤقتًا. يمكنك إعادة تفعيله في أي وقت عن طريق تسجيل الدخول مرة أخرى.",
+      "button": "تعطيل الحساب"
+    },
+    "delete": {
+      "title": "حذف الحساب",
+      "description": "احذف حسابك وجميع البيانات المرتبطة به بشكل دائم. لا يمكن التراجع عن هذا الإجراء.",
+      "button": "حذف الحساب نهائيًا"
+    }
+  },
+  "modals": {
+    "deactivate": {
+      "title": "تعطيل الحساب",
+      "description": "هل أنت متأكد أنك تريد تعطيل حسابك؟ يمكنك إعادة تفعيله في أي وقت عن طريق تسجيل الدخول مرة أخرى.",
+      "cancel": "إلغاء",
+      "confirm": "تعطيل",
+      "confirming": "جاري التعطيل..."
+    },
+    "delete": {
+      "title": "حذف الحساب نهائيًا",
+      "description": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك نهائيًا.",
+      "password": {
+        "label": "كلمة المرور",
+        "required": true
+      },
+      "reason": {
+        "label": "سبب المغادرة (اختياري)",
+        "placeholder": "ساعدنا على التحسين..."
+      },
+      "cancel": "إلغاء",
+      "confirm": "حذف نهائيًا",
+      "confirming": "جاري الحذف..."
+    }
+  },
+  "messages": {
+    "success": {
+      "avatarUploaded": "تم رفع الصورة الشخصية بنجاح",
+      "avatarDeleted": "تم حذف الصورة الشخصية بنجاح",
+      "personalInfoUpdated": "تم تحديث المعلومات الشخصية بنجاح",
+      "addressUpdated": "تم تحديث العنوان بنجاح",
+      "preferencesUpdated": "تم تحديث التفضيلات بنجاح",
+      "notificationsUpdated": "تم تحديث إعدادات الإشعارات بنجاح",
+      "privacyUpdated": "تم تحديث إعدادات الخصوصية بنجاح",
+      "passwordChanged": "تم تغيير كلمة المرور بنجاح",
+      "emailChanged": "تم تغيير البريد الإلكتروني بنجاح. يرجى التحقق من بريدك الإلكتروني الجديد.",
+      "accountDeactivated": "تم تعطيل الحساب بنجاح",
+      "accountDeleted": "تم حذف الحساب بنجاح"
+    },
+    "error": {
+      "pleaseLogin": "يرجى تسجيل الدخول لعرض الإعدادات",
+      "loadFailed": "فشل تحميل الإعدادات",
+      "imageSizeExceeded": "يجب أن يكون حجم الصورة أقل من 5 ميغابايت",
+      "invalidImageType": "يرجى رفع ملف صورة صالح (JPG أو PNG أو GIF)",
+      "avatarUploadFailed": "فشل رفع الصورة الشخصية",
+      "avatarDeleteFailed": "فشل حذف الصورة الشخصية",
+      "personalInfoUpdateFailed": "فشل تحديث المعلومات الشخصية",
+      "addressUpdateFailed": "فشل تحديث العنوان",
+      "preferencesUpdateFailed": "فشل تحديث التفضيلات",
+      "notificationsUpdateFailed": "فشل تحديث الإشعارات",
+      "privacyUpdateFailed": "فشل تحديث الخصوصية",
+      "passwordMismatch": "كلمات المرور الجديدة غير متطابقة",
+      "passwordTooShort": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل",
+      "passwordChangeFailed": "فشل تغيير كلمة المرور",
+      "invalidEmail": "يرجى إدخال عنوان بريد إلكتروني صالح",
+      "emailChangeFailed": "فشل تغيير البريد الإلكتروني",
+      "accountDeactivateFailed": "فشل تعطيل الحساب",
+      "enterPassword": "يرجى إدخال كلمة المرور",
+      "accountDeleteFailed": "فشل حذف الحساب"
+    }
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "minLength": "الحد الأدنى {min} حرفًا مطلوب",
+    "maxLength": "الحد الأقصى {max} حرفًا مسموح",
+    "invalidEmail": "يرجى إدخال عنوان بريد إلكتروني صالح",
+    "passwordMismatch": "كلمات المرور غير متطابقة"
+  }
+}

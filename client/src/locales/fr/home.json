@@ -1,0 +1,97 @@
+{
+  "hero": {
+    "title": "Trouvez votre séjour parfait",
+    "subtitle": "Découvrez l'hospitalité algérienne authentique du Sahara à la Méditerranée",
+    "badge": "🇩🇿 Expérience Algérienne Authentique",
+    "exploreStays": "Explorer les Séjours",
+    "rentVehicles": "Louer des Véhicules",
+    "stats": {
+      "properties": "Propriétés",
+      "cities": "Villes",
+      "rating": "Note",
+      "support": "Support",
+      "values": {
+        "properties": "1000+",
+        "cities": "50+",
+        "rating": "4,8★",
+        "support": "24/7"
+      }
+    }
+  },
+  "categories": {
+    "all": "Tout",
+    "stays": "Séjours",
+    "vehicles": "Véhicules",
+    "descriptions": {
+      "all": "Parcourez toutes les propriétés disponibles",
+      "stays": "Hébergements confortables à travers l'Algérie",
+      "vehicles": "Voitures, motos et plus pour votre voyage"
+    }
+  },
+  "sections": {
+    "categoryTitle": "Que recherchez-vous ?",
+    "categorySubtitle": "Choisissez parmi notre sélection de séjours et véhicules à travers l'Algérie",
+    "featuredTitle": "Découvrez des Propriétés Extraordinaires",
+    "featuredSubtitle": "Des riads traditionnels aux appartements modernes, des véhicules de luxe aux motos d'aventure - trouvez votre match parfait",
+    "destinationsTitle": "Explorez l'Algérie",
+    "destinationsSubtitle": "De la côte méditerranéenne au désert du Sahara, découvrez la beauté diverse de l'Algérie",
+    "exploreAllDestinations": "Explorer Toutes les Destinations"
+  },
+  "badges": {
+    "featured": "En vedette",
+    "superhost": "Superhôte",
+    "guestFavorite": "Favori des invités"
+  },
+  "propertyDetails": {
+    "beds": "lits",
+    "bed": "lit",
+    "baths": "salles de bain",
+    "bath": "salle de bain"
+  },
+  "pricing": {
+    "night": "par nuit",
+    "day": "par jour",
+    "total": "total avant taxes"
+  },
+  "propertyCount": {
+    "zero": "0 propriété",
+    "one": "1 propriété",
+    "other": "{count} propriétés",
+    "thousand": "{count}k+ propriétés"
+  },
+  "filters": {
+    "showing": "Affichage de",
+    "result": "résultat",
+    "results": "résultats",
+    "exploreCollection": "Explorez notre collection de",
+    "across": "à travers l'Algérie",
+    "inAlgeria": "en Algérie"
+  },
+  "emptyStates": {
+    "noPropertiesFound": "Aucune propriété trouvée",
+    "noPropertiesMessage": "Essayez de sélectionner une catégorie différente ou revenez plus tard pour de nouvelles annonces.",
+    "noPropertiesInMapArea": "Aucune propriété dans cette zone de la carte",
+    "noPropertiesInMapAreaMessage": "Essayez de zoomer ou de déplacer la carte pour voir plus de propriétés"
+  },
+  "actions": {
+    "showAllProperties": "Afficher Toutes les Propriétés",
+    "closeMapShowAll": "Fermer la Carte et Tout Afficher",
+    "resetFilter": "Réinitialiser le Filtre",
+    "showMap": "Afficher la carte",
+    "showMapWithCategory": "Afficher {category} sur la carte"
+  },
+  "map": {
+    "title": "Explorer les Propriétés",
+    "showingInMapArea": "Affichage de {count} sur {total} propriétés dans la zone de la carte",
+    "moveMapToExplore": "Déplacez la carte pour explorer plus de propriétés",
+    "mapBoundsActive": "Les limites de la carte sont actives - fermez la carte pour réinitialiser"
+  },
+  "loading": {
+    "map": "Chargement de la carte...",
+    "properties": "Chargement des propriétés..."
+  },
+  "location": {
+    "defaultCity": "Ville",
+    "defaultState": "État"
+  }
+}

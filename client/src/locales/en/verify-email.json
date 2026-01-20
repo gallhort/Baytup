@@ -1,0 +1,40 @@
+{
+  "title": "Verify your email",
+  "subtitle": "We've sent a verification link to",
+  "instructions": {
+    "title": "Check your inbox",
+    "description": "Click the verification link in the email to activate your account. The link will expire in 24 hours."
+  },
+  "resend": {
+    "question": "Didn't receive the email?",
+    "button": "Resend verification email",
+    "sending": "Sending..."
+  },
+  "emailInput": {
+    "label": "Enter your email address",
+    "placeholder": "your@email.com",
+    "send": "Send"
+  },
+  "success": {
+    "emailSent": "Verification email sent successfully!"
+  },
+  "errors": {
+    "emailRequired": "Email address is required",
+    "resendFailed": "Failed to resend verification email"
+  },
+  "tips": {
+    "title": "Email not showing up?",
+    "checkSpam": "Check your spam or junk folder",
+    "checkEmail": "Make sure you entered the correct email address",
+    "wait": "Wait a few minutes for the email to arrive",
+    "addContact": "Add contact@baytup.fr to your email contacts"
+  },
+  "benefits": {
+    "title": "Why verify your email?",
+    "security": "Secure your account and enable password recovery",
+    "notifications": "Receive important booking and hosting notifications",
+    "updates": "Get updates on new features and special offers",
+    "trust": "Build trust with other users on the platform"
+  },
+  "backToLogin": "Back to sign in"
+}

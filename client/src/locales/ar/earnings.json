@@ -1,0 +1,165 @@
+{
+  "header": {
+    "title": "الأرباح",
+    "subtitle": "تتبع إيراداتك ومدفوعاتك",
+    "exportReport": "تصدير التقرير"
+  },
+  "stats": {
+    "totalEarnings": "إجمالي الأرباح",
+    "monthlyEarnings": "الأرباح الشهرية",
+    "available": "متاح",
+    "pending": "قيد الانتظار",
+    "currentMonth": "الشهر الحالي",
+    "transaction": "معاملة",
+    "transactions": "معاملات",
+    "paidOut": "مدفوع",
+    "pendingCount": "قيد الانتظار"
+  },
+  "listingEarnings": {
+    "title": "الأرباح حسب الإعلان",
+    "totalEarned": "إجمالي الأرباح:",
+    "bookings": "الحجوزات:",
+    "avgPerBooking": "المتوسط لكل حجز:"
+  },
+  "filters": {
+    "searchPlaceholder": "البحث عن إعلانات أو ضيوف...",
+    "allStatus": "جميع الحالات",
+    "allListings": "جميع الإعلانات",
+    "statusOptions": {
+      "completed": "مكتمل",
+      "paid": "مدفوع",
+      "pending": "قيد الانتظار",
+      "processing": "قيد المعالجة"
+    },
+    "startDate": "تاريخ البداية",
+    "endDate": "تاريخ النهاية",
+    "clearFilters": "مسح الفلاتر"
+  },
+  "table": {
+    "headers": {
+      "listing": "الإعلان",
+      "guest": "الضيف",
+      "bookingDates": "تواريخ الحجز",
+      "amountEarned": "المبلغ المكتسب",
+      "platformFee": "رسوم المنصة",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "subtotal": "المجموع الفرعي:",
+    "cleaning": "التنظيف:",
+    "night": "ليلة",
+    "nights": "ليالي",
+    "paid": "مدفوع:",
+    "viewDetails": "عرض التفاصيل"
+  },
+  "status": {
+    "completed": "مكتمل",
+    "paid": "مدفوع",
+    "pending": "قيد الانتظار",
+    "processing": "قيد المعالجة",
+    "failed": "فشل"
+  },
+  "emptyState": {
+    "title": "لا توجد أرباح بعد",
+    "message": "لم تتلق أي مدفوعات بعد. ابدأ الاستضافة لكسب المال!"
+  },
+  "pagination": {
+    "page": "الصفحة",
+    "of": "من"
+  },
+  "detailsModal": {
+    "title": "تفاصيل المعاملة",
+    "guestInformation": "معلومات الضيف",
+    "bookingPeriod": "فترة الحجز",
+    "checkIn": "تسجيل الوصول",
+    "checkOut": "تسجيل المغادرة",
+    "night": "ليلة",
+    "nights": "ليالي",
+    "earningsBreakdown": "تفصيل الأرباح",
+    "subtotal": "المجموع الفرعي",
+    "cleaningFee": "رسوم التنظيف",
+    "yourEarnings": "أرباحك",
+    "platformFees": "رسوم المنصة",
+    "totalPlatformFee": "إجمالي رسوم المنصة",
+    "guestPaidTotal": "إجمالي مدفوعات الضيف",
+    "totalAmount": "المبلغ الإجمالي",
+    "payoutDate": "تاريخ الدفع:",
+    "payoutInfo": {
+      "title": "معلومات الدفع:",
+      "message": "عادة ما يتم معالجة الأرباح ودفعها في غضون 24-48 ساعة بعد تسجيل وصول الضيف."
+    }
+  },
+  "loading": {
+    "earnings": "جاري تحميل الأرباح..."
+  },
+  "toast": {
+    "loadEarningsFailed": "فشل تحميل بيانات الأرباح",
+    "loadTransactionsFailed": "فشل تحميل المعاملات"
+  },
+  "payout": {
+    "withdraw": "سحب",
+    "bankAccount": "الحساب البنكي",
+    "viewHistory": "سجل المدفوعات",
+    "withdrawTitle": "سحب الأرباح",
+    "bankAccountTitle": "تفاصيل الحساب البنكي",
+    "historyTitle": "سجل المدفوعات",
+    "availableBalance": "الرصيد المتاح",
+    "withdrawAmount": "مبلغ السحب",
+    "minimumAmount": "الحد الأدنى للسحب: 1000 دج",
+    "notes": "ملاحظات",
+    "optional": "اختياري",
+    "notesPlaceholder": "أضف ملاحظات للمسؤول...",
+    "bankAccountConfigured": "تم تكوين الحساب البنكي",
+    "noBankAccount": "لم يتم تكوين حساب بنكي",
+    "addBankAccountFirst": "يرجى إضافة تفاصيل حسابك البنكي أولاً",
+    "submitRequest": "إرسال الطلب",
+    "processing": "جاري المعالجة...",
+    "cancelButton": "إلغاء",
+    "saveButton": "حفظ الحساب البنكي",
+    "bankNameLabel": "اسم البنك",
+    "bankNamePlaceholder": "مثال: CPA، BNA، BEA",
+    "accountHolderLabel": "صاحب الحساب",
+    "accountHolderPlaceholder": "الاسم الكامل كما هو موجود في الحساب البنكي",
+    "accountNumberLabel": "رقم الحساب",
+    "accountNumberPlaceholder": "رقم الحساب",
+    "ribDigits": "20 رقم",
+    "digits": "أرقام",
+    "swiftCodeLabel": "رمز SWIFT/BIC",
+    "bankInfo": {
+      "title": "مهم",
+      "message": "يرجى تقديم معلومات بنكية دقيقة. سيتم استخدامها لجميع المدفوعات المستقبلية."
+    },
+    "requested": "تم الطلب",
+    "completed": "مكتمل",
+    "cancel": "إلغاء",
+    "bankName": "اسم البنك",
+    "accountHolder": "صاحب الحساب",
+    "accountNumber": "رقم الحساب",
+    "transactionId": "معرف المعاملة",
+    "yourNotes": "ملاحظاتك",
+    "adminNotes": "ملاحظات المسؤول",
+    "rejectionReason": "سبب الرفض",
+    "status": {
+      "completed": "مكتمل",
+      "processing": "قيد المعالجة",
+      "pending": "قيد الانتظار",
+      "rejected": "مرفوض",
+      "cancelled": "ملغى"
+    },
+    "validation": {
+      "requiredFields": "يرجى ملء جميع الحقول المطلوبة",
+      "ribFormat": "يجب أن يكون RIB 20 رقمًا بالضبط",
+      "invalidAmount": "يرجى إدخال مبلغ صحيح",
+      "insufficientBalance": "رصيد غير كافٍ",
+      "noBankAccount": "يرجى إضافة تفاصيل حسابك البنكي أولاً"
+    },
+    "toast": {
+      "bankAccountSaved": "تم حفظ الحساب البنكي بنجاح",
+      "bankAccountFailed": "فشل حفظ الحساب البنكي",
+      "withdrawSuccess": "تم إرسال طلب السحب بنجاح",
+      "withdrawFailed": "فشل إرسال طلب السحب",
+      "cancelSuccess": "تم إلغاء الدفع بنجاح",
+      "cancelFailed": "فشل إلغاء الدفع"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "title": "Notifications",
+  "unreadNotification": "notification non lue",
+  "unreadNotifications": "notifications non lues",
+  "noUnread": "Aucune notification non lue",
+  "markAllRead": "Tout marquer comme lu",
+  "filterByStatus": "Filtrer par statut",
+  "filterByType": "Filtrer par type",
+  "all": "Tout",
+  "unread": "Non lues",
+  "read": "Lues",
+  "allTypes": "Tous les types",
+  "loading": "Chargement des notifications...",
+  "noNotificationsTitle": "Aucune notification",
+  "noUnreadNotifications": "Vous n'avez aucune notification non lue",
+  "noReadNotifications": "Vous n'avez aucune notification lue",
+  "noNotificationsMessage": "Vous n'avez aucune notification pour le moment",
+  "viewDetails": "Voir les détails",
+  "markRead": "Marquer comme lu",
+  "delete": "Supprimer",
+  "urgent": "Urgent",
+  "high": "Haute",
+  "success": {
+    "allMarkedRead": "Toutes les notifications marquées comme lues",
+    "deleted": "Notification supprimée"
+  },
+  "errors": {
+    "fetchFailed": "Échec du chargement des notifications"
+  }
+}

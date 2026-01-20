@@ -1,0 +1,65 @@
+{
+  "loading": "Loading your saved listings...",
+  "header": {
+    "title": "My Saved Listings",
+    "subtitle": "Your favorite places to stay and explore"
+  },
+  "stats": {
+    "totalSaved": "Total Saved",
+    "stays": "Stays",
+    "cars": "Cars"
+  },
+  "filters": {
+    "filtersButton": "Filters",
+    "allCategories": "All Categories",
+    "stays": "Stays",
+    "carRentals": "Car Rentals",
+    "newestFirst": "Newest First",
+    "oldestFirst": "Oldest First",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "highestRated": "Highest Rated",
+    "clearAll": "Clear All",
+    "minPrice": "Min Price (DZD)",
+    "maxPrice": "Max Price (DZD)"
+  },
+  "results": {
+    "showing": "Showing",
+    "of": "of",
+    "savedListings": "saved listings"
+  },
+  "empty": {
+    "title": "No saved listings yet",
+    "description": "Start exploring and save your favorite places for later",
+    "exploreButton": "Explore Listings"
+  },
+  "card": {
+    "instantBook": "Instant Book",
+    "superhost": "Superhost",
+    "new": "New",
+    "night": "night",
+    "day": "day",
+    "per": "per",
+    "view": "View",
+    "viewDetails": "View Details",
+    "share": "Share",
+    "reviews": "reviews",
+    "favorites": "favorites"
+  },
+  "modal": {
+    "title": "Clear All Saved Listings?",
+    "warningPrefix": "This will remove all",
+    "warningSuffix": "saved listings from your collection. This action cannot be undone.",
+    "cancel": "Cancel",
+    "clearAll": "Clear All"
+  },
+  "toast": {
+    "removed": "Removed from saved listings",
+    "removeFailed": "Failed to remove listing",
+    "cleared": "All saved listings cleared",
+    "clearFailed": "Failed to clear listings",
+    "linkCopied": "Link copied to clipboard!",
+    "linkFailed": "Failed to copy link",
+    "loadFailed": "Failed to load saved listings"
+  }
+}

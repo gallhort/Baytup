@@ -1,0 +1,75 @@
+{
+  "header": {
+    "title": "Travel History",
+    "subtitle": "Your journey through wonderful places",
+    "loading": "Loading your travel history..."
+  },
+  "stats": {
+    "totalTrips": "Total Trips",
+    "destinations": "Destinations",
+    "nights": "Nights",
+    "totalSpent": "Total Spent",
+    "avgPerTrip": "Avg",
+    "trip": "trip",
+    "countriesVisited": "Countries Visited",
+    "favorite": "Favorite",
+    "totalNights": "Total Nights",
+    "avgNights": "Avg",
+    "nightsPerTrip": "nights/trip",
+    "byCategory": "By Category",
+    "hideStats": "Hide Stats",
+    "showStats": "Show Stats"
+  },
+  "filters": {
+    "filters": "Filters",
+    "allYears": "All Years",
+    "allCategories": "All Categories",
+    "stays": "Stays",
+    "carRentals": "Car Rentals",
+    "mostRecent": "Most Recent",
+    "oldestFirst": "Oldest First",
+    "highestSpent": "Highest Spent",
+    "lowestSpent": "Lowest Spent",
+    "export": "Export",
+    "showing": "Showing",
+    "of": "of",
+    "completedTrips": "completed trips"
+  },
+  "categories": {
+    "stay": "Stay",
+    "car": "Car Rental"
+  },
+  "card": {
+    "completed": "Completed",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "nights": "Nights",
+    "guests": "Guests",
+    "hostedBy": "Hosted by",
+    "yourReview": "Your Review:",
+    "shareExperience": "Share your experience! Write a review for this stay.",
+    "totalPaid": "Total Paid",
+    "viewListing": "View Listing",
+    "writeReview": "Write Review",
+    "bookAgain": "Book Again"
+  },
+  "yearSummary": {
+    "title": "Year by Year",
+    "trips": "Trips:",
+    "nights": "Nights:",
+    "spent": "Spent:"
+  },
+  "emptyState": {
+    "title": "No travel history yet",
+    "message": "Complete your first booking to start building your travel history",
+    "exploreListings": "Explore Listings"
+  },
+  "toast": {
+    "loadFailed": "Failed to load travel history",
+    "exportSuccess": "Travel history exported successfully",
+    "exportFailed": "Failed to export travel history"
+  },
+  "loading": {
+    "message": "Loading your travel history..."
+  }
+}

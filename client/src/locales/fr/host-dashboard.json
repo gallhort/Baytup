@@ -1,0 +1,180 @@
+{
+  "loading": {
+    "message": "Chargement du tableau de bord..."
+  },
+  "errors": {
+    "noData": "Aucune donnée disponible",
+    "loadFailed": "Échec du chargement des données du tableau de bord"
+  },
+  "header": {
+    "title": "Tableau de Bord Hôte",
+    "subtitle": "Gérez vos annonces et suivez les performances",
+    "editProfile": "Modifier"
+  },
+  "stats": {
+    "activeListings": {
+      "label": "Annonces Actives"
+    },
+    "totalListings": {
+      "total": "total"
+    },
+    "totalBookings": {
+      "label": "Réservations Totales",
+      "active": "active"
+    },
+    "totalRevenue": {
+      "label": "Revenu Total",
+      "currency": "DZD",
+      "avg": "moy"
+    },
+    "averageRating": {
+      "label": "Note Moyenne",
+      "views": "vues"
+    }
+  },
+  "tabs": {
+    "overview": "Aperçu",
+    "listings": "Annonces",
+    "bookings": "Réservations",
+    "reviews": "Avis"
+  },
+  "charts": {
+    "revenue": {
+      "title": "Tendance des Revenus",
+      "subtitle": "Aperçu des gains mensuels",
+      "label": "Revenu Mensuel (DZD)",
+      "yAxisLabel": "DZD"
+    },
+    "performance": {
+      "title": "Performance des Annonces",
+      "subtitle": "Top 5 des annonces par vues et réservations",
+      "viewsLabel": "Vues",
+      "bookingsLabel": "Réservations"
+    }
+  },
+  "sections": {
+    "upcomingBookings": {
+      "title": "Réservations à Venir",
+      "subtitle": "Prochaines réservations programmées"
+    },
+    "myListings": {
+      "title": "Mes Annonces",
+      "subtitle": "Gérez vos annonces de propriétés"
+    },
+    "allBookings": {
+      "title": "Toutes les Réservations",
+      "subtitle": "Voir et gérer les réservations"
+    },
+    "recentReviews": {
+      "title": "Avis Récents",
+      "subtitle": "Commentaires des invités sur vos annonces"
+    }
+  },
+  "bookings": {
+    "guest": "Invité",
+    "checkIn": "Arrivée",
+    "checkOut": "Départ",
+    "nights": "nuits",
+    "night": "nuit",
+    "totalPrice": "Prix Total",
+    "status": {
+      "confirmed": "Confirmée",
+      "pending": "En Attente",
+      "cancelled": "Annulée",
+      "completed": "Terminée"
+    },
+    "dateRange": "au"
+  },
+  "listings": {
+    "category": "Catégorie",
+    "subcategory": "Sous-catégorie",
+    "views": "Vues",
+    "bookings": "réservations",
+    "booking": "réservation",
+    "rating": "Note",
+    "price": "Prix",
+    "status": {
+      "active": "Active",
+      "paused": "En Pause",
+      "draft": "Brouillon",
+      "archived": "Archivée"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "pause": "Mettre en Pause",
+      "activate": "Activer",
+      "delete": "Supprimer"
+    }
+  },
+  "reviews": {
+    "title": "Avis",
+    "subtitle": "Commentaires des invités",
+    "rating": "Note",
+    "comment": "Commentaire",
+    "reviewer": "Évaluateur",
+    "listing": "Annonce",
+    "date": "Date",
+    "noComment": "Aucun commentaire fourni"
+  },
+  "actions": {
+    "addNewListing": "Ajouter une Nouvelle Annonce",
+    "createFirstListing": "Créez Votre Première Annonce",
+    "viewAll": "Voir Tout",
+    "viewDetails": "Voir les Détails",
+    "manage": "Gérer"
+  },
+  "emptyStates": {
+    "noUpcomingBookings": "Aucune réservation à venir",
+    "noListings": "Aucune annonce pour le moment",
+    "noBookings": "Aucune réservation pour le moment",
+    "noReviews": "Aucun avis pour le moment",
+    "createListing": "Créez votre première annonce pour commencer à héberger",
+    "waitingForBookings": "Vos réservations apparaîtront ici une fois que les invités auront fait des réservations"
+  },
+  "messages": {
+    "listingPaused": "Annonce mise en pause avec succès",
+    "listingActivated": "Annonce activée avec succès",
+    "listingActionFailed": "Échec de la mise à jour du statut de l'annonce",
+    "listingDeleted": "Annonce supprimée avec succès",
+    "listingDeleteFailed": "Échec de la suppression de l'annonce"
+  },
+  "currency": {
+    "dzd": "DZD",
+    "eur": "EUR",
+    "usd": "USD"
+  },
+  "time": {
+    "days": "jours",
+    "day": "jour",
+    "months": "mois",
+    "month": "mois",
+    "years": "années",
+    "year": "année"
+  },
+  "filters": {
+    "all": "Tout",
+    "active": "Active",
+    "paused": "En Pause",
+    "archived": "Archivée",
+    "confirmed": "Confirmée",
+    "pending": "En Attente",
+    "cancelled": "Annulée"
+  },
+  "performance": {
+    "title": "Métriques de Performance",
+    "viewsToBookingRatio": "Ratio Vues/Réservations",
+    "conversionRate": "Taux de Conversion",
+    "occupancyRate": "Taux d'Occupation",
+    "responseRate": "Taux de Réponse",
+    "responseTime": "Temps de Réponse"
+  },
+  "overview": {
+    "title": "Aperçu",
+    "summary": "Résumé du Tableau de Bord",
+    "thisMonth": "Ce Mois-ci",
+    "lastMonth": "Le Mois Dernier",
+    "trend": "Tendance",
+    "increase": "Augmentation",
+    "decrease": "Diminution"
+  }
+}

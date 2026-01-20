@@ -1,0 +1,72 @@
+{
+  "modal": {
+    "title": "تأكيد حجزك",
+    "subtitle": "راجع تفاصيل رحلتك قبل الحجز"
+  },
+  "sections": {
+    "yourTrip": "رحلتك",
+    "priceDetails": "تفاصيل السعر",
+    "specialRequests": "الطلبات الخاصة",
+    "termsAndConditions": "الشروط والأحكام",
+    "importantInfo": "معلومات مهمة"
+  },
+  "labels": {
+    "dates": "التواريخ",
+    "guests": "الضيوف",
+    "checkInCheckOut": "تسجيل الوصول والمغادرة",
+    "checkIn": "تسجيل الوصول",
+    "checkOut": "المغادرة",
+    "before": "قبل",
+    "cleaningFee": "رسوم التنظيف",
+    "serviceFee": "رسوم الخدمة (10%)",
+    "taxes": "الضرائب (5%)",
+    "total": "المجموع (دج)",
+    "totalAmount": "المجموع"
+  },
+  "guests": {
+    "adult": "بالغ",
+    "adults": "بالغين",
+    "child": "طفل",
+    "children": "أطفال",
+    "infant": "رضيع",
+    "infants": "رضع"
+  },
+  "time": {
+    "night": "ليلة",
+    "nights": "ليالي"
+  },
+  "form": {
+    "specialRequestsLabel": "الطلبات الخاصة (اختياري)",
+    "specialRequestsPlaceholder": "هل لديك أي طلبات أو متطلبات خاصة؟ أخبر المضيف...",
+    "characterCount": "{{count}}/500 حرف",
+    "termsAgreement": "أوافق على",
+    "termsOfService": "شروط الخدمة",
+    "and": "و",
+    "cancellationPolicy": "سياسة الإلغاء"
+  },
+  "payment": {
+    "securePaymentTitle": "الدفع الآمن مع Slick Pay",
+    "securePaymentDescription": "سيتم توجيهك إلى Slick Pay لإكمال الدفع بشكل آمن. سيتم تأكيد حجزك بمجرد معالجة الدفع.",
+    "paymentUrlError": "لم يتم استلام رابط الدفع"
+  },
+  "buttons": {
+    "cancel": "إلغاء",
+    "confirmAndPay": "تأكيد والدفع",
+    "requestAndPay": "طلب والدفع",
+    "processing": "جارٍ المعالجة..."
+  },
+  "errors": {
+    "title": "خطأ في الحجز",
+    "acceptTerms": "يرجى قبول الشروط والأحكام",
+    "selectDates": "يرجى تحديد تواريخ تسجيل الوصول والمغادرة",
+    "loginRequired": "يرجى تسجيل الدخول لإجراء حجز",
+    "bookingFailed": "فشل في إنشاء الحجز",
+    "bookingFailedRetry": "فشل في إنشاء الحجز. يرجى المحاولة مرة أخرى.",
+    "genericError": "حدث خطأ. يرجى المحاولة مرة أخرى."
+  },
+  "pricing": {
+    "perNight": "{{price}} × {{nights}} ليلة",
+    "perNights": "{{price}} × {{nights}} ليالي",
+    "breakdown": "تفصيل الأسعار"
+  }
+}

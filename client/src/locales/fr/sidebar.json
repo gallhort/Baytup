@@ -1,0 +1,40 @@
+{
+  "menuItems": {
+    "common": {
+      "dashboard": "Tableau de bord",
+      "notifications": "Notifications",
+      "messages": "Messages",
+      "settings": "Paramètres"
+    },
+    "admin": {
+      "users": "Utilisateurs",
+      "hostApplications": "Demandes d'hôte",
+      "allListings": "Toutes les annonces",
+      "bookings": "Réservations",
+      "payouts": "Paiements"
+    },
+    "host": {
+      "myListings": "Mes annonces",
+      "bookings": "Réservations",
+      "reviews": "Avis",
+      "earnings": "Revenus"
+    },
+    "guest": {
+      "myBookings": "Mes réservations",
+      "saved": "Favoris",
+      "travelHistory": "Historique des voyages",
+      "myReviews": "Mes avis",
+      "explore": "Explorer"
+    }
+  },
+  "actions": {
+    "logout": "Déconnexion",
+    "toggleMenu": "Basculer le menu",
+    "closeMenu": "Fermer le menu",
+    "openMenu": "Ouvrir le menu"
+  },
+  "messages": {
+    "loggedOut": "Déconnexion réussie",
+    "loginRequired": "Veuillez vous connecter pour accéder au tableau de bord"
+  }
+}

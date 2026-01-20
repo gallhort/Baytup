@@ -1,0 +1,75 @@
+{
+  "header": {
+    "title": "Historique des Voyages",
+    "subtitle": "Votre voyage à travers des endroits merveilleux",
+    "loading": "Chargement de votre historique de voyage..."
+  },
+  "stats": {
+    "totalTrips": "Voyages Totaux",
+    "destinations": "Destinations",
+    "nights": "Nuits",
+    "totalSpent": "Total Dépensé",
+    "avgPerTrip": "Moy",
+    "trip": "voyage",
+    "countriesVisited": "Pays Visités",
+    "favorite": "Favori",
+    "totalNights": "Nuits Totales",
+    "avgNights": "Moy",
+    "nightsPerTrip": "nuits/voyage",
+    "byCategory": "Par Catégorie",
+    "hideStats": "Masquer Stats",
+    "showStats": "Afficher Stats"
+  },
+  "filters": {
+    "filters": "Filtres",
+    "allYears": "Toutes les Années",
+    "allCategories": "Toutes Catégories",
+    "stays": "Séjours",
+    "carRentals": "Locations de Voiture",
+    "mostRecent": "Plus Récent",
+    "oldestFirst": "Plus Ancien",
+    "highestSpent": "Plus Cher",
+    "lowestSpent": "Moins Cher",
+    "export": "Exporter",
+    "showing": "Affichage",
+    "of": "de",
+    "completedTrips": "voyages terminés"
+  },
+  "categories": {
+    "stay": "Séjour",
+    "car": "Location de Voiture"
+  },
+  "card": {
+    "completed": "Terminé",
+    "checkIn": "Arrivée",
+    "checkOut": "Départ",
+    "nights": "Nuits",
+    "guests": "Invités",
+    "hostedBy": "Hébergé par",
+    "yourReview": "Votre Avis:",
+    "shareExperience": "Partagez votre expérience ! Écrivez un avis pour ce séjour.",
+    "totalPaid": "Total Payé",
+    "viewListing": "Voir l'Annonce",
+    "writeReview": "Écrire un Avis",
+    "bookAgain": "Réserver à Nouveau"
+  },
+  "yearSummary": {
+    "title": "Année par Année",
+    "trips": "Voyages:",
+    "nights": "Nuits:",
+    "spent": "Dépensé:"
+  },
+  "emptyState": {
+    "title": "Pas encore d'historique de voyage",
+    "message": "Terminez votre première réservation pour commencer à créer votre historique de voyage",
+    "exploreListings": "Explorer les Annonces"
+  },
+  "toast": {
+    "loadFailed": "Échec du chargement de l'historique de voyage",
+    "exportSuccess": "Historique de voyage exporté avec succès",
+    "exportFailed": "Échec de l'exportation de l'historique de voyage"
+  },
+  "loading": {
+    "message": "Chargement de votre historique de voyage..."
+  }
+}

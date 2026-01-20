@@ -1,0 +1,155 @@
+{
+  "loading": {
+    "message": "Chargement du tableau de bord..."
+  },
+  "errors": {
+    "noData": "Aucune donnée disponible",
+    "loadFailed": "Échec du chargement des données du tableau de bord"
+  },
+  "actions": {
+    "retry": "Réessayer",
+    "export": "Exporter",
+    "refresh": "Actualiser",
+    "refreshing": "Actualisation...",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "edit": "Modifier"
+  },
+  "header": {
+    "title": "Tableau de bord Admin",
+    "subtitle": "Vue d'ensemble complète de la plateforme Baytup"
+  },
+  "stats": {
+    "totalUsers": "Total des utilisateurs",
+    "hosts": "Hôtes",
+    "guests": "Invités",
+    "newThisMonth": "nouveaux ce mois-ci",
+    "listings": "Annonces",
+    "activeListings": "Actives",
+    "pendingListings": "En attente",
+    "pendingApproval": "en attente d'approbation",
+    "bookings": "Réservations",
+    "activeBookings": "Actives",
+    "completedBookings": "Terminées",
+    "currentlyActive": "actuellement actives",
+    "revenue": "Revenu",
+    "currency": "DZD",
+    "commission": "Commission",
+    "commissionEarned": "commission gagnée"
+  },
+  "quickActions": {
+    "title": "Actions rapides",
+    "addUser": "Ajouter un utilisateur",
+    "viewUsers": "Voir les utilisateurs",
+    "listings": "Annonces",
+    "applications": "Candidatures",
+    "bookings": "Réservations",
+    "reports": "Rapports",
+    "exportData": "Exporter les données",
+    "settings": "Paramètres"
+  },
+  "charts": {
+    "revenueTrend": "Tendance des revenus",
+    "last6Months": "Performance des 6 derniers mois",
+    "revenue": "Revenu (DZD)",
+    "categories": "Catégories",
+    "listingsByCategory": "Annonces par catégorie",
+    "topCities": "Principales villes",
+    "mostPopularDestinations": "Destinations les plus populaires",
+    "userGrowth": "Croissance des utilisateurs",
+    "newUserRegistrations": "Nouvelles inscriptions d'utilisateurs au cours des 30 derniers jours",
+    "newUsers": "Nouveaux utilisateurs",
+    "listingsByCity": "Annonces par ville"
+  },
+  "tables": {
+    "topPerformingListings": "Annonces les plus performantes",
+    "bestRatedMostBooked": "Les mieux notées et les plus réservées",
+    "recentBookings": "Réservations récentes",
+    "latestReservations": "Dernières réservations",
+    "viewAllListings": "Voir toutes les annonces",
+    "viewAllBookings": "Voir toutes les réservations",
+    "bookingsCount": "réservations",
+    "perNight": "DZD/nuit"
+  },
+  "systemStatus": {
+    "title": "État du système",
+    "allSystemsOperational": "Tous les systèmes opérationnels",
+    "apiStatus": "État de l'API",
+    "database": "Base de données",
+    "paymentGateway": "Passerelle de paiement",
+    "active": "Actif",
+    "connected": "Connecté",
+    "online": "En ligne"
+  },
+  "quickStats": {
+    "title": "Statistiques rapides",
+    "platformMetrics": "Métriques de la plateforme",
+    "avgBookingValue": "Valeur moyenne de réservation",
+    "featuredListings": "Annonces en vedette",
+    "cancelledBookings": "Réservations annulées"
+  },
+  "activity": {
+    "title": "Activité",
+    "recentPlatformActivity": "Activité récente de la plateforme",
+    "newReviews": "Nouveaux avis",
+    "newBookingsToday": "Nouvelles réservations aujourd'hui",
+    "newUsersToday": "Nouveaux utilisateurs aujourd'hui"
+  },
+  "modals": {
+    "quickCreateUser": {
+      "title": "Création rapide d'utilisateur",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "password": "Mot de passe",
+      "role": "Rôle",
+      "guest": "Invité",
+      "host": "Hôte",
+      "admin": "Admin",
+      "firstNamePlaceholder": "Jean",
+      "lastNamePlaceholder": "Dupont",
+      "emailPlaceholder": "jean.dupont@exemple.com",
+      "passwordPlaceholder": "Min 6 caractères",
+      "createUser": "Créer un utilisateur"
+    },
+    "generateReport": {
+      "title": "Générer un rapport",
+      "reportType": "Type de rapport",
+      "revenueReport": "Rapport de revenus",
+      "bookingsReport": "Rapport de réservations",
+      "usersReport": "Rapport des utilisateurs",
+      "listingsReport": "Rapport des annonces",
+      "dateRange": "Plage de dates",
+      "lastWeek": "Dernière semaine",
+      "lastMonth": "Dernier mois",
+      "lastQuarter": "Dernier trimestre",
+      "lastYear": "Dernière année",
+      "category": "Catégorie",
+      "allCategories": "Toutes les catégories",
+      "property": "Propriété",
+      "vehicle": "Véhicule",
+      "generate": "Générer"
+    },
+    "exportData": {
+      "title": "Exporter les données",
+      "chooseFormat": "Choisir le format d'exportation:",
+      "csvFormat": "Format CSV",
+      "csvDescription": "Valeurs séparées par des virgules",
+      "excelFormat": "Format Excel",
+      "excelDescription": "Classeur Microsoft Excel",
+      "pdfFormat": "Format PDF",
+      "pdfDescription": "Format de document portable"
+    },
+    "details": {
+      "title": "Détails"
+    }
+  },
+  "toast": {
+    "dashboardRefreshed": "Tableau de bord actualisé",
+    "userCreated": "Utilisateur créé avec succès",
+    "userCreateFailed": "Échec de la création de l'utilisateur",
+    "reportGenerated": "Rapport généré avec succès",
+    "dataExporting": "Exportation des données en {format}...",
+    "loadFailed": "Échec du chargement des données du tableau de bord"
+  }
+}

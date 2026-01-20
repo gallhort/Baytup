@@ -1,0 +1,117 @@
+{
+  "header": {
+    "welcomeBack": "Welcome back, {name}!",
+    "welcomeEmoji": "👋",
+    "subtitle": "Ready for your next adventure? Let's explore amazing places!",
+    "edit": "Edit"
+  },
+  "stats": {
+    "totalBookings": "Total Bookings",
+    "upcomingBookings": "upcoming",
+    "citiesVisited": "Cities Visited",
+    "uniqueDestinations": "unique destinations",
+    "savedListings": "Saved Listings",
+    "inWishlist": "in wishlist",
+    "totalSpent": "Total Spent",
+    "avg": "avg",
+    "reviewsWritten": "Reviews Written",
+    "yourExperiences": "your experiences",
+    "messages": "Messages",
+    "unreadMessages": "unread messages"
+  },
+  "cta": {
+    "exploreListings": "Explore Listings",
+    "viewUpcomingTrips": "View Upcoming Trips",
+    "startExploring": "Start Exploring",
+    "planNextTrip": "Plan Your Next Trip",
+    "browseListings": "Browse Listings",
+    "goToMessages": "Go to Messages",
+    "startTraveling": "Start Traveling"
+  },
+  "tabs": {
+    "overview": "Overview",
+    "bookings": "Bookings",
+    "wishlist": "Wishlist",
+    "history": "Travel History",
+    "reviews": "My Reviews",
+    "messages": "Messages"
+  },
+  "charts": {
+    "spendingTrend": "Spending Trend",
+    "monthlySpending": "Monthly Spending (DZD)",
+    "bookingStatus": "Booking Status",
+    "travelMap": "Travel Map - Top Cities",
+    "upcoming": "Upcoming",
+    "active": "Active",
+    "completed": "Completed",
+    "noSpendingData": "No spending data yet",
+    "noBookings": "No bookings yet",
+    "noData": "No data available",
+    "currency": "DZD"
+  },
+  "upcomingTrips": {
+    "title": "Upcoming Trips",
+    "noTrips": "No upcoming trips",
+    "planTrip": "Plan Your Next Trip",
+    "viewAll": "View All"
+  },
+  "recommendedListings": {
+    "title": "Recommended for You",
+    "viewMore": "View More",
+    "new": "New"
+  },
+  "recentMessages": {
+    "title": "Recent Messages",
+    "viewAll": "View All"
+  },
+  "bookings": {
+    "title": "All Bookings",
+    "subtitle": "Manage and track all your bookings",
+    "noBookings": "No bookings yet",
+    "host": "Host"
+  },
+  "wishlist": {
+    "noSavedListings": "No Saved Listings",
+    "description": "Start building your wishlist by saving listings you love. Find them all in one place!",
+    "removeFromWishlist": "Remove from wishlist",
+    "removedSuccess": "Removed from wishlist",
+    "removedFailed": "Failed to remove from wishlist"
+  },
+  "travelHistory": {
+    "title": "Travel History",
+    "subtitle": "Cities and places you've visited",
+    "visit": "visit",
+    "visits": "visits",
+    "lastVisit": "Last visit",
+    "noHistory": "No travel history yet",
+    "noHistoryDescription": "Start your journey and create memories!"
+  },
+  "reviews": {
+    "title": "My Reviews",
+    "subtitle": "Reviews you've written about your stays",
+    "noReviews": "No reviews yet",
+    "noReviewsDescription": "Complete a booking to leave your first review"
+  },
+  "messages": {
+    "title": "Recent Messages",
+    "unreadCount": "You have {count} unread message",
+    "unreadCountPlural": "You have {count} unread messages",
+    "allCaughtUp": "All caught up!",
+    "noMessages": "No messages yet",
+    "noMessagesDescription": "Messages from hosts will appear here"
+  },
+  "statusBadges": {
+    "confirmed": "Confirmed",
+    "active": "Active",
+    "completed": "Completed",
+    "pending": "Pending",
+    "cancelled": "Cancelled"
+  },
+  "firstBooking": {
+    "title": "Start Your Journey with Baytup!",
+    "description": "Book your first stay or vehicle and unlock exclusive benefits. Discover unique places across Algeria!"
+  },
+  "toast": {
+    "loadFailed": "Failed to load dashboard data"
+  }
+}

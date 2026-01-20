@@ -1,0 +1,48 @@
+{
+  "title": "Bon retour",
+  "subtitle": "Connectez-vous à votre compte pour continuer",
+  "form": {
+    "email": {
+      "label": "Adresse e-mail",
+      "placeholder": "Saisissez votre e-mail",
+      "required": "L'e-mail est obligatoire",
+      "invalid": "Veuillez saisir une adresse e-mail valide"
+    },
+    "password": {
+      "label": "Mot de passe",
+      "placeholder": "Saisissez votre mot de passe",
+      "required": "Le mot de passe est obligatoire"
+    },
+    "rememberMe": "Se souvenir de moi",
+    "forgotPassword": "Mot de passe oublié ?",
+    "signIn": "Se connecter",
+    "signingIn": "Connexion en cours...",
+    "orContinueWith": "Ou continuer avec",
+    "resendVerification": "Renvoyer l'e-mail de vérification",
+    "emailVerificationRequired": "Vérification d'e-mail requise",
+    "dismiss": "Fermer"
+  },
+  "errors": {
+    "invalidCredentials": "E-mail ou mot de passe invalide",
+    "emailNotVerified": "Veuillez vérifier votre e-mail avant de vous connecter",
+    "loginFailed": "Échec de la connexion",
+    "googleLoginFailed": "Échec de la connexion Google"
+  },
+  "success": {
+    "emailVerified": "E-mail vérifié avec succès ! Vous pouvez maintenant vous connecter.",
+    "loginSuccess": "Connexion réussie !",
+    "googleLoginSuccess": "Connexion Google réussie !"
+  },
+  "signUp": {
+    "text": "Vous n'avez pas de compte ?",
+    "link": "Inscrivez-vous maintenant"
+  },
+  "hero": {
+    "title": "Bon retour sur Baytup",
+    "description": "Connectez-vous pour continuer à explorer la première plateforme de location d'Algérie. Trouvez des propriétés et véhicules uniques dans tout le pays.",
+    "stats": {
+      "properties": "Propriétés",
+      "vehicles": "Véhicules"
+    }
+  }
+}

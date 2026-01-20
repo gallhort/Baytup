@@ -1,0 +1,155 @@
+{
+  "loading": {
+    "message": "جاري تحميل لوحة التحكم..."
+  },
+  "errors": {
+    "noData": "لا توجد بيانات متاحة",
+    "loadFailed": "فشل تحميل بيانات لوحة التحكم"
+  },
+  "actions": {
+    "retry": "إعادة المحاولة",
+    "export": "تصدير",
+    "refresh": "تحديث",
+    "refreshing": "جارٍ التحديث...",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "edit": "تعديل"
+  },
+  "header": {
+    "title": "لوحة تحكم المسؤول",
+    "subtitle": "نظرة عامة كاملة على منصة بيتوب"
+  },
+  "stats": {
+    "totalUsers": "إجمالي المستخدمين",
+    "hosts": "المضيفون",
+    "guests": "الضيوف",
+    "newThisMonth": "جديد هذا الشهر",
+    "listings": "الإعلانات",
+    "activeListings": "نشط",
+    "pendingListings": "قيد الانتظار",
+    "pendingApproval": "في انتظار الموافقة",
+    "bookings": "الحجوزات",
+    "activeBookings": "نشط",
+    "completedBookings": "مكتمل",
+    "currentlyActive": "نشط حالياً",
+    "revenue": "الإيرادات",
+    "currency": "دج",
+    "commission": "العمولة",
+    "commissionEarned": "عمولة مكتسبة"
+  },
+  "quickActions": {
+    "title": "إجراءات سريعة",
+    "addUser": "إضافة مستخدم",
+    "viewUsers": "عرض المستخدمين",
+    "listings": "الإعلانات",
+    "applications": "الطلبات",
+    "bookings": "الحجوزات",
+    "reports": "التقارير",
+    "exportData": "تصدير البيانات",
+    "settings": "الإعدادات"
+  },
+  "charts": {
+    "revenueTrend": "اتجاه الإيرادات",
+    "last6Months": "أداء آخر 6 أشهر",
+    "revenue": "الإيرادات (دج)",
+    "categories": "الفئات",
+    "listingsByCategory": "الإعلانات حسب الفئة",
+    "topCities": "أهم المدن",
+    "mostPopularDestinations": "الوجهات الأكثر شعبية",
+    "userGrowth": "نمو المستخدمين",
+    "newUserRegistrations": "تسجيلات المستخدمين الجدد في آخر 30 يوماً",
+    "newUsers": "مستخدمون جدد",
+    "listingsByCity": "الإعلانات حسب المدينة"
+  },
+  "tables": {
+    "topPerformingListings": "الإعلانات الأفضل أداءً",
+    "bestRatedMostBooked": "الأعلى تقييماً والأكثر حجزاً",
+    "recentBookings": "الحجوزات الأخيرة",
+    "latestReservations": "أحدث الحجوزات",
+    "viewAllListings": "عرض كل الإعلانات",
+    "viewAllBookings": "عرض كل الحجوزات",
+    "bookingsCount": "حجوزات",
+    "perNight": "دج/ليلة"
+  },
+  "systemStatus": {
+    "title": "حالة النظام",
+    "allSystemsOperational": "جميع الأنظمة تعمل",
+    "apiStatus": "حالة API",
+    "database": "قاعدة البيانات",
+    "paymentGateway": "بوابة الدفع",
+    "active": "نشط",
+    "connected": "متصل",
+    "online": "متصل"
+  },
+  "quickStats": {
+    "title": "إحصائيات سريعة",
+    "platformMetrics": "مقاييس المنصة",
+    "avgBookingValue": "متوسط قيمة الحجز",
+    "featuredListings": "الإعلانات المميزة",
+    "cancelledBookings": "الحجوزات الملغاة"
+  },
+  "activity": {
+    "title": "النشاط",
+    "recentPlatformActivity": "نشاط المنصة الأخير",
+    "newReviews": "تقييمات جديدة",
+    "newBookingsToday": "حجوزات جديدة اليوم",
+    "newUsersToday": "مستخدمون جدد اليوم"
+  },
+  "modals": {
+    "quickCreateUser": {
+      "title": "إنشاء مستخدم سريع",
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "role": "الدور",
+      "guest": "ضيف",
+      "host": "مضيف",
+      "admin": "مسؤول",
+      "firstNamePlaceholder": "أحمد",
+      "lastNamePlaceholder": "محمد",
+      "emailPlaceholder": "ahmad.mohamed@example.com",
+      "passwordPlaceholder": "6 أحرف على الأقل",
+      "createUser": "إنشاء مستخدم"
+    },
+    "generateReport": {
+      "title": "إنشاء تقرير",
+      "reportType": "نوع التقرير",
+      "revenueReport": "تقرير الإيرادات",
+      "bookingsReport": "تقرير الحجوزات",
+      "usersReport": "تقرير المستخدمين",
+      "listingsReport": "تقرير الإعلانات",
+      "dateRange": "النطاق الزمني",
+      "lastWeek": "الأسبوع الماضي",
+      "lastMonth": "الشهر الماضي",
+      "lastQuarter": "الربع الماضي",
+      "lastYear": "السنة الماضية",
+      "category": "الفئة",
+      "allCategories": "كل الفئات",
+      "property": "عقار",
+      "vehicle": "مركبة",
+      "generate": "إنشاء"
+    },
+    "exportData": {
+      "title": "تصدير البيانات",
+      "chooseFormat": "اختر صيغة التصدير:",
+      "csvFormat": "صيغة CSV",
+      "csvDescription": "قيم مفصولة بفواصل",
+      "excelFormat": "صيغة Excel",
+      "excelDescription": "مصنف Microsoft Excel",
+      "pdfFormat": "صيغة PDF",
+      "pdfDescription": "صيغة المستند المحمول"
+    },
+    "details": {
+      "title": "التفاصيل"
+    }
+  },
+  "toast": {
+    "dashboardRefreshed": "تم تحديث لوحة التحكم",
+    "userCreated": "تم إنشاء المستخدم بنجاح",
+    "userCreateFailed": "فشل في إنشاء المستخدم",
+    "reportGenerated": "تم إنشاء التقرير بنجاح",
+    "dataExporting": "جارٍ تصدير البيانات بصيغة {format}...",
+    "loadFailed": "فشل تحميل بيانات لوحة التحكم"
+  }
+}

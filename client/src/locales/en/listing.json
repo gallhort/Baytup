@@ -1,0 +1,156 @@
+{
+  "loading": {
+    "map": "Loading map...",
+    "listing": "Loading listing..."
+  },
+  "errors": {
+    "notFound": "Listing Not Found",
+    "notFoundDescription": "The listing you are looking for does not exist.",
+    "browseListings": "Browse Listings",
+    "fetchError": "Failed to fetch listing details",
+    "loadError": "Failed to load listing",
+    "selectDates": "Please select check-in and check-out dates"
+  },
+  "header": {
+    "share": "Share",
+    "copied": "Copied!",
+    "save": "Save"
+  },
+  "share": {
+    "property": "Check out this property on Baytup",
+    "vehicle": "Check out this vehicle on Baytup"
+  },
+  "imageGallery": {
+    "allPhotos": "All Photos",
+    "showAll": "Show all {count} photos"
+  },
+  "title": {
+    "new": "New",
+    "reviews": "reviews",
+    "superhost": "Superhost"
+  },
+  "host": {
+    "propertyHostedBy": "Property hosted by",
+    "vehicleHostedBy": "Vehicle hosted by",
+    "bedroom": "bedroom",
+    "bedrooms": "bedrooms",
+    "bathroom": "bathroom",
+    "bathrooms": "bathrooms",
+    "type": "Type",
+    "makeAndModel": "Make & Model",
+    "year": "Year",
+    "seats": "Seats",
+    "seatsValue": "seats",
+    "transmission": "Transmission",
+    "fuelType": "Fuel Type",
+    "responseRate": "Response rate",
+    "responseTime": "Response time",
+    "hostSince": "Host since",
+    "reviews": "Reviews"
+  },
+  "description": {
+    "aboutPlace": "About this place",
+    "aboutVehicle": "About this vehicle"
+  },
+  "amenities": {
+    "title": "Amenities",
+    "featuresTitle": "Features",
+    "noAmenities": "No amenities listed",
+    "showLess": "Show less",
+    "showAll": "Show all {count} amenities",
+    "showAllFeatures": "Show all {count} features",
+    "wifi": "WiFi",
+    "parking": "Free Parking",
+    "pool": "Swimming Pool",
+    "gym": "Gym",
+    "garden": "Garden",
+    "terrace": "Terrace",
+    "elevator": "Elevator",
+    "security": "24/7 Security",
+    "ac": "Air Conditioning",
+    "heating": "Heating",
+    "kitchen": "Kitchen",
+    "balcony": "Balcony",
+    "tv": "TV",
+    "washer": "Washer",
+    "beachAccess": "Beach Access",
+    "mountainView": "Mountain View",
+    "gps": "GPS Navigation",
+    "bluetooth": "Bluetooth",
+    "sunroof": "Sunroof",
+    "backupCamera": "Backup Camera",
+    "cruiseControl": "Cruise Control",
+    "heatedSeats": "Heated Seats",
+    "wifiHotspot": "WiFi Hotspot",
+    "childSeat": "Child Seat",
+    "skiRack": "Ski Rack",
+    "bikeRack": "Bike Rack"
+  },
+  "vehicleTypes": {
+    "car": "Car",
+    "motorcycle": "Motorcycle",
+    "truck": "Truck",
+    "van": "Van",
+    "suv": "SUV",
+    "bus": "Bus",
+    "bicycle": "Bicycle",
+    "scooter": "Scooter",
+    "boat": "Boat"
+  },
+  "transmission": {
+    "manual": "Manual",
+    "automatic": "Automatic"
+  },
+  "fuelTypes": {
+    "gasoline": "Gasoline",
+    "diesel": "Diesel",
+    "electric": "Electric",
+    "hybrid": "Hybrid"
+  },
+  "houseRules": {
+    "title": "House Rules",
+    "smokingAllowed": "Smoking allowed",
+    "noSmoking": "No smoking",
+    "petsAllowed": "Pets allowed",
+    "noPets": "No pets",
+    "partiesAllowed": "Parties allowed",
+    "noPartiesOrEvents": "No parties or events",
+    "childrenWelcome": "Children welcome",
+    "notSuitableForChildren": "Not suitable for children",
+    "checkIn": "Check-in:",
+    "checkOut": "Check-out: Before"
+  },
+  "reviews": {
+    "title": "reviews",
+    "user": "User",
+    "recently": "Recently",
+    "showLess": "Show less",
+    "showAll": "Show all {count} reviews"
+  },
+  "location": {
+    "title": "Location",
+    "exactLocation": "Exact location provided after booking",
+    "exactLocationDescription": "We'll share the precise address once your reservation is confirmed"
+  },
+  "booking": {
+    "perNight": "night",
+    "perDay": "day",
+    "reviews": "reviews",
+    "checkIn": "CHECK-IN",
+    "checkout": "CHECKOUT",
+    "guests": "GUESTS",
+    "adults": "Adults",
+    "children": "Children",
+    "infants": "Infants",
+    "reserve": "Reserve",
+    "requestToBook": "Request to Book",
+    "notChargedYet": "You won't be charged yet",
+    "night": "night",
+    "nights": "nights",
+    "cleaningFee": "Cleaning fee",
+    "serviceFee": "Service fee (10%)",
+    "taxes": "Taxes (5%)",
+    "total": "Total",
+    "reportListing": "Report this listing"
+  }
+}

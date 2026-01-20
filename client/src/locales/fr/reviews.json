@@ -1,0 +1,106 @@
+{
+  "header": {
+    "hostTitle": "Avis à Votre Sujet",
+    "hostSubtitle": "Gérez les avis de vos invités",
+    "guestTitle": "Avis que Vous Avez Écrits",
+    "guestSubtitle": "Consultez et gérez vos avis"
+  },
+  "stats": {
+    "totalReviews": "Total des Avis",
+    "averageRating": "Note Moyenne",
+    "responseRate": "Taux de Réponse",
+    "published": "Publiés"
+  },
+  "detailedRatings": {
+    "title": "Notes Détaillées",
+    "cleanliness": "Propreté",
+    "communication": "Communication",
+    "checkin": "Arrivée",
+    "checkIn": "Arrivée",
+    "accuracy": "Précision",
+    "location": "Emplacement",
+    "value": "Rapport Qualité-Prix"
+  },
+  "filters": {
+    "rating": {
+      "all": "Toutes les Notes",
+      "5stars": "5 Étoiles",
+      "4plus": "4+ Étoiles",
+      "3plus": "3+ Étoiles",
+      "2plus": "2+ Étoiles",
+      "1plus": "1+ Étoiles"
+    },
+    "status": {
+      "published": "Publiés",
+      "pending": "En Attente",
+      "all": "Tous les Statuts"
+    }
+  },
+  "table": {
+    "headers": {
+      "listing": "Annonce",
+      "reviewer": "Évaluateur",
+      "reviewee": "Évalué",
+      "rating": "Note",
+      "review": "Avis",
+      "date": "Date",
+      "status": "Statut",
+      "actions": "Actions"
+    }
+  },
+  "status": {
+    "published": "Publié",
+    "pending": "En Attente",
+    "hidden": "Masqué",
+    "flagged": "Signalé"
+  },
+  "actions": {
+    "viewDetails": "Voir les Détails",
+    "respond": "Répondre",
+    "delete": "Supprimer"
+  },
+  "detailsModal": {
+    "title": "Détails de l'Avis",
+    "titleLabel": "Titre",
+    "commentLabel": "Commentaire",
+    "detailedRatingsLabel": "Notes Détaillées",
+    "hostResponse": "Réponse de l'Hôte",
+    "reviewedOn": "Évalué le"
+  },
+  "responseModal": {
+    "title": "Ajouter une Réponse",
+    "instructionPrefix": "Répondre à l'avis de",
+    "instructionSuffix": "",
+    "label": "Votre Réponse",
+    "placeholder": "Écrivez votre réponse...",
+    "characterCount": "caractères",
+    "cancel": "Annuler",
+    "submit": "Ajouter une Réponse"
+  },
+  "deleteModal": {
+    "title": "Supprimer l'Avis",
+    "confirmPrefix": "Êtes-vous sûr de vouloir supprimer votre avis pour",
+    "confirmSuffix": "? Cette action ne peut pas être annulée.",
+    "cancel": "Annuler",
+    "confirm": "Supprimer l'Avis"
+  },
+  "emptyState": {
+    "title": "Aucun Avis Trouvé",
+    "hostMessage": "Vous n'avez pas encore reçu d'avis",
+    "guestMessage": "Vous n'avez pas encore écrit d'avis"
+  },
+  "pagination": {
+    "page": "Page",
+    "of": "sur"
+  },
+  "loading": {
+    "reviews": "Chargement des avis..."
+  },
+  "toast": {
+    "loadFailed": "Échec du chargement des avis",
+    "responseSuccess": "Réponse ajoutée avec succès",
+    "responseFailed": "Échec de l'ajout de la réponse",
+    "deleteSuccess": "Avis supprimé avec succès",
+    "deleteFailed": "Échec de la suppression de l'avis"
+  }
+}

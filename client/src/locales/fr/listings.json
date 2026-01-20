@@ -1,0 +1,109 @@
+{
+  "header": {
+    "title": "Toutes les annonces",
+    "subtitle": "Gérer toutes les annonces de propriétés et de véhicules"
+  },
+  "stats": {
+    "total": "Total",
+    "active": "Actives",
+    "inactive": "Inactives",
+    "pending": "En attente",
+    "featured": "En vedette",
+    "stays": "Séjours",
+    "vehicles": "Véhicules"
+  },
+  "filters": {
+    "searchPlaceholder": "Rechercher par titre, lieu ou description...",
+    "category": {
+      "label": "Catégorie",
+      "all": "Toutes les catégories",
+      "stays": "Séjours",
+      "vehicles": "Véhicules"
+    },
+    "status": {
+      "label": "Statut",
+      "all": "Tous les statuts",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "En attente",
+      "rejected": "Rejetée"
+    }
+  },
+  "card": {
+    "featured": "En vedette",
+    "viewDetails": "Voir les détails",
+    "delete": "Supprimer",
+    "deactivate": "Désactiver",
+    "activate": "Activer",
+    "unfeature": "Retirer de la vedette",
+    "feature": "Mettre en vedette"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "En attente",
+    "rejected": "Rejetée"
+  },
+  "pagination": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "showing": "Affichage de",
+    "to": "à",
+    "of": "sur",
+    "results": "résultats"
+  },
+  "viewModal": {
+    "title": "Détails de l'annonce",
+    "close": "Fermer",
+    "sections": {
+      "images": "Images",
+      "basicInfo": "Informations de base",
+      "description": "Description",
+      "host": "Hôte",
+      "stats": "Statistiques"
+    },
+    "fields": {
+      "title": "Titre",
+      "category": "Catégorie",
+      "subcategory": "Sous-catégorie",
+      "status": "Statut",
+      "price": "Prix",
+      "location": "Emplacement",
+      "description": "Description",
+      "host": "Hôte",
+      "views": "Vues",
+      "favorites": "Favoris",
+      "bookings": "Réservations",
+      "rating": "Note",
+      "createdAt": "Créé le",
+      "updatedAt": "Mis à jour le",
+      "reviews": "avis"
+    }
+  },
+  "deleteModal": {
+    "title": "Supprimer l'annonce",
+    "confirmMessage": "Êtes-vous sûr de vouloir supprimer",
+    "warningMessage": "Cette action est irréversible.",
+    "cancel": "Annuler",
+    "confirm": "Supprimer l'annonce"
+  },
+  "toast": {
+    "accessDeniedAdmin": "Accès refusé. Administrateur uniquement.",
+    "accessDenied": "Accès refusé",
+    "failedToLoad": "Échec du chargement des annonces",
+    "deleteSuccess": "Annonce supprimée avec succès",
+    "deleteFailed": "Échec de la suppression de l'annonce",
+    "activated": "Annonce activée",
+    "deactivated": "Annonce désactivée",
+    "statusUpdateFailed": "Échec de la mise à jour du statut",
+    "featured": "Annonce mise en vedette",
+    "unfeatured": "Annonce retirée de la vedette",
+    "featuredUpdateFailed": "Échec de la mise à jour du statut de vedette",
+    "loading": "Chargement des annonces..."
+  },
+  "pricing": {
+    "perNight": "par nuit",
+    "perHour": "par heure",
+    "perDay": "par jour"
+  }
+}

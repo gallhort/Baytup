@@ -1,0 +1,30 @@
+{
+  "title": "الإشعارات",
+  "unreadNotification": "إشعار غير مقروء",
+  "unreadNotifications": "إشعارات غير مقروءة",
+  "noUnread": "لا توجد إشعارات غير مقروءة",
+  "markAllRead": "تحديد الكل كمقروء",
+  "filterByStatus": "تصفية حسب الحالة",
+  "filterByType": "تصفية حسب النوع",
+  "all": "الكل",
+  "unread": "غير مقروءة",
+  "read": "مقروءة",
+  "allTypes": "جميع الأنواع",
+  "loading": "جاري تحميل الإشعارات...",
+  "noNotificationsTitle": "لا توجد إشعارات",
+  "noUnreadNotifications": "ليس لديك إشعارات غير مقروءة",
+  "noReadNotifications": "ليس لديك إشعارات مقروءة",
+  "noNotificationsMessage": "ليس لديك أي إشعارات في الوقت الحالي",
+  "viewDetails": "عرض التفاصيل",
+  "markRead": "تحديد كمقروء",
+  "delete": "حذف",
+  "urgent": "عاجل",
+  "high": "عالية",
+  "success": {
+    "allMarkedRead": "تم تحديد جميع الإشعارات كمقروءة",
+    "deleted": "تم حذف الإشعار"
+  },
+  "errors": {
+    "fetchFailed": "فشل في تحميل الإشعارات"
+  }
+}

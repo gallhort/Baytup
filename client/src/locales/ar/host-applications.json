@@ -1,0 +1,159 @@
+{
+  "header": {
+    "title": "طلبات المضيفين",
+    "subtitle": "إدارة جميع طلبات المضيفين"
+  },
+  "stats": {
+    "total": "المجموع",
+    "pending": "قيد الانتظار",
+    "underReview": "قيد المراجعة",
+    "approved": "موافق عليه",
+    "rejected": "مرفوض",
+    "resubmit": "إعادة التقديم"
+  },
+  "filters": {
+    "filterByStatus": "تصفية حسب الحالة",
+    "allStatus": "جميع الحالات",
+    "pending": "قيد الانتظار",
+    "underReview": "قيد المراجعة",
+    "approved": "موافق عليه",
+    "rejected": "مرفوض",
+    "resubmissionRequired": "إعادة التقديم مطلوبة"
+  },
+  "table": {
+    "headers": {
+      "applicant": "المتقدم",
+      "contact": "جهة الاتصال",
+      "status": "الحالة",
+      "completion": "الاكتمال",
+      "submitted": "تم التقديم",
+      "actions": "الإجراءات"
+    },
+    "content": {
+      "notSubmitted": "لم يتم التقديم",
+      "na": "غير متوفر",
+      "unknown": "غير معروف",
+      "user": "مستخدم"
+    }
+  },
+  "status": {
+    "pending": "قيد الانتظار",
+    "underReview": "قيد المراجعة",
+    "approved": "موافق عليه",
+    "rejected": "مرفوض",
+    "resubmissionRequired": "إعادة التقديم مطلوبة"
+  },
+  "actions": {
+    "viewDetails": "عرض التفاصيل",
+    "editApplication": "تعديل الطلب",
+    "changeStatus": "تغيير الحالة",
+    "approve": "الموافقة",
+    "reject": "الرفض",
+    "requestResubmission": "طلب إعادة التقديم",
+    "delete": "حذف"
+  },
+  "pagination": {
+    "previous": "السابق",
+    "next": "التالي",
+    "showing": "عرض",
+    "to": "إلى",
+    "of": "من",
+    "results": "نتائج"
+  },
+  "viewModal": {
+    "title": "تفاصيل الطلب",
+    "applicantInfo": "معلومات المتقدم",
+    "personalInfo": "المعلومات الشخصية",
+    "hostIntent": "نية الاستضافة",
+    "bankingInfo": "المعلومات المصرفية",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "nationalId": "الهوية الوطنية",
+    "dateOfBirth": "تاريخ الميلاد",
+    "city": "المدينة",
+    "propertyTypes": "أنواع العقارات",
+    "vehicleTypes": "أنواع المركبات",
+    "expectedListings": "القوائم المتوقعة",
+    "experienceLevel": "مستوى الخبرة",
+    "motivation": "الدافع",
+    "none": "لا شيء",
+    "bankName": "اسم البنك",
+    "accountHolder": "صاحب الحساب",
+    "rib": "RIB",
+    "close": "إغلاق"
+  },
+  "editModal": {
+    "title": "تعديل الطلب",
+    "phone": "الهاتف",
+    "city": "المدينة",
+    "nationalIdNumber": "رقم الهوية الوطنية",
+    "numberOfListings": "عدد القوائم",
+    "bankName": "اسم البنك",
+    "rib": "RIB",
+    "cancel": "إلغاء",
+    "saveChanges": "حفظ التغييرات"
+  },
+  "approveModal": {
+    "title": "الموافقة على الطلب",
+    "message": "هل أنت متأكد من الموافقة على هذا الطلب؟ سيؤدي هذا إلى ترقية المستخدم إلى حالة المضيف.",
+    "cancel": "إلغاء",
+    "approve": "الموافقة"
+  },
+  "rejectModal": {
+    "title": "رفض الطلب",
+    "message": "يرجى تقديم سبب رفض هذا الطلب:",
+    "placeholder": "أدخل سبب الرفض...",
+    "cancel": "إلغاء",
+    "reject": "رفض"
+  },
+  "resubmitModal": {
+    "title": "طلب إعادة التقديم",
+    "message": "يرجى تقديم ملاحظات حول ما يحتاج إلى التصحيح:",
+    "placeholder": "أدخل ملاحظات إعادة التقديم...",
+    "cancel": "إلغاء",
+    "requestResubmission": "طلب إعادة التقديم"
+  },
+  "deleteModal": {
+    "title": "حذف الطلب",
+    "message": "هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.",
+    "cancel": "إلغاء",
+    "delete": "حذف"
+  },
+  "statusModal": {
+    "title": "تغيير حالة الطلب",
+    "currentStatus": "الحالة الحالية:",
+    "applicant": "المتقدم:",
+    "newStatus": "الحالة الجديدة",
+    "pending": "قيد الانتظار",
+    "underReview": "قيد المراجعة",
+    "approved": "موافق عليه (ضيف ← مضيف)",
+    "rejected": "مرفوض",
+    "resubmissionRequired": "إعادة التقديم مطلوبة",
+    "approvalWarning": "⚠️ سيؤدي هذا إلى ترقية المستخدم إلى حالة المضيف!",
+    "rejectionNote": "ملاحظة: فكر في استخدام زر الرفض لإضافة سبب.",
+    "resubmitNote": "ملاحظة: فكر في استخدام زر طلب إعادة التقديم لإضافة ملاحظات.",
+    "cancel": "إلغاء",
+    "updateStatus": "تحديث الحالة"
+  },
+  "toast": {
+    "loadingApplications": "جاري تحميل الطلبات...",
+    "accessDenied": "تم رفض الوصول. للمسؤولين فقط.",
+    "failedToLoad": "فشل تحميل الطلبات",
+    "applicationApproved": "تمت الموافقة على الطلب بنجاح",
+    "failedToApprove": "فشل الموافقة على الطلب",
+    "provideRejectionReason": "يرجى تقديم سبب الرفض",
+    "applicationRejected": "تم رفض الطلب",
+    "failedToReject": "فشل رفض الطلب",
+    "provideResubmitNotes": "يرجى تقديم ملاحظات إعادة التقديم",
+    "resubmissionRequested": "تم طلب إعادة التقديم",
+    "failedToRequestResubmission": "فشل طلب إعادة التقديم",
+    "applicationDeleted": "تم حذف الطلب بنجاح",
+    "failedToDelete": "فشل حذف الطلب",
+    "applicationUpdated": "تم تحديث الطلب بنجاح",
+    "failedToUpdate": "فشل تحديث الطلب",
+    "selectStatus": "يرجى تحديد حالة",
+    "statusUpdated": "تم تحديث الحالة بنجاح",
+    "failedToChangeStatus": "فشل تغيير الحالة"
+  }
+}

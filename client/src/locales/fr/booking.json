@@ -1,0 +1,72 @@
+{
+  "modal": {
+    "title": "Confirmez votre réservation",
+    "subtitle": "Vérifiez les détails de votre voyage avant de réserver"
+  },
+  "sections": {
+    "yourTrip": "Votre voyage",
+    "priceDetails": "Détails du prix",
+    "specialRequests": "Demandes spéciales",
+    "termsAndConditions": "Conditions générales",
+    "importantInfo": "Informations importantes"
+  },
+  "labels": {
+    "dates": "Dates",
+    "guests": "Voyageurs",
+    "checkInCheckOut": "Arrivée et départ",
+    "checkIn": "Arrivée",
+    "checkOut": "Départ",
+    "before": "Avant",
+    "cleaningFee": "Frais de ménage",
+    "serviceFee": "Frais de service (10%)",
+    "taxes": "Taxes (5%)",
+    "total": "Total (DZD)",
+    "totalAmount": "Total"
+  },
+  "guests": {
+    "adult": "adulte",
+    "adults": "adultes",
+    "child": "enfant",
+    "children": "enfants",
+    "infant": "bébé",
+    "infants": "bébés"
+  },
+  "time": {
+    "night": "nuit",
+    "nights": "nuits"
+  },
+  "form": {
+    "specialRequestsLabel": "Demandes spéciales (optionnel)",
+    "specialRequestsPlaceholder": "Des demandes ou exigences particulières ? Faites-le savoir à l'hôte...",
+    "characterCount": "{{count}}/500 caractères",
+    "termsAgreement": "J'accepte les",
+    "termsOfService": "Conditions d'utilisation",
+    "and": "et la",
+    "cancellationPolicy": "Politique d'annulation"
+  },
+  "payment": {
+    "securePaymentTitle": "Paiement sécurisé avec Slick Pay",
+    "securePaymentDescription": "Vous serez redirigé vers Slick Pay pour effectuer votre paiement en toute sécurité. Votre réservation sera confirmée une fois le paiement traité.",
+    "paymentUrlError": "URL de paiement non reçue"
+  },
+  "buttons": {
+    "cancel": "Annuler",
+    "confirmAndPay": "Confirmer et payer",
+    "requestAndPay": "Demander et payer",
+    "processing": "Traitement en cours..."
+  },
+  "errors": {
+    "title": "Erreur de réservation",
+    "acceptTerms": "Veuillez accepter les conditions générales",
+    "selectDates": "Veuillez sélectionner les dates d'arrivée et de départ",
+    "loginRequired": "Veuillez vous connecter pour effectuer une réservation",
+    "bookingFailed": "Échec de la création de la réservation",
+    "bookingFailedRetry": "Échec de la création de la réservation. Veuillez réessayer.",
+    "genericError": "Une erreur s'est produite. Veuillez réessayer."
+  },
+  "pricing": {
+    "perNight": "{{price}} × {{nights}} nuit",
+    "perNights": "{{price}} × {{nights}} nuits",
+    "breakdown": "Répartition des prix"
+  }
+}

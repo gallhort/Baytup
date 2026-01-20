@@ -1,0 +1,69 @@
+{
+  "loading": {
+    "message": "Chargement du tableau de bord...",
+    "spinner": "Chargement..."
+  },
+  "common": {
+    "loading": "Chargement du tableau de bord...",
+    "noData": "Aucune donnée disponible",
+    "retry": "Réessayer",
+    "refresh": "Actualiser",
+    "refreshing": "Actualisation...",
+    "edit": "Modifier",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "viewAll": "Voir tout",
+    "seeMore": "Voir plus",
+    "back": "Retour",
+    "export": "Exporter",
+    "generate": "Générer"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "overview": "Vue d'ensemble",
+    "listings": "Annonces",
+    "bookings": "Réservations",
+    "reviews": "Avis",
+    "messages": "Messages",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "reports": "Rapports"
+  },
+  "status": {
+    "active": "Actif",
+    "inactive": "Inactif",
+    "pending": "En attente",
+    "confirmed": "Confirmé",
+    "cancelled": "Annulé",
+    "completed": "Terminé",
+    "approved": "Approuvé",
+    "rejected": "Rejeté",
+    "paused": "En pause"
+  },
+  "currency": {
+    "dzd": "DZD",
+    "perNight": "par nuit",
+    "perDay": "par jour",
+    "perWeek": "par semaine",
+    "perMonth": "par mois",
+    "total": "Total",
+    "avg": "moy"
+  },
+  "time": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois-ci",
+    "lastWeek": "La semaine dernière",
+    "lastMonth": "Le mois dernier",
+    "lastQuarter": "Le trimestre dernier",
+    "lastYear": "L'année dernière"
+  },
+  "empty": {
+    "noDataYet": "Pas encore de données",
+    "startNow": "Commencer maintenant",
+    "noResults": "Aucun résultat trouvé"
+  }
+}

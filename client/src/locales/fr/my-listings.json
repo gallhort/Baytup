@@ -1,0 +1,200 @@
+{
+  "loading": {
+    "message": "Chargement de vos annonces..."
+  },
+  "messages": {
+    "error": {
+      "failed": "Échec du chargement des annonces. Veuillez réessayer.",
+      "updateFailed": "Échec de la mise à jour de l'annonce. Veuillez réessayer.",
+      "deleteFailed": "Échec de la suppression de l'annonce. Veuillez réessayer.",
+      "statusFailed": "Échec de la mise à jour du statut. Veuillez réessayer.",
+      "duplicateFailed": "Échec de la duplication de l'annonce. Veuillez réessayer."
+    },
+    "success": {
+      "updated": "Annonce mise à jour avec succès !",
+      "deleted": "Annonce supprimée avec succès !",
+      "statusChanged": "Statut de l'annonce mis à jour avec succès !",
+      "duplicated": "Annonce dupliquée avec succès !"
+    }
+  },
+  "header": {
+    "title": "Mes Annonces",
+    "subtitle": "Gérez et suivez vos annonces de propriétés et de véhicules",
+    "createButton": "Créer une Nouvelle Annonce"
+  },
+  "stats": {
+    "totalListings": "Total des Annonces",
+    "active": "Actives",
+    "totalViews": "Vues Totales",
+    "totalBookings": "Réservations Totales",
+    "views": "Vues",
+    "bookings": "Réservations"
+  },
+  "filters": {
+    "search": "Rechercher",
+    "searchPlaceholder": "Rechercher des annonces par titre ou localisation...",
+    "status": "Statut",
+    "allStatus": "Tous les Statuts",
+    "statusActive": "Active",
+    "statusPaused": "Suspendue",
+    "statusPending": "En Attente",
+    "statusInactive": "Inactive",
+    "category": "Catégorie",
+    "allCategories": "Toutes les Catégories",
+    "categoryStays": "Hébergements",
+    "categoryVehicles": "Véhicules"
+  },
+  "table": {
+    "headers": {
+      "listing": "Annonce",
+      "category": "Catégorie",
+      "price": "Prix",
+      "stats": "Statistiques",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "empty": {
+      "message": "Aucune annonce trouvée. Commencez par créer votre première annonce !",
+      "action": "Créer Votre Première Annonce"
+    }
+  },
+  "pricing": {
+    "perNight": "par nuit"
+  },
+  "badges": {
+    "featured": "En Vedette"
+  },
+  "actions": {
+    "viewDetails": "Voir les Détails",
+    "edit": "Modifier",
+    "duplicate": "Dupliquer",
+    "pause": "Mettre en Pause",
+    "activate": "Activer",
+    "delete": "Supprimer"
+  },
+  "viewModal": {
+    "title": "Détails de l'Annonce",
+    "closeButton": "Fermer",
+    "basicInfo": {
+      "title": "Informations de Base",
+      "titleLabel": "Titre",
+      "categoryType": "Catégorie",
+      "description": "Description",
+      "status": "Statut",
+      "slug": "Identifiant URL"
+    },
+    "location": {
+      "title": "Emplacement",
+      "street": "Adresse",
+      "city": "Ville",
+      "state": "État/Province",
+      "postalCode": "Code Postal",
+      "country": "Pays",
+      "coordinates": "Coordonnées"
+    },
+    "stayDetails": {
+      "title": "Détails de la Propriété",
+      "propertyType": "Type de Propriété",
+      "bedrooms": "Chambres",
+      "bathrooms": "Salles de Bain",
+      "area": "Surface",
+      "floor": "Étage",
+      "furnished": "Meublé",
+      "amenities": "Équipements"
+    },
+    "vehicleDetails": {
+      "title": "Détails du Véhicule",
+      "vehicleType": "Type de Véhicule",
+      "make": "Marque",
+      "model": "Modèle",
+      "year": "Année",
+      "transmission": "Transmission",
+      "fuelType": "Type de Carburant",
+      "seats": "Places",
+      "features": "Caractéristiques"
+    },
+    "pricing": {
+      "title": "Tarification",
+      "basePrice": "Prix de Base",
+      "per": "par",
+      "cleaningFee": "Frais de Ménage",
+      "serviceFee": "Frais de Service",
+      "securityDeposit": "Caution"
+    },
+    "availability": {
+      "title": "Disponibilité et Règles de Réservation",
+      "instantBook": "Réservation Instantanée",
+      "yes": "Oui",
+      "no": "Non",
+      "minStay": "Séjour Minimum",
+      "maxStay": "Séjour Maximum",
+      "advanceNotice": "Préavis",
+      "preparationTime": "Temps de Préparation",
+      "checkInTime": "Heure d'Arrivée",
+      "checkOutTime": "Heure de Départ"
+    },
+    "rules": {
+      "title": "Règlement Intérieur",
+      "smoking": "Fumeur",
+      "pets": "Animaux",
+      "parties": "Fêtes/Événements",
+      "children": "Enfants",
+      "allowed": "Autorisé",
+      "notAllowed": "Non Autorisé",
+      "additionalRules": "Règles Supplémentaires"
+    },
+    "images": {
+      "title": "Images",
+      "primary": "Principale"
+    },
+    "statistics": {
+      "title": "Statistiques",
+      "totalViews": "Vues Totales",
+      "favorites": "Favoris",
+      "bookings": "Réservations",
+      "totalRevenue": "Revenu Total",
+      "averageRating": "Note Moyenne",
+      "reviewCount": "Avis"
+    },
+    "timestamps": {
+      "title": "Horodatage",
+      "createdAt": "Créé",
+      "lastUpdated": "Dernière Mise à Jour"
+    }
+  },
+  "editModal": {
+    "title": "Modifier l'Annonce",
+    "titleLabel": "Titre",
+    "description": "Description",
+    "basePrice": "Prix de Base",
+    "status": "Statut",
+    "statusActive": "Active",
+    "statusPaused": "Suspendue",
+    "statusInactive": "Inactive",
+    "cancelButton": "Annuler",
+    "saveButton": "Enregistrer les Modifications"
+  },
+  "deleteModal": {
+    "title": "Supprimer l'Annonce",
+    "message": "Êtes-vous sûr de vouloir supprimer cette annonce ?",
+    "warning": "Cette action ne peut pas être annulée. Toutes les données, réservations et avis associés seront définitivement supprimés.",
+    "cancelButton": "Annuler",
+    "deleteButton": "Supprimer l'Annonce"
+  },
+  "statusModal": {
+    "title": "Changer le Statut de l'Annonce",
+    "message": "Changer le statut",
+    "to": "à",
+    "reasonLabel": "Raison (optionnel)",
+    "reasonPlaceholder": "Fournir une raison pour ce changement de statut...",
+    "cancelButton": "Annuler",
+    "confirmButton": "Confirmer le Changement"
+  },
+  "duplicateModal": {
+    "title": "Dupliquer l'Annonce",
+    "message": "Créer une copie de cette annonce ?",
+    "info": "Une nouvelle annonce sera créée avec tous les mêmes détails. Vous pourrez la modifier par la suite.",
+    "cancelButton": "Annuler",
+    "duplicateButton": "Dupliquer l'Annonce"
+  }
+}

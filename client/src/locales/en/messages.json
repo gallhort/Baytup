@@ -1,0 +1,143 @@
+{
+  "header": {
+    "title": "Messages",
+    "subtitle": "Communicate with hosts and manage your conversations"
+  },
+  "stats": {
+    "totalConversations": "Total Conversations",
+    "unreadMessages": "Unread Messages",
+    "archived": "Archived"
+  },
+  "conversations": {
+    "title": "Conversations",
+    "newConversation": "New conversation",
+    "searchPlaceholder": "Search conversations...",
+    "filters": {
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "empty": {
+      "noConversations": "No conversations",
+      "noMatches": "No conversations match your search",
+      "startConversation": "Start a conversation with a host"
+    },
+    "youPrefix": "You: ",
+    "unreadBadge": "new"
+  },
+  "messagesArea": {
+    "tooltips": {
+      "archive": "Archive conversation",
+      "unarchive": "Unarchive conversation",
+      "delete": "Delete conversation"
+    },
+    "empty": "No messages yet. Start the conversation!",
+    "edited": "(edited)",
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "input": {
+      "placeholder": "Type your message...",
+      "hint": "Press Enter to send, Shift + Enter for new line"
+    },
+    "emptyState": {
+      "title": "Select a conversation",
+      "subtitle": "Choose a conversation from the list to start messaging"
+    },
+    "loading": "Loading messages..."
+  },
+  "deleteModal": {
+    "title": "Delete Message",
+    "message": "Are you sure you want to delete this message? This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Delete Message"
+  },
+  "archiveModal": {
+    "archiveTitle": "Archive Conversation",
+    "unarchiveTitle": "Unarchive Conversation",
+    "archiveMessage": "This conversation will be moved to archived. You can restore it later.",
+    "unarchiveMessage": "This conversation will be moved back to active conversations.",
+    "cancel": "Cancel",
+    "confirmArchive": "Archive",
+    "confirmUnarchive": "Unarchive"
+  },
+  "newConversationModal": {
+    "title": "Start New Conversation",
+    "message": "To start a new conversation, please browse listings and contact the host from the listing page.",
+    "close": "Close",
+    "browseListings": "Browse Listings"
+  },
+  "toast": {
+    "newMessage": "New message from {name}",
+    "loginRequired": "Please login to view messages",
+    "loadFailed": "Failed to load messages",
+    "sendFailed": "Failed to send message",
+    "updateSuccess": "Message updated successfully",
+    "updateFailed": "Failed to update message",
+    "deleteSuccess": "Message deleted successfully",
+    "deleteFailed": "Failed to delete message",
+    "archiveSuccess": "Conversation archived",
+    "unarchiveSuccess": "Conversation unarchived",
+    "archiveFailed": "Failed to archive conversation",
+    "unarchiveFailed": "Failed to unarchive conversation",
+    "conversationDeleteSuccess": "Conversation deleted successfully",
+    "conversationDeleteFailed": "Failed to delete conversation",
+    "connectionError": "Connection error"
+  },
+  "time": {
+    "yesterday": "Yesterday"
+  },
+  "admin": {
+    "loading": "Loading messages management...",
+    "header": {
+      "title": "Messages Management",
+      "subtitle": "View and manage all conversations across the platform"
+    },
+    "stats": {
+      "totalConversations": "Total Conversations",
+      "allTime": "All time",
+      "activeConversations": "Active Conversations",
+      "currentlyOngoing": "Currently ongoing",
+      "archived": "Archived",
+      "inactiveThreads": "Inactive threads",
+      "totalMessages": "Total Messages",
+      "platformWide": "Platform-wide"
+    },
+    "searchPlaceholder": "Search users, listings...",
+    "filters": {
+      "all": "All"
+    },
+    "empty": {
+      "noConversations": "No conversations found",
+      "tryAdjusting": "Try adjusting your search",
+      "noInCategory": "No conversations in this category"
+    },
+    "roles": {
+      "guest": "Guest",
+      "host": "Host"
+    },
+    "labels": {
+      "message": "message",
+      "messages": "messages"
+    },
+    "pagination": {
+      "page": "Page",
+      "of": "of"
+    },
+    "messages": {
+      "noMessages": "No messages in this conversation"
+    },
+    "footer": {
+      "readOnly": "Admin View - Read-only mode"
+    },
+    "deleteModal": {
+      "title": "Delete Conversation",
+      "message": "Are you sure you want to permanently delete this conversation? This will delete all",
+      "between": "between",
+      "cannotUndo": "This action cannot be undone.",
+      "confirmButton": "Delete Permanently"
+    }
+  }
+}

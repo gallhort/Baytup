@@ -1,0 +1,65 @@
+{
+  "loading": "Chargement de vos annonces enregistrées...",
+  "header": {
+    "title": "Mes Annonces Enregistrées",
+    "subtitle": "Vos endroits préférés pour séjourner et explorer"
+  },
+  "stats": {
+    "totalSaved": "Total Enregistré",
+    "stays": "Séjours",
+    "cars": "Voitures"
+  },
+  "filters": {
+    "filtersButton": "Filtres",
+    "allCategories": "Toutes les Catégories",
+    "stays": "Séjours",
+    "carRentals": "Location de Voitures",
+    "newestFirst": "Plus Récent",
+    "oldestFirst": "Plus Ancien",
+    "priceLowToHigh": "Prix: Bas à Élevé",
+    "priceHighToLow": "Prix: Élevé à Bas",
+    "highestRated": "Mieux Noté",
+    "clearAll": "Tout Effacer",
+    "minPrice": "Prix Min (DZD)",
+    "maxPrice": "Prix Max (DZD)"
+  },
+  "results": {
+    "showing": "Affichage de",
+    "of": "sur",
+    "savedListings": "annonces enregistrées"
+  },
+  "empty": {
+    "title": "Aucune annonce enregistrée",
+    "description": "Commencez à explorer et enregistrez vos endroits préférés pour plus tard",
+    "exploreButton": "Explorer les Annonces"
+  },
+  "card": {
+    "instantBook": "Réservation Instantanée",
+    "superhost": "Superhôte",
+    "new": "Nouveau",
+    "night": "nuit",
+    "day": "jour",
+    "per": "par",
+    "view": "Voir",
+    "viewDetails": "Voir les Détails",
+    "share": "Partager",
+    "reviews": "avis",
+    "favorites": "favoris"
+  },
+  "modal": {
+    "title": "Effacer Toutes les Annonces Enregistrées?",
+    "warningPrefix": "Cela supprimera toutes les",
+    "warningSuffix": "annonces enregistrées de votre collection. Cette action ne peut pas être annulée.",
+    "cancel": "Annuler",
+    "clearAll": "Tout Effacer"
+  },
+  "toast": {
+    "removed": "Retiré des annonces enregistrées",
+    "removeFailed": "Échec de la suppression de l'annonce",
+    "cleared": "Toutes les annonces enregistrées effacées",
+    "clearFailed": "Échec de l'effacement des annonces",
+    "linkCopied": "Lien copié dans le presse-papiers!",
+    "linkFailed": "Échec de la copie du lien",
+    "loadFailed": "Échec du chargement des annonces enregistrées"
+  }
+}

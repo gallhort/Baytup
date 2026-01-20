@@ -1,0 +1,40 @@
+{
+  "menuItems": {
+    "common": {
+      "dashboard": "لوحة التحكم",
+      "notifications": "الإشعارات",
+      "messages": "الرسائل",
+      "settings": "الإعدادات"
+    },
+    "admin": {
+      "users": "المستخدمون",
+      "hostApplications": "طلبات المضيفين",
+      "allListings": "جميع الإعلانات",
+      "bookings": "الحجوزات",
+      "payouts": "المدفوعات"
+    },
+    "host": {
+      "myListings": "إعلاناتي",
+      "bookings": "الحجوزات",
+      "reviews": "التقييمات",
+      "earnings": "الأرباح"
+    },
+    "guest": {
+      "myBookings": "حجوزاتي",
+      "saved": "المحفوظات",
+      "travelHistory": "سجل السفر",
+      "myReviews": "تقييماتي",
+      "explore": "استكشف"
+    }
+  },
+  "actions": {
+    "logout": "تسجيل الخروج",
+    "toggleMenu": "تبديل القائمة",
+    "closeMenu": "إغلاق القائمة",
+    "openMenu": "فتح القائمة"
+  },
+  "messages": {
+    "loggedOut": "تم تسجيل الخروج بنجاح",
+    "loginRequired": "يرجى تسجيل الدخول للوصول إلى لوحة التحكم"
+  }
+}

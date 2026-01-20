@@ -1,0 +1,314 @@
+{
+  "header": {
+    "title": "Paramètres",
+    "subtitle": "Gérez les paramètres et préférences de votre compte",
+    "loading": "Chargement des paramètres..."
+  },
+  "tabs": {
+    "personal": "Infos Personnelles",
+    "address": "Adresse",
+    "preferences": "Préférences",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "security": "Sécurité",
+    "account": "Compte"
+  },
+  "personal": {
+    "title": "Informations Personnelles",
+    "avatar": {
+      "title": "Photo de Profil",
+      "chooseImage": "Choisir une Image",
+      "upload": "Télécharger",
+      "uploading": "Téléchargement...",
+      "remove": "Supprimer",
+      "removing": "Suppression...",
+      "sizeHint": "JPG, PNG ou GIF. Taille max 5MB"
+    },
+    "firstName": {
+      "label": "Prénom",
+      "required": true
+    },
+    "lastName": {
+      "label": "Nom",
+      "required": true
+    },
+    "email": {
+      "label": "Email",
+      "readonly": "(Lecture seule)",
+      "hint": "Pour modifier votre email, utilisez l'onglet Sécurité"
+    },
+    "phone": {
+      "label": "Numéro de Téléphone",
+      "placeholder": "+213 XXX XXX XXX"
+    },
+    "dateOfBirth": {
+      "label": "Date de Naissance"
+    },
+    "gender": {
+      "label": "Genre",
+      "placeholder": "Sélectionner le Genre",
+      "options": {
+        "male": "Homme",
+        "female": "Femme",
+        "other": "Autre"
+      }
+    },
+    "bio": {
+      "label": "Bio",
+      "placeholder": "Parlez-nous de vous...",
+      "characters": "caractères"
+    },
+    "buttons": {
+      "save": "Enregistrer les Modifications",
+      "saving": "Enregistrement..."
+    }
+  },
+  "address": {
+    "title": "Adresse",
+    "street": {
+      "label": "Adresse de Rue"
+    },
+    "city": {
+      "label": "Ville"
+    },
+    "state": {
+      "label": "État/Province"
+    },
+    "postalCode": {
+      "label": "Code Postal"
+    },
+    "country": {
+      "label": "Pays",
+      "options": {
+        "algeria": "Algérie",
+        "france": "France",
+        "tunisia": "Tunisie",
+        "morocco": "Maroc"
+      }
+    },
+    "buttons": {
+      "save": "Enregistrer l'Adresse",
+      "saving": "Enregistrement..."
+    }
+  },
+  "preferences": {
+    "title": "Préférences",
+    "language": {
+      "label": "Langue",
+      "options": {
+        "en": "English",
+        "fr": "Français",
+        "ar": "العربية"
+      }
+    },
+    "currency": {
+      "label": "Devise",
+      "options": {
+        "dzd": "DZD - Dinar Algérien",
+        "eur": "EUR - Euro"
+      }
+    },
+    "theme": {
+      "label": "Thème",
+      "options": {
+        "light": "Clair",
+        "dark": "Sombre"
+      }
+    },
+    "buttons": {
+      "save": "Enregistrer les Préférences",
+      "saving": "Enregistrement..."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "email": {
+      "title": "Notifications par Email",
+      "bookingUpdates": {
+        "label": "Mises à jour de Réservation",
+        "description": "Recevoir des emails sur l'état de vos réservations"
+      },
+      "messages": {
+        "label": "Messages",
+        "description": "Être notifié lors de la réception de nouveaux messages"
+      },
+      "promotions": {
+        "label": "Promotions",
+        "description": "Offres spéciales et réductions"
+      },
+      "newsletter": {
+        "label": "Newsletter",
+        "description": "Newsletter mensuelle avec conseils et mises à jour"
+      }
+    },
+    "push": {
+      "title": "Notifications Push",
+      "bookingUpdates": {
+        "label": "Mises à jour de Réservation",
+        "description": "Recevoir des notifications push sur les réservations"
+      },
+      "messages": {
+        "label": "Messages",
+        "description": "Notifications instantanées pour les nouveaux messages"
+      },
+      "promotions": {
+        "label": "Promotions",
+        "description": "Offres et promotions spéciales"
+      }
+    },
+    "buttons": {
+      "save": "Enregistrer les Notifications",
+      "saving": "Enregistrement..."
+    }
+  },
+  "privacy": {
+    "title": "Paramètres de Confidentialité",
+    "showEmail": {
+      "label": "Afficher l'Email sur le Profil",
+      "description": "Permettre aux autres de voir votre adresse email"
+    },
+    "showPhone": {
+      "label": "Afficher le Téléphone sur le Profil",
+      "description": "Permettre aux autres de voir votre numéro de téléphone"
+    },
+    "profileVisibility": {
+      "label": "Visibilité du Profil",
+      "options": {
+        "public": "Public - Tout le monde peut voir votre profil",
+        "private": "Privé - Vous seul pouvez voir votre profil",
+        "contacts": "Contacts Uniquement - Seulement les personnes avec qui vous avez échangé"
+      }
+    },
+    "buttons": {
+      "save": "Enregistrer les Paramètres de Confidentialité",
+      "saving": "Enregistrement..."
+    }
+  },
+  "security": {
+    "title": "Sécurité",
+    "password": {
+      "title": "Changer le Mot de Passe",
+      "currentPassword": {
+        "label": "Mot de Passe Actuel"
+      },
+      "newPassword": {
+        "label": "Nouveau Mot de Passe"
+      },
+      "confirmPassword": {
+        "label": "Confirmer le Nouveau Mot de Passe"
+      },
+      "buttons": {
+        "save": "Changer le Mot de Passe",
+        "saving": "Changement..."
+      }
+    },
+    "email": {
+      "title": "Changer l'Email",
+      "currentEmail": "Email Actuel :",
+      "verified": "✓ Vérifié",
+      "notVerified": "✗ Non Vérifié",
+      "newEmail": {
+        "label": "Nouvelle Adresse Email"
+      },
+      "password": {
+        "label": "Mot de Passe"
+      },
+      "buttons": {
+        "save": "Changer l'Email",
+        "saving": "Changement..."
+      }
+    }
+  },
+  "account": {
+    "title": "Gestion du Compte",
+    "info": {
+      "title": "Informations du Compte",
+      "role": "Rôle du Compte",
+      "emailVerified": "Email Vérifié",
+      "status": "Statut du Compte",
+      "memberSince": "Membre Depuis",
+      "lastLogin": "Dernière Connexion",
+      "yes": "Oui",
+      "no": "Non",
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "deactivate": {
+      "title": "Désactiver le Compte",
+      "description": "Désactivez temporairement votre compte. Vous pouvez le réactiver à tout moment en vous reconnectant.",
+      "button": "Désactiver le Compte"
+    },
+    "delete": {
+      "title": "Supprimer le Compte",
+      "description": "Supprimez définitivement votre compte et toutes les données associées. Cette action ne peut pas être annulée.",
+      "button": "Supprimer le Compte Définitivement"
+    }
+  },
+  "modals": {
+    "deactivate": {
+      "title": "Désactiver le Compte",
+      "description": "Êtes-vous sûr de vouloir désactiver votre compte ? Vous pouvez le réactiver à tout moment en vous reconnectant.",
+      "cancel": "Annuler",
+      "confirm": "Désactiver",
+      "confirming": "Désactivation..."
+    },
+    "delete": {
+      "title": "Supprimer le Compte Définitivement",
+      "description": "Cette action ne peut pas être annulée. Toutes vos données seront définitivement supprimées.",
+      "password": {
+        "label": "Mot de Passe",
+        "required": true
+      },
+      "reason": {
+        "label": "Raison du départ (Optionnel)",
+        "placeholder": "Aidez-nous à nous améliorer..."
+      },
+      "cancel": "Annuler",
+      "confirm": "Supprimer Définitivement",
+      "confirming": "Suppression..."
+    }
+  },
+  "messages": {
+    "success": {
+      "avatarUploaded": "Avatar téléchargé avec succès",
+      "avatarDeleted": "Avatar supprimé avec succès",
+      "personalInfoUpdated": "Informations personnelles mises à jour avec succès",
+      "addressUpdated": "Adresse mise à jour avec succès",
+      "preferencesUpdated": "Préférences mises à jour avec succès",
+      "notificationsUpdated": "Paramètres de notification mis à jour avec succès",
+      "privacyUpdated": "Paramètres de confidentialité mis à jour avec succès",
+      "passwordChanged": "Mot de passe changé avec succès",
+      "emailChanged": "Email changé avec succès. Veuillez vérifier votre nouvel email.",
+      "accountDeactivated": "Compte désactivé avec succès",
+      "accountDeleted": "Compte supprimé avec succès"
+    },
+    "error": {
+      "pleaseLogin": "Veuillez vous connecter pour voir les paramètres",
+      "loadFailed": "Échec du chargement des paramètres",
+      "imageSizeExceeded": "La taille de l'image doit être inférieure à 5MB",
+      "invalidImageType": "Veuillez télécharger un fichier image valide (JPG, PNG ou GIF)",
+      "avatarUploadFailed": "Échec du téléchargement de l'avatar",
+      "avatarDeleteFailed": "Échec de la suppression de l'avatar",
+      "personalInfoUpdateFailed": "Échec de la mise à jour des informations personnelles",
+      "addressUpdateFailed": "Échec de la mise à jour de l'adresse",
+      "preferencesUpdateFailed": "Échec de la mise à jour des préférences",
+      "notificationsUpdateFailed": "Échec de la mise à jour des notifications",
+      "privacyUpdateFailed": "Échec de la mise à jour de la confidentialité",
+      "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
+      "passwordChangeFailed": "Échec du changement de mot de passe",
+      "invalidEmail": "Veuillez entrer une adresse email valide",
+      "emailChangeFailed": "Échec du changement d'email",
+      "accountDeactivateFailed": "Échec de la désactivation du compte",
+      "enterPassword": "Veuillez entrer votre mot de passe",
+      "accountDeleteFailed": "Échec de la suppression du compte"
+    }
+  },
+  "validation": {
+    "required": "Ce champ est requis",
+    "minLength": "Minimum {min} caractères requis",
+    "maxLength": "Maximum {max} caractères autorisés",
+    "invalidEmail": "Veuillez entrer une adresse email valide",
+    "passwordMismatch": "Les mots de passe ne correspondent pas"
+  }
+}

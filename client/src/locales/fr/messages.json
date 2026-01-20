@@ -1,0 +1,143 @@
+{
+  "header": {
+    "title": "Messages",
+    "subtitle": "Communiquez avec les hôtes et gérez vos conversations"
+  },
+  "stats": {
+    "totalConversations": "Conversations totales",
+    "unreadMessages": "Messages non lus",
+    "archived": "Archivées"
+  },
+  "conversations": {
+    "title": "Conversations",
+    "newConversation": "Nouvelle conversation",
+    "searchPlaceholder": "Rechercher des conversations...",
+    "filters": {
+      "active": "Actives",
+      "archived": "Archivées"
+    },
+    "empty": {
+      "noConversations": "Aucune conversation",
+      "noMatches": "Aucune conversation ne correspond à votre recherche",
+      "startConversation": "Démarrer une conversation avec un hôte"
+    },
+    "youPrefix": "Vous : ",
+    "unreadBadge": "nouveau"
+  },
+  "messagesArea": {
+    "tooltips": {
+      "archive": "Archiver la conversation",
+      "unarchive": "Désarchiver la conversation",
+      "delete": "Supprimer la conversation"
+    },
+    "empty": "Aucun message pour le moment. Commencez la conversation !",
+    "edited": "(modifié)",
+    "actions": {
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "input": {
+      "placeholder": "Écrivez votre message...",
+      "hint": "Appuyez sur Entrée pour envoyer, Maj + Entrée pour une nouvelle ligne"
+    },
+    "emptyState": {
+      "title": "Sélectionnez une conversation",
+      "subtitle": "Choisissez une conversation dans la liste pour commencer à échanger"
+    },
+    "loading": "Chargement des messages..."
+  },
+  "deleteModal": {
+    "title": "Supprimer le message",
+    "message": "Êtes-vous sûr de vouloir supprimer ce message ? Cette action est irréversible.",
+    "cancel": "Annuler",
+    "confirm": "Supprimer le message"
+  },
+  "archiveModal": {
+    "archiveTitle": "Archiver la conversation",
+    "unarchiveTitle": "Désarchiver la conversation",
+    "archiveMessage": "Cette conversation sera déplacée dans les archives. Vous pourrez la restaurer ultérieurement.",
+    "unarchiveMessage": "Cette conversation sera replacée dans les conversations actives.",
+    "cancel": "Annuler",
+    "confirmArchive": "Archiver",
+    "confirmUnarchive": "Désarchiver"
+  },
+  "newConversationModal": {
+    "title": "Démarrer une nouvelle conversation",
+    "message": "Pour démarrer une nouvelle conversation, veuillez parcourir les annonces et contacter l'hôte depuis la page de l'annonce.",
+    "close": "Fermer",
+    "browseListings": "Parcourir les annonces"
+  },
+  "toast": {
+    "newMessage": "Nouveau message de {name}",
+    "loginRequired": "Veuillez vous connecter pour voir les messages",
+    "loadFailed": "Échec du chargement des messages",
+    "sendFailed": "Échec de l'envoi du message",
+    "updateSuccess": "Message mis à jour avec succès",
+    "updateFailed": "Échec de la mise à jour du message",
+    "deleteSuccess": "Message supprimé avec succès",
+    "deleteFailed": "Échec de la suppression du message",
+    "archiveSuccess": "Conversation archivée",
+    "unarchiveSuccess": "Conversation désarchivée",
+    "archiveFailed": "Échec de l'archivage de la conversation",
+    "unarchiveFailed": "Échec de la désarchivage de la conversation",
+    "conversationDeleteSuccess": "Conversation supprimée avec succès",
+    "conversationDeleteFailed": "Échec de la suppression de la conversation",
+    "connectionError": "Erreur de connexion"
+  },
+  "time": {
+    "yesterday": "Hier"
+  },
+  "admin": {
+    "loading": "Chargement de la gestion des messages...",
+    "header": {
+      "title": "Gestion des messages",
+      "subtitle": "Voir et gérer toutes les conversations sur la plateforme"
+    },
+    "stats": {
+      "totalConversations": "Conversations totales",
+      "allTime": "Tout le temps",
+      "activeConversations": "Conversations actives",
+      "currentlyOngoing": "En cours actuellement",
+      "archived": "Archivées",
+      "inactiveThreads": "Fils inactifs",
+      "totalMessages": "Messages totaux",
+      "platformWide": "Sur toute la plateforme"
+    },
+    "searchPlaceholder": "Rechercher des utilisateurs, des annonces...",
+    "filters": {
+      "all": "Tout"
+    },
+    "empty": {
+      "noConversations": "Aucune conversation trouvée",
+      "tryAdjusting": "Essayez d'ajuster votre recherche",
+      "noInCategory": "Aucune conversation dans cette catégorie"
+    },
+    "roles": {
+      "guest": "Invité",
+      "host": "Hôte"
+    },
+    "labels": {
+      "message": "message",
+      "messages": "messages"
+    },
+    "pagination": {
+      "page": "Page",
+      "of": "sur"
+    },
+    "messages": {
+      "noMessages": "Aucun message dans cette conversation"
+    },
+    "footer": {
+      "readOnly": "Vue administrateur - Mode lecture seule"
+    },
+    "deleteModal": {
+      "title": "Supprimer la conversation",
+      "message": "Êtes-vous sûr de vouloir supprimer définitivement cette conversation ? Cela supprimera tous les",
+      "between": "entre",
+      "cannotUndo": "Cette action est irréversible.",
+      "confirmButton": "Supprimer définitivement"
+    }
+  }
+}

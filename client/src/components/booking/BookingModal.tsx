@@ -1,0 +1,386 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import {
+  X, Calendar, Users, DollarSign, Shield, AlertCircle,
+  Check, Loader, Clock, Home, CreditCard, Info
+} from 'lucide-react';
+import { Listing } from '@/types';
+import { useTranslation } from '@/hooks/useTranslation';
+
+interface BookingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  listing: Listing;
+  checkIn: string;
+  checkOut: string;
+  guests: {
+    adults: number;
+    children: number;
+    infants: number;
+  };
+  onGuestsChange?: (guests: { adults: number; children: number; infants: number }) => void;
+}
+
+interface PricingBreakdown {
+  basePrice: number;
+  nights: number;
+  subtotal: number;
+  cleaningFee: number;
+  serviceFee: number;
+  taxes: number;
+  total: number;
+}
+
+export default function BookingModal({
+  isOpen,
+  onClose,
+  listing,
+  checkIn,
+  checkOut,
+  guests,
+  onGuestsChange
+}: BookingModalProps) {
+  const t = useTranslation('booking');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [specialRequests, setSpecialRequests] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [pricing, setPricing] = useState<PricingBreakdown | null>(null);
+
+  // Calculate pricing breakdown
+  useEffect(() => {
+    if (checkIn && checkOut && listing) {
+      const start = new Date(checkIn);
+      const end = new Date(checkOut);
+      const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (nights > 0) {
+        const basePrice = listing.pricing?.basePrice || 0;
+        const subtotal = basePrice * nights;
+        const cleaningFee = listing.pricing?.cleaningFee || 0;
+        const serviceFee = Math.round(subtotal * 0.10); // 10% service fee
+        const taxes = Math.round((subtotal + cleaningFee + serviceFee) * 0.05); // 5% taxes
+        const total = subtotal + cleaningFee + serviceFee + taxes;
+
+        setPricing({
+          basePrice,
+          nights,
+          subtotal,
+          cleaningFee,
+          serviceFee,
+          taxes,
+          total
+        });
+      }
+    }
+  }, [checkIn, checkOut, listing]);
+
+  const formatPrice = (price: number) => {
+    const currency = listing.pricing?.currency || 'DZD';
+    if (currency === 'DZD') {
+      return `${price.toLocaleString('fr-FR')} دج`;
+    }
+    return `€${price.toLocaleString('fr-FR')}`;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const getGuestLabel = (count: number, singular: string, plural: string) => {
+    return count === 1 ? ((t as any)?.guests?.[singular] || singular) : ((t as any)?.guests?.[plural] || plural);
+  };
+
+  const getNightLabel = (count: number) => {
+    return count === 1 ? ((t as any)?.time?.night || 'night') : ((t as any)?.time?.nights || 'nights');
+  };
+
+  const handleBooking = async () => {
+    if (!acceptedTerms) {
+      setError((t as any)?.errors?.acceptTerms || 'Please accept the terms and conditions');
+      return;
+    }
+
+    if (!checkIn || !checkOut) {
+      setError((t as any)?.errors?.selectDates || 'Please select check-in and check-out dates');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        setError((t as any)?.errors?.loginRequired || 'Please log in to continue');
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings/create-with-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          listing: listing._id || listing.id,
+          startDate: checkIn,
+          endDate: checkOut,
+          guestCount: guests,
+          specialRequests
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || ((t as any)?.errors?.bookingFailed || 'Booking failed'));
+      }
+
+      if (data.status === 'success' && data.data?.payment?.paymentUrl) {
+        // Redirect to Slick Pay payment page
+        window.location.href = data.data.payment.paymentUrl;
+      } else {
+        throw new Error((t as any)?.payment?.paymentUrlError || 'Payment URL not available');
+      }
+    } catch (err: any) {
+      console.error('Booking error:', err);
+      setError(err.message || ((t as any)?.errors?.bookingFailedRetry || 'Booking failed. Please try again.'));
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const totalGuests = guests.adults + guests.children + guests.infants;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">{(t as any)?.modal?.title || 'Confirm and Pay'}</h2>
+              <p className="text-sm text-gray-600 mt-1">{listing.title}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              disabled={loading}
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 max-h-[70vh] overflow-y-auto">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-red-800 font-medium">{(t as any)?.errors?.title || 'Error'}</p>
+                  <p className="text-red-600 text-sm mt-1">{error}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Trip Details */}
+            <div className="space-y-4 mb-6">
+              <h3 className="text-lg font-bold text-gray-900">{(t as any)?.sections?.yourTrip || 'Your Trip'}</h3>
+
+              {/* Dates */}
+              <div className="flex items-start justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <Calendar className="w-5 h-5 text-[#FF6B35] mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-gray-900">{(t as any)?.labels?.dates || 'Dates'}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {formatDate(checkIn)} → {formatDate(checkOut)}
+                    </p>
+                    {pricing && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {pricing.nights} {getNightLabel(pricing.nights)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Guests */}
+              <div className="flex items-start justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <Users className="w-5 h-5 text-[#FF6B35] mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-gray-900">{(t as any)?.labels?.guests || 'Guests'}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {guests.adults} {getGuestLabel(guests.adults, 'adult', 'adults')}
+                      {guests.children > 0 && `, ${guests.children} ${getGuestLabel(guests.children, 'child', 'children')}`}
+                      {guests.infants > 0 && `, ${guests.infants} ${getGuestLabel(guests.infants, 'infant', 'infants')}`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Check-in/Check-out times */}
+              {listing.availability && (
+                <div className="flex items-start justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-[#FF6B35] mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-gray-900">{(t as any)?.labels?.checkInCheckOut || 'Check-in / Check-out'}</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {(t as any)?.labels?.checkIn || 'Check-in'}: {listing.availability.checkInFrom} - {listing.availability.checkInTo}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {(t as any)?.labels?.checkOut || 'Check-out'}: {(t as any)?.labels?.before || 'Before'} {listing.availability.checkOutBefore}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Special Requests */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                {(t as any)?.form?.specialRequestsLabel || 'Special Requests'}
+              </label>
+              <textarea
+                value={specialRequests}
+                onChange={(e) => setSpecialRequests(e.target.value)}
+                placeholder={(t as any)?.form?.specialRequestsPlaceholder || 'Any special requests? (optional)'}
+                rows={3}
+                maxLength={500}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent resize-none"
+                disabled={loading}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {specialRequests.length}/500 characters
+              </p>
+            </div>
+
+            {/* Price Breakdown */}
+            {pricing && (
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{(t as any)?.sections?.priceDetails || 'Price Details'}</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-gray-700">
+                    <span>
+                      {formatPrice(pricing.basePrice)} × {pricing.nights} {getNightLabel(pricing.nights)}
+                    </span>
+                    <span>{formatPrice(pricing.subtotal)}</span>
+                  </div>
+                  {pricing.cleaningFee > 0 && (
+                    <div className="flex justify-between text-gray-700">
+                      <span>{(t as any)?.labels?.cleaningFee || 'Cleaning fee'}</span>
+                      <span>{formatPrice(pricing.cleaningFee)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-gray-700">
+                    <span>{(t as any)?.labels?.serviceFee || 'Service fee'}</span>
+                    <span>{formatPrice(pricing.serviceFee)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>{(t as any)?.labels?.taxes || 'Taxes'}</span>
+                    <span>{formatPrice(pricing.taxes)}</span>
+                  </div>
+                  <div className="pt-3 border-t border-gray-300 flex justify-between font-bold text-lg">
+                    <span>{(t as any)?.labels?.total || 'Total'}</span>
+                    <span>{formatPrice(pricing.total)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Terms and Conditions */}
+            <div className="mb-6">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 w-5 h-5 rounded border-gray-300 text-[#FF6B35] focus:ring-[#FF6B35]"
+                  disabled={loading}
+                />
+                <span className="text-sm text-gray-700 group-hover:text-gray-900">
+                  {(t as any)?.form?.termsAgreement || 'I agree to the'}{' '}
+                  <a href="/terms" className="text-[#FF6B35] hover:underline" target="_blank">
+                    {(t as any)?.form?.termsOfService || 'Terms of Service'}
+                  </a>
+                  {' '}{(t as any)?.form?.and || 'and'}{' '}
+                  <a href="/cancellation-policy" className="text-[#FF6B35] hover:underline" target="_blank">
+                    {(t as any)?.form?.cancellationPolicy || 'Cancellation Policy'}
+                  </a>
+                </span>
+              </label>
+            </div>
+
+            {/* Important Information */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-900">
+                  <p className="font-semibold mb-1">{(t as any)?.payment?.securePaymentTitle || 'Secure Payment'}</p>
+                  <p className="text-blue-700">
+                    {(t as any)?.payment?.securePaymentDescription || 'Your payment will be processed securely through Slick Pay.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between gap-4 p-6 border-t border-gray-200 bg-gray-50">
+            <button
+              onClick={onClose}
+              className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+              disabled={loading}
+            >
+              {(t as any)?.buttons?.cancel || 'Cancel'}
+            </button>
+            <button
+              onClick={handleBooking}
+              disabled={loading || !acceptedTerms || !pricing}
+              className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] text-white rounded-xl font-bold hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {loading ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  {(t as any)?.buttons?.processing || 'Processing...'}
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5" />
+                  {listing.availability?.instantBook ? ((t as any)?.buttons?.confirmAndPay || 'Confirm and Pay') : ((t as any)?.buttons?.requestAndPay || 'Request and Pay')}
+                  {pricing && ` ${formatPrice(pricing.total)}`}
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

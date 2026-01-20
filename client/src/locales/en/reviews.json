@@ -1,0 +1,106 @@
+{
+  "header": {
+    "hostTitle": "Reviews About You",
+    "hostSubtitle": "Manage reviews from your guests",
+    "guestTitle": "Reviews You Wrote",
+    "guestSubtitle": "View and manage your reviews"
+  },
+  "stats": {
+    "totalReviews": "Total Reviews",
+    "averageRating": "Average Rating",
+    "responseRate": "Response Rate",
+    "published": "Published"
+  },
+  "detailedRatings": {
+    "title": "Detailed Ratings",
+    "cleanliness": "Cleanliness",
+    "communication": "Communication",
+    "checkin": "Checkin",
+    "checkIn": "Check-in",
+    "accuracy": "Accuracy",
+    "location": "Location",
+    "value": "Value"
+  },
+  "filters": {
+    "rating": {
+      "all": "All Ratings",
+      "5stars": "5 Stars",
+      "4plus": "4+ Stars",
+      "3plus": "3+ Stars",
+      "2plus": "2+ Stars",
+      "1plus": "1+ Stars"
+    },
+    "status": {
+      "published": "Published",
+      "pending": "Pending",
+      "all": "All Status"
+    }
+  },
+  "table": {
+    "headers": {
+      "listing": "Listing",
+      "reviewer": "Reviewer",
+      "reviewee": "Reviewee",
+      "rating": "Rating",
+      "review": "Review",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "status": {
+    "published": "Published",
+    "pending": "Pending",
+    "hidden": "Hidden",
+    "flagged": "Flagged"
+  },
+  "actions": {
+    "viewDetails": "View Details",
+    "respond": "Respond",
+    "delete": "Delete"
+  },
+  "detailsModal": {
+    "title": "Review Details",
+    "titleLabel": "Title",
+    "commentLabel": "Comment",
+    "detailedRatingsLabel": "Detailed Ratings",
+    "hostResponse": "Host Response",
+    "reviewedOn": "Reviewed on"
+  },
+  "responseModal": {
+    "title": "Add Response",
+    "instructionPrefix": "Respond to",
+    "instructionSuffix": "'s review",
+    "label": "Your Response",
+    "placeholder": "Write your response...",
+    "characterCount": "characters",
+    "cancel": "Cancel",
+    "submit": "Add Response"
+  },
+  "deleteModal": {
+    "title": "Delete Review",
+    "confirmPrefix": "Are you sure you want to delete your review for",
+    "confirmSuffix": "? This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Delete Review"
+  },
+  "emptyState": {
+    "title": "No Reviews Found",
+    "hostMessage": "You haven't received any reviews yet",
+    "guestMessage": "You haven't written any reviews yet"
+  },
+  "pagination": {
+    "page": "Page",
+    "of": "of"
+  },
+  "loading": {
+    "reviews": "Loading reviews..."
+  },
+  "toast": {
+    "loadFailed": "Failed to load reviews",
+    "responseSuccess": "Response added successfully",
+    "responseFailed": "Failed to add response",
+    "deleteSuccess": "Review deleted successfully",
+    "deleteFailed": "Failed to delete review"
+  }
+}

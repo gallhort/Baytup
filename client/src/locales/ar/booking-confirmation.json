@@ -1,0 +1,43 @@
+{
+  "verifying": {
+    "title": "التحقق من الدفع",
+    "message": "يرجى الانتظار بينما نقوم بتأكيد دفعتك..."
+  },
+  "success": {
+    "title": "تم الدفع بنجاح!",
+    "message": "تم الدفع بنجاح! تم تأكيد حجزك.",
+    "paymentDetails": {
+      "title": "تفاصيل الدفع",
+      "transactionId": "معرّف المعاملة",
+      "paymentMethod": "طريقة الدفع",
+      "status": "الحالة",
+      "paid": "مدفوع",
+      "na": "غير متوفر"
+    },
+    "buttons": {
+      "viewBookingDetails": "عرض تفاصيل الحجز",
+      "viewAllBookings": "عرض جميع الحجوزات",
+      "backToHome": "العودة إلى الصفحة الرئيسية"
+    }
+  },
+  "failed": {
+    "title": "الدفع غير مكتمل",
+    "messagePending": "الدفع لا يزال قيد الانتظار. يرجى إكمال الدفع أو المحاولة مرة أخرى.",
+    "messageNotCompleted": "لم يتم إكمال الدفع. يرجى المحاولة مرة أخرى.",
+    "buttons": {
+      "viewBookingAndRetry": "عرض الحجز وإعادة محاولة الدفع",
+      "viewAllBookings": "عرض جميع الحجوزات",
+      "backToHome": "العودة إلى الصفحة الرئيسية"
+    }
+  },
+  "error": {
+    "title": "خطأ في التحقق",
+    "pleaseLogin": "يرجى تسجيل الدخول لعرض حجزك",
+    "messageFailed": "فشل التحقق من الدفع. يرجى التحقق من صفحة حجوزاتك.",
+    "buttons": {
+      "tryAgain": "حاول مرة أخرى",
+      "viewMyBookings": "عرض حجوزاتي",
+      "backToHome": "العودة إلى الصفحة الرئيسية"
+    }
+  }
+}

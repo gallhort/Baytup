@@ -1,0 +1,69 @@
+{
+  "loading": {
+    "message": "Loading dashboard...",
+    "spinner": "Loading..."
+  },
+  "common": {
+    "loading": "Loading dashboard...",
+    "noData": "No data available",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "delete": "Delete",
+    "viewAll": "View All",
+    "seeMore": "See More",
+    "back": "Back",
+    "export": "Export",
+    "generate": "Generate"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "overview": "Overview",
+    "listings": "Listings",
+    "bookings": "Bookings",
+    "reviews": "Reviews",
+    "messages": "Messages",
+    "settings": "Settings",
+    "profile": "Profile",
+    "reports": "Reports"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "paused": "Paused"
+  },
+  "currency": {
+    "dzd": "DZD",
+    "perNight": "per night",
+    "perDay": "per day",
+    "perWeek": "per week",
+    "perMonth": "per month",
+    "total": "Total",
+    "avg": "avg"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "lastWeek": "Last Week",
+    "lastMonth": "Last Month",
+    "lastQuarter": "Last Quarter",
+    "lastYear": "Last Year"
+  },
+  "empty": {
+    "noDataYet": "No data yet",
+    "startNow": "Get started now",
+    "noResults": "No results found"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(test:*)",
+      "Bash(dir /s \"C:\\\\xampp\\\\htdocs\\\\baytup\\\\client\\\\app\")",
+      "Bash(node test-search-params.js:*)",
+      "Bash(curl:*)",
+      "Bash(node test-exact-query.js:*)",
+      "Bash(node test-split-location.js:*)",
+      "Bash(node:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(dir:*)",
+      "Bash(python:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git fetch:*)",
+      "Bash(if [ -f .gitignore ])",
+      "Bash(then echo \"exists\")",
+      "Bash(else echo \"not found\")",
+      "Bash(fi)",
+      "Bash(git add:*)",
+      "Bash(del /F /Q nul)"
+    ]
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "header": {
+    "title": "سجل الرحلات",
+    "subtitle": "رحلتك عبر أماكن رائعة",
+    "loading": "جاري تحميل سجل رحلاتك..."
+  },
+  "stats": {
+    "totalTrips": "إجمالي الرحلات",
+    "destinations": "الوجهات",
+    "nights": "الليالي",
+    "totalSpent": "إجمالي الإنفاق",
+    "avgPerTrip": "المتوسط",
+    "trip": "رحلة",
+    "countriesVisited": "الدول المزارة",
+    "favorite": "المفضلة",
+    "totalNights": "إجمالي الليالي",
+    "avgNights": "المتوسط",
+    "nightsPerTrip": "ليلة/رحلة",
+    "byCategory": "حسب الفئة",
+    "hideStats": "إخفاء الإحصائيات",
+    "showStats": "عرض الإحصائيات"
+  },
+  "filters": {
+    "filters": "الفلاتر",
+    "allYears": "كل السنوات",
+    "allCategories": "كل الفئات",
+    "stays": "الإقامات",
+    "carRentals": "تأجير السيارات",
+    "mostRecent": "الأحدث",
+    "oldestFirst": "الأقدم أولاً",
+    "highestSpent": "الأعلى إنفاقاً",
+    "lowestSpent": "الأقل إنفاقاً",
+    "export": "تصدير",
+    "showing": "عرض",
+    "of": "من",
+    "completedTrips": "رحلات مكتملة"
+  },
+  "categories": {
+    "stay": "إقامة",
+    "car": "تأجير سيارة"
+  },
+  "card": {
+    "completed": "مكتمل",
+    "checkIn": "تسجيل الوصول",
+    "checkOut": "تسجيل المغادرة",
+    "nights": "الليالي",
+    "guests": "الضيوف",
+    "hostedBy": "مستضاف من قبل",
+    "yourReview": "تقييمك:",
+    "shareExperience": "شارك تجربتك! اكتب تقييماً لهذه الإقامة.",
+    "totalPaid": "إجمالي المدفوع",
+    "viewListing": "عرض الإعلان",
+    "writeReview": "كتابة تقييم",
+    "bookAgain": "احجز مرة أخرى"
+  },
+  "yearSummary": {
+    "title": "سنة بعد سنة",
+    "trips": "الرحلات:",
+    "nights": "الليالي:",
+    "spent": "الإنفاق:"
+  },
+  "emptyState": {
+    "title": "لا يوجد سجل رحلات بعد",
+    "message": "أكمل حجزك الأول لبدء بناء سجل رحلاتك",
+    "exploreListings": "استكشف الإعلانات"
+  },
+  "toast": {
+    "loadFailed": "فشل تحميل سجل الرحلات",
+    "exportSuccess": "تم تصدير سجل الرحلات بنجاح",
+    "exportFailed": "فشل تصدير سجل الرحلات"
+  },
+  "loading": {
+    "message": "جاري تحميل سجل رحلاتك..."
+  }
+}

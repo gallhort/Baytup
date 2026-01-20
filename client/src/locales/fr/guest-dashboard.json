@@ -1,0 +1,117 @@
+{
+  "header": {
+    "welcomeBack": "Bon retour, {name} !",
+    "welcomeEmoji": "👋",
+    "subtitle": "Prêt pour votre prochaine aventure ? Explorons des endroits incroyables !",
+    "edit": "Modifier"
+  },
+  "stats": {
+    "totalBookings": "Total des réservations",
+    "upcomingBookings": "à venir",
+    "citiesVisited": "Villes visitées",
+    "uniqueDestinations": "destinations uniques",
+    "savedListings": "Annonces enregistrées",
+    "inWishlist": "dans la liste de souhaits",
+    "totalSpent": "Total dépensé",
+    "avg": "moy",
+    "reviewsWritten": "Avis rédigés",
+    "yourExperiences": "vos expériences",
+    "messages": "Messages",
+    "unreadMessages": "messages non lus"
+  },
+  "cta": {
+    "exploreListings": "Explorer les annonces",
+    "viewUpcomingTrips": "Voir les voyages à venir",
+    "startExploring": "Commencer à explorer",
+    "planNextTrip": "Planifiez votre prochain voyage",
+    "browseListings": "Parcourir les annonces",
+    "goToMessages": "Aller aux messages",
+    "startTraveling": "Commencer à voyager"
+  },
+  "tabs": {
+    "overview": "Vue d'ensemble",
+    "bookings": "Réservations",
+    "wishlist": "Liste de souhaits",
+    "history": "Historique de voyage",
+    "reviews": "Mes avis",
+    "messages": "Messages"
+  },
+  "charts": {
+    "spendingTrend": "Tendance des dépenses",
+    "monthlySpending": "Dépenses mensuelles (DZD)",
+    "bookingStatus": "Statut des réservations",
+    "travelMap": "Carte de voyage - Principales villes",
+    "upcoming": "À venir",
+    "active": "Actif",
+    "completed": "Terminé",
+    "noSpendingData": "Aucune donnée de dépenses pour le moment",
+    "noBookings": "Aucune réservation pour le moment",
+    "noData": "Aucune donnée disponible",
+    "currency": "DZD"
+  },
+  "upcomingTrips": {
+    "title": "Voyages à venir",
+    "noTrips": "Aucun voyage à venir",
+    "planTrip": "Planifiez votre prochain voyage",
+    "viewAll": "Voir Tout"
+  },
+  "recommendedListings": {
+    "title": "Recommandé pour vous",
+    "viewMore": "Voir plus",
+    "new": "Nouveau"
+  },
+  "recentMessages": {
+    "title": "Messages récents",
+    "viewAll": "Voir Tout"
+  },
+  "bookings": {
+    "title": "Toutes les réservations",
+    "subtitle": "Gérer et suivre toutes vos réservations",
+    "noBookings": "Aucune réservation pour le moment",
+    "host": "Hôte"
+  },
+  "wishlist": {
+    "noSavedListings": "Aucune annonce enregistrée",
+    "description": "Commencez à créer votre liste de souhaits en enregistrant les annonces que vous aimez. Retrouvez-les toutes en un seul endroit !",
+    "removeFromWishlist": "Retirer de la liste de souhaits",
+    "removedSuccess": "Retiré de la liste de souhaits",
+    "removedFailed": "Échec de la suppression de la liste de souhaits"
+  },
+  "travelHistory": {
+    "title": "Historique de voyage",
+    "subtitle": "Villes et lieux que vous avez visités",
+    "visit": "visite",
+    "visits": "visites",
+    "lastVisit": "Dernière visite",
+    "noHistory": "Aucun historique de voyage pour le moment",
+    "noHistoryDescription": "Commencez votre voyage et créez des souvenirs !"
+  },
+  "reviews": {
+    "title": "Mes avis",
+    "subtitle": "Avis que vous avez rédigés sur vos séjours",
+    "noReviews": "Aucun avis pour le moment",
+    "noReviewsDescription": "Terminez une réservation pour laisser votre premier avis"
+  },
+  "messages": {
+    "title": "Messages récents",
+    "unreadCount": "Vous avez {count} message non lu",
+    "unreadCountPlural": "Vous avez {count} messages non lus",
+    "allCaughtUp": "Tout est à jour !",
+    "noMessages": "Aucun message pour le moment",
+    "noMessagesDescription": "Les messages des hôtes apparaîtront ici"
+  },
+  "statusBadges": {
+    "confirmed": "Confirmé",
+    "active": "Actif",
+    "completed": "Terminé",
+    "pending": "En attente",
+    "cancelled": "Annulé"
+  },
+  "firstBooking": {
+    "title": "Commencez votre voyage avec Baytup !",
+    "description": "Réservez votre premier séjour ou véhicule et débloquez des avantages exclusifs. Découvrez des lieux uniques à travers l'Algérie !"
+  },
+  "toast": {
+    "loadFailed": "Échec du chargement des données du tableau de bord"
+  }
+}

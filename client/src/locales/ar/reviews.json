@@ -1,0 +1,106 @@
+{
+  "header": {
+    "hostTitle": "التقييمات عنك",
+    "hostSubtitle": "إدارة تقييمات ضيوفك",
+    "guestTitle": "التقييمات التي كتبتها",
+    "guestSubtitle": "عرض وإدارة تقييماتك"
+  },
+  "stats": {
+    "totalReviews": "إجمالي التقييمات",
+    "averageRating": "متوسط التقييم",
+    "responseRate": "معدل الاستجابة",
+    "published": "منشور"
+  },
+  "detailedRatings": {
+    "title": "التقييمات التفصيلية",
+    "cleanliness": "النظافة",
+    "communication": "التواصل",
+    "checkin": "تسجيل الوصول",
+    "checkIn": "تسجيل الوصول",
+    "accuracy": "الدقة",
+    "location": "الموقع",
+    "value": "القيمة مقابل المال"
+  },
+  "filters": {
+    "rating": {
+      "all": "جميع التقييمات",
+      "5stars": "5 نجوم",
+      "4plus": "4+ نجوم",
+      "3plus": "3+ نجوم",
+      "2plus": "2+ نجوم",
+      "1plus": "1+ نجوم"
+    },
+    "status": {
+      "published": "منشور",
+      "pending": "قيد الانتظار",
+      "all": "جميع الحالات"
+    }
+  },
+  "table": {
+    "headers": {
+      "listing": "الإعلان",
+      "reviewer": "المقيّم",
+      "reviewee": "المُقيّم",
+      "rating": "التقييم",
+      "review": "المراجعة",
+      "date": "التاريخ",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    }
+  },
+  "status": {
+    "published": "منشور",
+    "pending": "قيد الانتظار",
+    "hidden": "مخفي",
+    "flagged": "مبلغ عنه"
+  },
+  "actions": {
+    "viewDetails": "عرض التفاصيل",
+    "respond": "الرد",
+    "delete": "حذف"
+  },
+  "detailsModal": {
+    "title": "تفاصيل التقييم",
+    "titleLabel": "العنوان",
+    "commentLabel": "التعليق",
+    "detailedRatingsLabel": "التقييمات التفصيلية",
+    "hostResponse": "رد المضيف",
+    "reviewedOn": "تم التقييم في"
+  },
+  "responseModal": {
+    "title": "إضافة رد",
+    "instructionPrefix": "الرد على تقييم",
+    "instructionSuffix": "",
+    "label": "ردك",
+    "placeholder": "اكتب ردك...",
+    "characterCount": "حرف",
+    "cancel": "إلغاء",
+    "submit": "إضافة رد"
+  },
+  "deleteModal": {
+    "title": "حذف التقييم",
+    "confirmPrefix": "هل أنت متأكد من أنك تريد حذف تقييمك لـ",
+    "confirmSuffix": "؟ لا يمكن التراجع عن هذا الإجراء.",
+    "cancel": "إلغاء",
+    "confirm": "حذف التقييم"
+  },
+  "emptyState": {
+    "title": "لم يتم العثور على تقييمات",
+    "hostMessage": "لم تتلق أي تقييمات بعد",
+    "guestMessage": "لم تكتب أي تقييمات بعد"
+  },
+  "pagination": {
+    "page": "الصفحة",
+    "of": "من"
+  },
+  "loading": {
+    "reviews": "جاري تحميل التقييمات..."
+  },
+  "toast": {
+    "loadFailed": "فشل تحميل التقييمات",
+    "responseSuccess": "تمت إضافة الرد بنجاح",
+    "responseFailed": "فشل إضافة الرد",
+    "deleteSuccess": "تم حذف التقييم بنجاح",
+    "deleteFailed": "فشل حذف التقييم"
+  }
+}

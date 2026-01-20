@@ -1,0 +1,113 @@
+{
+  "header": {
+    "title": "Payout Management",
+    "subtitle": "Manage host payout requests"
+  },
+  "stats": {
+    "total": "Total Requests",
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed",
+    "rejected": "Rejected"
+  },
+  "filters": {
+    "searchPlaceholder": "Search by host name, email, or bank...",
+    "allStatus": "All Status",
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed",
+    "rejected": "Rejected",
+    "clearFilters": "Clear Filters"
+  },
+  "table": {
+    "host": "Host",
+    "amount": "Amount",
+    "bankAccount": "Bank Account",
+    "requested": "Requested",
+    "status": "Status",
+    "actions": "Actions",
+    "net": "Net",
+    "completed": "Completed"
+  },
+  "actions": {
+    "viewDetails": "View Details",
+    "approve": "Approve",
+    "reject": "Reject",
+    "complete": "Mark as Complete"
+  },
+  "status": {
+    "completed": "Completed",
+    "processing": "Processing",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled"
+  },
+  "emptyState": {
+    "title": "No Payout Requests",
+    "message": "No payout requests match your filters."
+  },
+  "pagination": {
+    "page": "Page",
+    "of": "of"
+  },
+  "modal": {
+    "host": "Host",
+    "amount": "Amount",
+    "bank": "Bank",
+    "adminNotes": "Admin Notes",
+    "optional": "optional",
+    "adminNotesPlaceholder": "Add notes visible to the host...",
+    "cancel": "Cancel",
+    "processing": "Processing...",
+    "approve": {
+      "title": "Approve Payout",
+      "button": "Approve Payout"
+    },
+    "reject": {
+      "title": "Reject Payout",
+      "button": "Reject Payout",
+      "reasonLabel": "Rejection Reason",
+      "reasonPlaceholder": "Provide a reason for rejection..."
+    },
+    "complete": {
+      "title": "Complete Payout",
+      "button": "Mark as Complete",
+      "transactionIdLabel": "Transaction ID",
+      "transactionIdPlaceholder": "Enter transaction ID..."
+    }
+  },
+  "details": {
+    "title": "Payout Details",
+    "payoutAmount": "Payout Amount",
+    "requestedAmount": "Requested Amount",
+    "platformFee": "Platform Fee",
+    "processingFee": "Processing Fee",
+    "finalAmount": "Final Amount",
+    "bankAccount": "Bank Account Details",
+    "bankName": "Bank Name",
+    "accountHolder": "Account Holder",
+    "accountNumber": "Account Number",
+    "swiftCode": "SWIFT Code",
+    "timeline": "Timeline",
+    "requested": "Requested",
+    "processed": "Processed",
+    "completed": "Completed",
+    "hostNotes": "Host Notes",
+    "adminNotes": "Admin Notes",
+    "rejectionReason": "Rejection Reason",
+    "transactionId": "Transaction ID"
+  },
+  "validation": {
+    "rejectionReasonRequired": "Please provide a rejection reason",
+    "transactionIdRequired": "Please provide a transaction ID"
+  },
+  "toast": {
+    "loadFailed": "Failed to load payouts",
+    "updateSuccess": "Payout updated successfully",
+    "updateFailed": "Failed to update payout"
+  },
+  "errors": {
+    "adminOnly": "Admin access required"
+  },
+  "loading": "Loading payouts..."
+}

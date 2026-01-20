@@ -1,0 +1,151 @@
+{
+  "header": {
+    "title": "إدارة المستخدمين",
+    "subtitle": "إدارة جميع المستخدمين في النظام",
+    "addButton": "إضافة مستخدم جديد"
+  },
+  "stats": {
+    "totalUsers": "إجمالي المستخدمين",
+    "guests": "الضيوف",
+    "hosts": "المضيفون",
+    "admins": "المسؤولون",
+    "active": "نشط",
+    "blocked": "محظور"
+  },
+  "filters": {
+    "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني...",
+    "allRoles": "جميع الأدوار",
+    "allStatus": "جميع الحالات",
+    "roleGuest": "الضيوف",
+    "roleHost": "المضيفون",
+    "roleAdmin": "المسؤولون",
+    "statusActive": "نشط",
+    "statusInactive": "غير نشط",
+    "statusBlocked": "محظور"
+  },
+  "table": {
+    "headers": {
+      "user": "المستخدم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "status": "الحالة",
+      "joined": "تاريخ الانضمام",
+      "actions": "الإجراءات"
+    },
+    "content": {
+      "verified": "موثق",
+      "notVerified": "غير موثق",
+      "guest": "ضيف",
+      "host": "مضيف",
+      "admin": "مسؤول",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "blocked": "محظور"
+    }
+  },
+  "actions": {
+    "viewDetails": "عرض التفاصيل",
+    "editUser": "تعديل المستخدم",
+    "resetPassword": "إعادة تعيين كلمة المرور",
+    "blockUser": "حظر المستخدم",
+    "unblockUser": "إلغاء حظر المستخدم",
+    "deleteUser": "حذف المستخدم"
+  },
+  "pagination": {
+    "previous": "السابق",
+    "next": "التالي",
+    "showing": "عرض",
+    "to": "إلى",
+    "of": "من",
+    "results": "نتيجة"
+  },
+  "modal": {
+    "createTitle": "إنشاء مستخدم جديد",
+    "editTitle": "تعديل المستخدم",
+    "viewTitle": "تفاصيل المستخدم",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "phone": "الهاتف",
+    "role": "الدور",
+    "dateOfBirth": "تاريخ الميلاد",
+    "gender": "الجنس",
+    "selectGender": "اختر الجنس",
+    "male": "ذكر",
+    "female": "أنثى",
+    "other": "آخر",
+    "city": "المدينة",
+    "state": "الولاية",
+    "country": "الدولة",
+    "statistics": "الإحصائيات",
+    "totalBookings": "إجمالي الحجوزات",
+    "totalListings": "إجمالي الإعلانات",
+    "totalReviews": "إجمالي التقييمات",
+    "averageRating": "متوسط التقييم",
+    "na": "غير متوفر",
+    "close": "إغلاق",
+    "cancel": "إلغاء",
+    "createUser": "إنشاء المستخدم",
+    "saveChanges": "حفظ التغييرات",
+    "firstNameRequired": "الاسم الأول *",
+    "lastNameRequired": "اسم العائلة *",
+    "emailRequired": "البريد الإلكتروني *",
+    "passwordRequired": "كلمة المرور *",
+    "status": "الحالة",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "blocked": "محظور",
+    "guest": "ضيف",
+    "host": "مضيف",
+    "admin": "مسؤول",
+    "joined": "انضم"
+  },
+  "resetPassword": {
+    "title": "إعادة تعيين كلمة المرور",
+    "resetPasswordFor": "إعادة تعيين كلمة المرور لـ:",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "newPasswordPlaceholder": "أدخل كلمة مرور جديدة (6 أحرف على الأقل)",
+    "confirmPasswordPlaceholder": "أكد كلمة المرور الجديدة",
+    "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+    "resetButton": "إعادة تعيين كلمة المرور"
+  },
+  "blockUser": {
+    "title": "حظر المستخدم",
+    "message": "أنت على وشك حظر:",
+    "reasonLabel": "سبب الحظر",
+    "reasonPlaceholder": "أدخل سبب حظر هذا المستخدم...",
+    "blockButton": "حظر المستخدم"
+  },
+  "deleteUser": {
+    "title": "حذف المستخدم",
+    "message": "هل أنت متأكد من حذف",
+    "warning": "لا يمكن التراجع عن هذا الإجراء.",
+    "deleteButton": "حذف المستخدم"
+  },
+  "toast": {
+    "loadingUsers": "جاري تحميل المستخدمين...",
+    "accessDenied": "تم رفض الوصول. للمسؤولين فقط.",
+    "failedToLoad": "فشل تحميل المستخدمين",
+    "userCreated": "تم إنشاء المستخدم بنجاح",
+    "failedToCreate": "فشل إنشاء المستخدم",
+    "userUpdated": "تم تحديث المستخدم بنجاح",
+    "failedToUpdate": "فشل تحديث المستخدم",
+    "passwordMinLength": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل",
+    "passwordMismatch": "كلمات المرور غير متطابقة",
+    "passwordReset": "تم إعادة تعيين كلمة المرور بنجاح",
+    "failedToReset": "فشل إعادة تعيين كلمة المرور",
+    "provideBlockReason": "يرجى تقديم سبب الحظر",
+    "userBlocked": "تم حظر المستخدم بنجاح",
+    "failedToBlock": "فشل حظر المستخدم",
+    "userUnblocked": "تم إلغاء حظر المستخدم بنجاح",
+    "failedToUnblock": "فشل إلغاء حظر المستخدم",
+    "userDeleted": "تم حذف المستخدم بنجاح",
+    "failedToDelete": "فشل حذف المستخدم",
+    "roleUpdated": "تم تحديث دور المستخدم إلى",
+    "failedToUpdateRole": "فشل تحديث الدور",
+    "emailVerified": "تم التحقق من البريد الإلكتروني بنجاح",
+    "failedToVerify": "فشل التحقق من البريد الإلكتروني"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "verifying": {
+    "title": "Verifying Payment",
+    "message": "Please wait while we confirm your payment..."
+  },
+  "success": {
+    "title": "Payment Successful!",
+    "message": "Payment successful! Your booking is confirmed.",
+    "paymentDetails": {
+      "title": "Payment Details",
+      "transactionId": "Transaction ID",
+      "paymentMethod": "Payment Method",
+      "status": "Status",
+      "paid": "Paid",
+      "na": "N/A"
+    },
+    "buttons": {
+      "viewBookingDetails": "View Booking Details",
+      "viewAllBookings": "View All Bookings",
+      "backToHome": "Back to Home"
+    }
+  },
+  "failed": {
+    "title": "Payment Incomplete",
+    "messagePending": "Payment is still pending. Please complete the payment or try again.",
+    "messageNotCompleted": "Payment was not completed. Please try again.",
+    "buttons": {
+      "viewBookingAndRetry": "View Booking & Retry Payment",
+      "viewAllBookings": "View All Bookings",
+      "backToHome": "Back to Home"
+    }
+  },
+  "error": {
+    "title": "Verification Error",
+    "pleaseLogin": "Please log in to view your booking",
+    "messageFailed": "Failed to verify payment. Please check your bookings page.",
+    "buttons": {
+      "tryAgain": "Try Again",
+      "viewMyBookings": "View My Bookings",
+      "backToHome": "Back to Home"
+    }
+  }
+}

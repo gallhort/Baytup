@@ -1,0 +1,48 @@
+{
+  "title": "Welcome back",
+  "subtitle": "Sign in to your account to continue",
+  "form": {
+    "email": {
+      "label": "Email address",
+      "placeholder": "Enter your email",
+      "required": "Email is required",
+      "invalid": "Please enter a valid email address"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Enter your password",
+      "required": "Password is required"
+    },
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot your password?",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "orContinueWith": "Or continue with",
+    "resendVerification": "Resend verification email",
+    "emailVerificationRequired": "Email verification required",
+    "dismiss": "Dismiss"
+  },
+  "errors": {
+    "invalidCredentials": "Invalid email or password",
+    "emailNotVerified": "Please verify your email before logging in",
+    "loginFailed": "Login failed",
+    "googleLoginFailed": "Google login failed"
+  },
+  "success": {
+    "emailVerified": "Email verified successfully! You can now log in.",
+    "loginSuccess": "Login successful!",
+    "googleLoginSuccess": "Google login successful!"
+  },
+  "signUp": {
+    "text": "Don't have an account?",
+    "link": "Sign up now"
+  },
+  "hero": {
+    "title": "Welcome Back to Baytup",
+    "description": "Sign in to continue exploring Algeria's premier rental marketplace. Find unique properties and vehicles across the country.",
+    "stats": {
+      "properties": "Properties",
+      "vehicles": "Vehicles"
+    }
+  }
+}

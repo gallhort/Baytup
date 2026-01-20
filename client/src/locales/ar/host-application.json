@@ -1,0 +1,138 @@
+{
+  "header": {
+    "title": "طلب المضيف",
+    "subtitle": "أكمل جميع الخطوات لتقديم طلبك",
+    "progress": "التقدم",
+    "step": "خطوة"
+  },
+  "steps": {
+    "personalInfo": "المعلومات الشخصية",
+    "hostIntent": "نية الاستضافة",
+    "documents": "المستندات",
+    "bankingInfo": "المعلومات المصرفية",
+    "emergencyContact": "جهة الاتصال في حالات الطوارئ",
+    "agreements": "الشروط والاتفاقيات"
+  },
+  "personalInfo": {
+    "title": "المعلومات الشخصية",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "+213 XXX XXX XXX",
+    "dateOfBirth": "تاريخ الميلاد",
+    "nationalIdNumber": "رقم بطاقة الهوية الوطنية",
+    "nationalIdPlaceholder": "أدخل رقم بطاقة الهوية الوطنية",
+    "city": "المدينة",
+    "cityPlaceholder": "أدخل مدينتك",
+    "street": "عنوان الشارع",
+    "streetPlaceholder": "أدخل عنوان الشارع",
+    "state": "الولاية/المقاطعة",
+    "statePlaceholder": "أدخل ولايتك أو مقاطعتك",
+    "postalCode": "الرمز البريدي",
+    "postalCodePlaceholder": "أدخل الرمز البريدي"
+  },
+  "hostIntent": {
+    "title": "نية الاستضافة",
+    "propertyTypes": "ما نوع الممتلكات التي ستدرجها؟",
+    "vehicleTypes": "ما نوع المركبات التي ستدرجها؟",
+    "numberOfListings": "كم عدد القوائم التي تخطط لإنشائها؟",
+    "experienceLevel": "مستوى الخبرة",
+    "motivation": "لماذا تريد أن تصبح مضيفًا؟",
+    "motivationPlaceholder": "أخبرنا عن دوافعك لتصبح مضيفًا...",
+    "characterCount": "أحرف",
+    "propertyOptions": {
+      "apartment": "شقة",
+      "house": "منزل",
+      "villa": "فيلا",
+      "chalet": "شاليه",
+      "guesthouse": "بيت ضيافة",
+      "other": "أخرى"
+    },
+    "vehicleOptions": {
+      "car": "سيارة",
+      "motorcycle": "دراجة نارية",
+      "van": "شاحنة صغيرة",
+      "suv": "سيارة دفع رباعي",
+      "bike": "دراجة",
+      "other": "أخرى"
+    },
+    "experienceLevels": {
+      "first_time": "مضيف لأول مرة",
+      "experienced": "مضيف ذو خبرة",
+      "professional": "مدير ممتلكات محترف"
+    }
+  },
+  "documents": {
+    "title": "المستندات",
+    "nationalIdFront": "بطاقة الهوية الوطنية (الأمامية)",
+    "nationalIdBack": "بطاقة الهوية الوطنية (الخلفية)",
+    "proofOfAddress": "إثبات العنوان (اختياري)",
+    "uploaded": "تم تحميل المستند",
+    "replace": "استبدال",
+    "clickToUpload": "انقر للتحميل",
+    "clickToUploadOptional": "انقر للتحميل (اختياري)",
+    "infoMessage": "يجب أن تكون جميع المستندات واضحة ومقروءة. نحن نقبل الصور (JPG، PNG) وملفات PDF."
+  },
+  "bankingInfo": {
+    "title": "المعلومات المصرفية",
+    "bankName": "اسم البنك",
+    "bankNamePlaceholder": "أدخل اسم البنك الخاص بك",
+    "accountHolderName": "اسم صاحب الحساب",
+    "accountHolderPlaceholder": "الاسم الكامل كما هو موجود في الحساب المصرفي",
+    "accountNumber": "رقم الحساب",
+    "accountNumberPlaceholder": "أدخل رقم الحساب",
+    "rib": "RIB (المعرف المصرفي)",
+    "ribPlaceholder": "أدخل رقم RIB",
+    "swift": "كود SWIFT (اختياري)",
+    "swiftPlaceholder": "أدخل كود SWIFT (للتحويلات الدولية)",
+    "securityMessage": "معلوماتك المصرفية مشفرة وآمنة. سنستخدم هذه المعلومات لتحويل أرباحك."
+  },
+  "emergencyContact": {
+    "title": "جهة الاتصال في حالات الطوارئ",
+    "name": "اسم جهة الاتصال في حالات الطوارئ",
+    "namePlaceholder": "الاسم الكامل لجهة الاتصال في حالات الطوارئ",
+    "relationship": "العلاقة",
+    "relationshipPlaceholder": "مثال: الزوج/الزوجة، الوالدين، الأخ/الأخت",
+    "phone": "هاتف جهة الاتصال في حالات الطوارئ",
+    "phonePlaceholder": "+213 XXX XXX XXX",
+    "confidentialityMessage": "سيتم استخدام هذه المعلومات فقط في حالات الطوارئ وستبقى سرية."
+  },
+  "agreements": {
+    "title": "الشروط والاتفاقيات",
+    "terms": {
+      "title": "أوافق على الشروط والأحكام",
+      "description": "من خلال تحديد هذا المربع، فإنك توافق على شروط خدمة Baytup وتقر بأنك قرأتها وفهمتها."
+    },
+    "privacy": {
+      "title": "أوافق على سياسة الخصوصية",
+      "description": "من خلال تحديد هذا المربع، فإنك توافق على سياسة الخصوصية الخاصة بـ Baytup وتوافق على جمع واستخدام معلوماتك كما هو موضح."
+    },
+    "guidelines": {
+      "title": "أوافق على إرشادات المضيف",
+      "description": "من خلال تحديد هذا المربع، فإنك توافق على اتباع إرشادات المضيف الخاصة بـ Baytup والحفاظ على معايير عالية من الضيافة."
+    },
+    "reviewMessage": "بمجرد قبول جميع الاتفاقيات وتقديم طلبك، سيقوم فريقنا بمراجعته في غضون 2-3 أيام عمل."
+  },
+  "actions": {
+    "previous": "السابق",
+    "next": "التالي",
+    "saveProgress": "حفظ التقدم",
+    "submitApplication": "تقديم الطلب"
+  },
+  "messages": {
+    "loading": "جاري تحميل الطلب...",
+    "failedToLoad": "فشل تحميل الطلب",
+    "stepSaved": "تم الحفظ بنجاح",
+    "failedToSave": "فشل حفظ المعلومات",
+    "documentUploaded": "تم تحميل المستند بنجاح",
+    "failedToUpload": "فشل تحميل المستند",
+    "applicationSubmitted": "تم تقديم الطلب بنجاح! سنقوم بمراجعته والعودة إليك قريبًا.",
+    "failedToSubmit": "فشل تقديم الطلب",
+    "pleaseSignIn": "يرجى تسجيل الدخول للوصول إلى طلب المضيف",
+    "pleaseWait": "يرجى الانتظار حتى يتم تحميل الطلب"
+  },
+  "noApplication": {
+    "title": "ابدأ طلب المضيف الخاص بك",
+    "description": "لم تبدأ طلب مضيف بعد. انقر أدناه لبدء رحلتك كمضيف Baytup.",
+    "startButton": "بدء الطلب"
+  },
+  "required": "*"
+}

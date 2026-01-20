@@ -1,0 +1,138 @@
+{
+  "header": {
+    "title": "Host Application",
+    "subtitle": "Complete all steps to submit your application",
+    "progress": "Progress",
+    "step": "Step"
+  },
+  "steps": {
+    "personalInfo": "Personal Information",
+    "hostIntent": "Host Intent",
+    "documents": "Documents",
+    "bankingInfo": "Banking Information",
+    "emergencyContact": "Emergency Contact",
+    "agreements": "Terms & Agreements"
+  },
+  "personalInfo": {
+    "title": "Personal Information",
+    "phone": "Phone Number",
+    "phonePlaceholder": "+213 XXX XXX XXX",
+    "dateOfBirth": "Date of Birth",
+    "nationalIdNumber": "National ID Number",
+    "nationalIdPlaceholder": "Enter your national ID number",
+    "city": "City",
+    "cityPlaceholder": "Enter your city",
+    "street": "Street Address",
+    "streetPlaceholder": "Enter your street address",
+    "state": "State/Province",
+    "statePlaceholder": "Enter your state or province",
+    "postalCode": "Postal Code",
+    "postalCodePlaceholder": "Enter postal code"
+  },
+  "hostIntent": {
+    "title": "Host Intent",
+    "propertyTypes": "What type of properties will you list?",
+    "vehicleTypes": "What type of vehicles will you list?",
+    "numberOfListings": "How many listings do you plan to create?",
+    "experienceLevel": "Experience Level",
+    "motivation": "Why do you want to become a host?",
+    "motivationPlaceholder": "Tell us about your motivation for becoming a host...",
+    "characterCount": "characters",
+    "propertyOptions": {
+      "apartment": "Apartment",
+      "house": "House",
+      "villa": "Villa",
+      "chalet": "Chalet",
+      "guesthouse": "Guesthouse",
+      "other": "Other"
+    },
+    "vehicleOptions": {
+      "car": "Car",
+      "motorcycle": "Motorcycle",
+      "van": "Van",
+      "suv": "SUV",
+      "bike": "Bicycle",
+      "other": "Other"
+    },
+    "experienceLevels": {
+      "first_time": "First Time Host",
+      "experienced": "Experienced Host",
+      "professional": "Professional Property Manager"
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "nationalIdFront": "National ID (Front)",
+    "nationalIdBack": "National ID (Back)",
+    "proofOfAddress": "Proof of Address (Optional)",
+    "uploaded": "Document uploaded",
+    "replace": "Replace",
+    "clickToUpload": "Click to upload",
+    "clickToUploadOptional": "Click to upload (optional)",
+    "infoMessage": "All documents must be clear and readable. We accept images (JPG, PNG) and PDF files."
+  },
+  "bankingInfo": {
+    "title": "Banking Information",
+    "bankName": "Bank Name",
+    "bankNamePlaceholder": "Enter your bank name",
+    "accountHolderName": "Account Holder Name",
+    "accountHolderPlaceholder": "Full name as on bank account",
+    "accountNumber": "Account Number",
+    "accountNumberPlaceholder": "Enter account number",
+    "rib": "RIB (Bank ID)",
+    "ribPlaceholder": "Enter RIB number",
+    "swift": "SWIFT Code (Optional)",
+    "swiftPlaceholder": "Enter SWIFT code (for international transfers)",
+    "securityMessage": "Your banking information is encrypted and secure. We will use this information to transfer your earnings."
+  },
+  "emergencyContact": {
+    "title": "Emergency Contact",
+    "name": "Emergency Contact Name",
+    "namePlaceholder": "Full name of emergency contact",
+    "relationship": "Relationship",
+    "relationshipPlaceholder": "e.g., Spouse, Parent, Sibling",
+    "phone": "Emergency Contact Phone",
+    "phonePlaceholder": "+213 XXX XXX XXX",
+    "confidentialityMessage": "This information will only be used in case of emergencies and will be kept confidential."
+  },
+  "agreements": {
+    "title": "Terms & Agreements",
+    "terms": {
+      "title": "I accept the Terms and Conditions",
+      "description": "By checking this box, you agree to Baytup's Terms of Service and acknowledge that you have read and understood them."
+    },
+    "privacy": {
+      "title": "I accept the Privacy Policy",
+      "description": "By checking this box, you agree to Baytup's Privacy Policy and consent to the collection and use of your information as described."
+    },
+    "guidelines": {
+      "title": "I accept the Host Guidelines",
+      "description": "By checking this box, you agree to follow Baytup's Host Guidelines and maintain high standards of hospitality."
+    },
+    "reviewMessage": "Once you accept all agreements and submit your application, our team will review it within 2-3 business days."
+  },
+  "actions": {
+    "previous": "Previous",
+    "next": "Next",
+    "saveProgress": "Save Progress",
+    "submitApplication": "Submit Application"
+  },
+  "messages": {
+    "loading": "Loading application...",
+    "failedToLoad": "Failed to load application",
+    "stepSaved": "saved successfully",
+    "failedToSave": "Failed to save information",
+    "documentUploaded": "Document uploaded successfully",
+    "failedToUpload": "Failed to upload document",
+    "applicationSubmitted": "Application submitted successfully! We will review it and get back to you soon.",
+    "failedToSubmit": "Failed to submit application",
+    "pleaseSignIn": "Please sign in to access the host application",
+    "pleaseWait": "Please wait for application to load"
+  },
+  "noApplication": {
+    "title": "Start Your Host Application",
+    "description": "You haven't started a host application yet. Click below to begin your journey as a Baytup host.",
+    "startButton": "Start Application"
+  },
+  "required": "*"
+}

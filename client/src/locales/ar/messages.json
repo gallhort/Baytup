@@ -1,0 +1,143 @@
+{
+  "header": {
+    "title": "الرسائل",
+    "subtitle": "تواصل مع المضيفين وإدارة محادثاتك"
+  },
+  "stats": {
+    "totalConversations": "إجمالي المحادثات",
+    "unreadMessages": "الرسائل غير المقروءة",
+    "archived": "المؤرشفة"
+  },
+  "conversations": {
+    "title": "المحادثات",
+    "newConversation": "محادثة جديدة",
+    "searchPlaceholder": "البحث في المحادثات...",
+    "filters": {
+      "active": "نشطة",
+      "archived": "مؤرشفة"
+    },
+    "empty": {
+      "noConversations": "لا توجد محادثات",
+      "noMatches": "لا توجد محادثات تطابق بحثك",
+      "startConversation": "ابدأ محادثة مع مضيف"
+    },
+    "youPrefix": "أنت: ",
+    "unreadBadge": "جديد"
+  },
+  "messagesArea": {
+    "tooltips": {
+      "archive": "أرشفة المحادثة",
+      "unarchive": "إلغاء أرشفة المحادثة",
+      "delete": "حذف المحادثة"
+    },
+    "empty": "لا توجد رسائل بعد. ابدأ المحادثة!",
+    "edited": "(معدّل)",
+    "actions": {
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "input": {
+      "placeholder": "اكتب رسالتك...",
+      "hint": "اضغط Enter للإرسال، Shift + Enter لسطر جديد"
+    },
+    "emptyState": {
+      "title": "اختر محادثة",
+      "subtitle": "اختر محادثة من القائمة لبدء المراسلة"
+    },
+    "loading": "جارٍ تحميل الرسائل..."
+  },
+  "deleteModal": {
+    "title": "حذف الرسالة",
+    "message": "هل أنت متأكد من أنك تريد حذف هذه الرسالة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "cancel": "إلغاء",
+    "confirm": "حذف الرسالة"
+  },
+  "archiveModal": {
+    "archiveTitle": "أرشفة المحادثة",
+    "unarchiveTitle": "إلغاء أرشفة المحادثة",
+    "archiveMessage": "سيتم نقل هذه المحادثة إلى الأرشيف. يمكنك استعادتها لاحقاً.",
+    "unarchiveMessage": "سيتم نقل هذه المحادثة مرة أخرى إلى المحادثات النشطة.",
+    "cancel": "إلغاء",
+    "confirmArchive": "أرشفة",
+    "confirmUnarchive": "إلغاء الأرشفة"
+  },
+  "newConversationModal": {
+    "title": "بدء محادثة جديدة",
+    "message": "لبدء محادثة جديدة، يرجى تصفح القوائم والاتصال بالمضيف من صفحة القائمة.",
+    "close": "إغلاق",
+    "browseListings": "تصفح القوائم"
+  },
+  "toast": {
+    "newMessage": "رسالة جديدة من {name}",
+    "loginRequired": "يرجى تسجيل الدخول لعرض الرسائل",
+    "loadFailed": "فشل تحميل الرسائل",
+    "sendFailed": "فشل إرسال الرسالة",
+    "updateSuccess": "تم تحديث الرسالة بنجاح",
+    "updateFailed": "فشل تحديث الرسالة",
+    "deleteSuccess": "تم حذف الرسالة بنجاح",
+    "deleteFailed": "فشل حذف الرسالة",
+    "archiveSuccess": "تمت أرشفة المحادثة",
+    "unarchiveSuccess": "تم إلغاء أرشفة المحادثة",
+    "archiveFailed": "فشلت أرشفة المحادثة",
+    "unarchiveFailed": "فشل إلغاء أرشفة المحادثة",
+    "conversationDeleteSuccess": "تم حذف المحادثة بنجاح",
+    "conversationDeleteFailed": "فشل حذف المحادثة",
+    "connectionError": "خطأ في الاتصال"
+  },
+  "time": {
+    "yesterday": "أمس"
+  },
+  "admin": {
+    "loading": "جارٍ تحميل إدارة الرسائل...",
+    "header": {
+      "title": "إدارة الرسائل",
+      "subtitle": "عرض وإدارة جميع المحادثات عبر المنصة"
+    },
+    "stats": {
+      "totalConversations": "إجمالي المحادثات",
+      "allTime": "كل الأوقات",
+      "activeConversations": "المحادثات النشطة",
+      "currentlyOngoing": "جارية حالياً",
+      "archived": "مؤرشفة",
+      "inactiveThreads": "مواضيع غير نشطة",
+      "totalMessages": "إجمالي الرسائل",
+      "platformWide": "على مستوى المنصة"
+    },
+    "searchPlaceholder": "البحث عن المستخدمين والقوائم...",
+    "filters": {
+      "all": "الكل"
+    },
+    "empty": {
+      "noConversations": "لم يتم العثور على محادثات",
+      "tryAdjusting": "حاول تعديل بحثك",
+      "noInCategory": "لا توجد محادثات في هذه الفئة"
+    },
+    "roles": {
+      "guest": "ضيف",
+      "host": "مضيف"
+    },
+    "labels": {
+      "message": "رسالة",
+      "messages": "رسائل"
+    },
+    "pagination": {
+      "page": "صفحة",
+      "of": "من"
+    },
+    "messages": {
+      "noMessages": "لا توجد رسائل في هذه المحادثة"
+    },
+    "footer": {
+      "readOnly": "عرض المسؤول - وضع القراءة فقط"
+    },
+    "deleteModal": {
+      "title": "حذف المحادثة",
+      "message": "هل أنت متأكد من أنك تريد حذف هذه المحادثة نهائياً؟ سيؤدي هذا إلى حذف جميع",
+      "between": "بين",
+      "cannotUndo": "لا يمكن التراجع عن هذا الإجراء.",
+      "confirmButton": "حذف نهائياً"
+    }
+  }
+}
