@@ -156,18 +156,18 @@ export default function SearchResults({
                   {/* LEFT: Main content (ville, titre, détails, badge) */}
                   <div className="flex-1 flex flex-col justify-between min-w-0">
                     <div className="space-y-1.5">
-                      {/* Arrondissement/Ville */}
-                      <div className="text-xs text-gray-600 truncate">
+                      {/* Arrondissement/Ville - Taille augmentée */}
+                      <div className="text-sm text-gray-600 truncate">
                         {listing.address?.city || 'Ville'}
                       </div>
 
-                      {/* Title (bold, 2 lines) */}
-                      <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2">
+                      {/* Title (bold, 2 lines) - Taille augmentée */}
+                      <h3 className="font-bold text-gray-900 text-lg leading-snug line-clamp-2">
                         {listing.title}
                       </h3>
 
-                      {/* Property details */}
-                      <div className="text-sm text-gray-600 line-clamp-1">
+                      {/* Property details - Taille augmentée */}
+                      <div className="text-base text-gray-600 line-clamp-1">
                         {listing.category === 'stay' ? (
                           <>
                             Appartement • {listing.stayDetails?.bedrooms || 1} {listing.stayDetails?.bedrooms === 1 ? 'chambre' : 'chambres'}
@@ -178,52 +178,56 @@ export default function SearchResults({
                         )}
                       </div>
 
-                      {/* Badge "Hôte professionnel" */}
+                      {/* Badge "Hôte professionnel" - Taille augmentée */}
                       {typeof listing.host === 'object' && listing.host.hostInfo?.superhost && (
-                        <div className="text-xs text-gray-700 font-medium mt-1">
+                        <div className="text-sm text-gray-700 font-medium mt-1">
                           Hôte professionnel
                         </div>
                       )}
                     </div>
 
-                    {/* Rating badge at bottom */}
-                    {ratingBadge && (
+                    {/* Rating badge at bottom - Taille augmentée */}
+                    {hasRatings ? (
                       <div className="flex items-center gap-1.5 mt-2">
-                        <div className={`${ratingBadge.color} text-white px-2 py-0.5 rounded text-xs font-bold`}>
+                        <div className={`${ratingBadge?.color} text-white px-2 py-0.5 rounded text-sm font-bold`}>
                           {avgRating.toFixed(1)}
                         </div>
-                        <span className="text-xs font-semibold text-gray-900">{ratingBadge.label}</span>
-                        <span className="text-xs text-gray-500">{reviewCount} avis</span>
+                        <span className="text-sm font-semibold text-gray-900">{ratingBadge?.label}</span>
+                        <span className="text-sm text-gray-500">{reviewCount} avis</span>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500 mt-2">
+                        Pas encore d'avis
                       </div>
                     )}
                   </div>
 
-                  {/* RIGHT: Price section */}
+                  {/* RIGHT: Price section - Tailles augmentées */}
                   <div className="flex flex-col items-end justify-end text-right flex-shrink-0">
                     {/* Prix barré si discount */}
                     {listing.pricing?.convertedPrice && listing.pricing.convertedPrice > (listing.pricing?.basePrice || 0) && (
-                      <div className="text-sm text-gray-500 line-through">
+                      <div className="text-base text-gray-500 line-through">
                         {formatPrice(listing.pricing.convertedPrice, listing.pricing?.currency || 'DZD')}
                       </div>
                     )}
 
-                    {/* Prix principal (GROS) */}
-                    <div className="font-bold text-xl text-gray-900">
+                    {/* Prix principal (GROS) - Taille augmentée */}
+                    <div className="font-bold text-2xl text-gray-900">
                       {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')}
                     </div>
 
-                    {/* "pour X nuits, 1 appartement" */}
-                    <div className="text-xs text-gray-600 mt-0.5">
+                    {/* "pour X nuits, 1 appartement" - Taille augmentée */}
+                    <div className="text-sm text-gray-600 mt-0.5">
                       pour 1 nuit, 1 {listing.category === 'stay' ? 'appartement' : 'véhicule'}
                     </div>
 
-                    {/* "X € par nuit" */}
-                    <div className="text-xs text-gray-600">
+                    {/* "X € par nuit" - Taille augmentée */}
+                    <div className="text-sm text-gray-600">
                       {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')} par nuit
                     </div>
 
-                    {/* "taxes et frais compris" */}
-                    <div className="text-xs text-gray-500">
+                    {/* "taxes et frais compris" - Taille augmentée */}
+                    <div className="text-sm text-gray-500">
                       taxes et frais compris
                     </div>
                   </div>

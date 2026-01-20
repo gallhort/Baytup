@@ -685,7 +685,7 @@ function SearchPageContent() {
             <LeafletMapView
               listings={listings}
               center={mapCenter}
-              zoom={10}
+              zoom={12}
               selectedListing={selectedListing}
               onListingSelect={handleListingSelect}
               onListingHover={handleListingHover}
