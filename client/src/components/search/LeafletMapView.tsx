@@ -225,7 +225,50 @@ export default function LeafletMapView({
     }
   }, [hoveredListing]);
 
-  // Process listings with enhanced coordinate handling
+  // Function to offset markers with duplicate coordinates
+  const offsetDuplicateCoordinates = useCallback((listings: any[]) => {
+    const coordMap = new Map<string, any[]>();
+
+    // Group listings by coordinates
+    listings.forEach(listing => {
+      const coords = listing.displayCoordinates;
+      if (!coords) return;
+
+      const key = `${coords[0].toFixed(6)}_${coords[1].toFixed(6)}`;
+      if (!coordMap.has(key)) {
+        coordMap.set(key, []);
+      }
+      coordMap.get(key)!.push(listing);
+    });
+
+    // Apply offset to duplicate coordinates
+    const result: any[] = [];
+    coordMap.forEach((group) => {
+      if (group.length === 1) {
+        result.push(group[0]);
+      } else {
+        // Multiple listings at same location - apply circular offset
+        const offsetRadius = 0.0002; // ~20 meters offset
+        group.forEach((listing, index) => {
+          const angle = (index / group.length) * 2 * Math.PI;
+          const offsetLat = offsetRadius * Math.cos(angle);
+          const offsetLng = offsetRadius * Math.sin(angle);
+
+          result.push({
+            ...listing,
+            displayCoordinates: [
+              listing.displayCoordinates[0] + offsetLat,
+              listing.displayCoordinates[1] + offsetLng
+            ]
+          });
+        });
+      }
+    });
+
+    return result;
+  }, []);
+
+  // Process listings with enhanced coordinate handling and offset for duplicates
   const processedListings = useMemo(() => {
     const filtered = listings.filter(listing => {
       const coords = listing.address?.coordinates || listing.displayCoordinates || listing.location?.coordinates;
@@ -253,8 +296,9 @@ export default function LeafletMapView({
       };
     });
 
-    return filtered;
-  }, [listings, selectedCategory]);
+    // Apply offset to duplicate coordinates
+    return offsetDuplicateCoordinates(filtered);
+  }, [listings, selectedCategory, offsetDuplicateCoordinates]);
 
   // Convert center coordinates
   const mapCenter = useMemo(() => ({
