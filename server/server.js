@@ -497,6 +497,8 @@ app.use('/api/notifications', limiter, require('./src/routes/notifications'));
 app.use('/api/webhooks', require('./src/routes/webhooks')); // Webhook routes (no rate limiting for external services)
 // ✅ NOUVELLE ROUTE: Disputes
 app.use('/api/disputes', limiter, require('./src/routes/disputes'));
+// ✅ NOUVELLE ROUTE: Cities (alternative gratuite à Google Places Autocomplete)
+app.use('/api/cities', require('./src/routes/cities'));
 
 // 404 handler
 app.use('*', (req, res) => {

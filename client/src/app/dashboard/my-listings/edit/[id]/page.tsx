@@ -12,16 +12,9 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import GoogleMapsScriptLoader from '@/components/listing/GoogleMapsScriptLoader';
-import GoogleMapsAutocomplete from '@/components/listing/GoogleMapsAutocomplete';
+import CityAutocomplete from '@/components/listing/CityAutocomplete';
 import { useTranslation } from '@/hooks/useTranslation';
 import PriceInput from '@/components/common/PriceInput';
-// Dynamically import the map component to avoid SSR issues
-const GoogleMapsLocationPicker = dynamic(
-  () => import('@/components/listing/GoogleMapsLocationPicker'),
-  { ssr: false }
-);
 
 interface ListingForm {
   title: string;
@@ -612,10 +605,10 @@ export default function EditListingPage() {
           <label className="block text-sm font-medium text-gray-700 mb-3">
             {(t as any).location.searchLocation} <span className="text-red-500">*</span>
           </label>
-          <GoogleMapsAutocomplete
+          <CityAutocomplete
             onPlaceSelected={handlePlaceSelected}
             placeholder={(t as any).location.searchPlaceholder}
-            defaultValue={formData.address.street ? `${formData.address.street}, ${formData.address.city}` : ''}
+            defaultValue={formData.address.city || ''}
           />
         </div>
 

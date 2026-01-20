@@ -21,7 +21,16 @@
       "Bash(else echo \"not found\")",
       "Bash(fi)",
       "Bash(git add:*)",
-      "Bash(del /F /Q nul)"
+      "Bash(del /F /Q nul)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git push:*)",
+      "Bash(ssh root@baytup.fr \"ls -la /var/www/html/\")",
+      "Bash(ssh root@baytup.fr \"ps aux | grep ''npm install'' | grep -v grep\")",
+      "Bash(ssh-keygen:*)",
+      "Bash(ssh:*)",
+      "Bash(sshpass -p 'n4OKwuNQ' ssh -o StrictHostKeyChecking=no root@135.125.211.180 \"cd /var/www/html && git status\")",
+      "Bash(npm install:*)"
     ]
   }
 }

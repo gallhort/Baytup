@@ -36,8 +36,7 @@ import { useClickAway } from '@/hooks/useClickAway';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useDebounce, useThrottledCallback } from '@/hooks/useDebounce';
-import { Autocomplete } from '@react-google-maps/api';
-import { useGoogleMaps } from '@/contexts/GoogleMapsContext';
+import axios from 'axios';
 import { useSocket } from '@/contexts/SocketContext';
 import { useFeature } from '@/contexts/FeatureFlagsContext'; // ✅ Feature flags
 import moment from 'moment';
@@ -531,15 +530,9 @@ const Header = React.memo(function Header({
     }
   }, [scrollY, scrollDirection, isAtTop, headerState.searchExpanded, headerState.isAnimating]);
 
-  // Use the Google Maps context for API status
-  const { isLoaded, loadError, initializeAutocomplete } = useGoogleMaps();
-
   // Translation system
   const t = useTranslation('header') as any;
   const isRTL = language === 'ar';
-
-  // Autocomplete refs
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   // Enhanced data arrays
   const languages = [
@@ -597,80 +590,9 @@ const Header = React.memo(function Header({
     return curr.name;
   };
 
-  // Google Maps Autocomplete handlers - using context for lazy loading
-  const onAutocompleteLoad = (autocomplete: google.maps.places.Autocomplete) => {
-    autocompleteRef.current = autocomplete;
-  };
-
-  const onPlaceChanged = () => {
-    if (autocompleteRef.current) {
-      const place = autocompleteRef.current.getPlace();
-
-      if (!place || !place.geometry) {
-        console.warn('Invalid place selected');
-        return;
-      }
-
-      const locationName = place.formatted_address ||
-                          place.name ||
-                          place.vicinity ||
-                          '';
-
-      const coordinates = {
-        lat: place.geometry.location?.lat() || 0,
-        lng: place.geometry.location?.lng() || 0
-      };
-
-      let city = '';
-      let region = '';
-      if (place.address_components) {
-        place.address_components.forEach(component => {
-          if (component.types.includes('locality')) {
-            city = component.long_name;
-          }
-          if (component.types.includes('administrative_area_level_1')) {
-            region = component.long_name;
-          }
-        });
-      }
-
-      if (locationName) {
-        setSearchData(prev => ({
-          ...prev,
-          location: locationName,
-          placeId: place.place_id || '',
-          coordinates,
-          city: city || '',
-          region: region || '',
-          placeTypes: place.types || []
-        }));
-
-        setActiveSearchField(null);
-      }
-    }
-  };
-
-  // Enhanced autocomplete options for Algeria with custom dropdown disabled
-  const autocompleteOptions = useMemo(() => ({
-    componentRestrictions: { country: 'dz' },
-    types: ['geocode', 'establishment'],
-    fields: [
-      'formatted_address',
-      'geometry',
-      'name',
-      'place_id',
-      'vicinity',
-      'types',
-      'address_components',
-      'plus_code'
-    ],
-    language: language,
-    strictBounds: false
-  }), [language]);
-
-  // Fetch Google Maps autocomplete suggestions
-  const fetchGoogleSuggestions = useCallback(async (input: string) => {
-    if (!input.trim() || !isLoaded || !window.google?.maps?.places?.AutocompleteService) {
+  // ✅ NEW: Fetch city suggestions from our FREE database API (NO Google Maps!)
+  const fetchCitySuggestions = useCallback(async (input: string) => {
+    if (!input.trim() || input.trim().length < 2) {
       setGoogleSuggestions([]);
       return;
     }
@@ -678,69 +600,47 @@ const Header = React.memo(function Header({
     setIsLoadingSuggestions(true);
 
     try {
-      const service = new window.google.maps.places.AutocompleteService();
-
-      const request = {
-        input: input.trim(),
-        componentRestrictions: { country: 'dz' },
-        types: ['geocode', 'establishment'],
-        language: language
-      };
-
-      service.getPlacePredictions(request, (predictions, status) => {
-        setIsLoadingSuggestions(false);
-
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-          // Combine Google suggestions with popular cities
-          const googleResults = predictions.map(prediction => ({
-            place_id: prediction.place_id,
-            description: prediction.description,
-            main_text: prediction.structured_formatting?.main_text || prediction.description,
-            secondary_text: prediction.structured_formatting?.secondary_text || '',
-            types: prediction.types,
-            isGoogle: true
-          }));
-
-          setGoogleSuggestions(googleResults);
-        } else {
-          setGoogleSuggestions([]);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cities/search`, {
+        params: {
+          q: input.trim(),
+          limit: 10
         }
       });
+
+      if (response.data.status === 'success') {
+        // Convert to format compatible with existing UI
+        const cityResults = response.data.data.cities.map((city: any) => ({
+          place_id: `city-${city.id}`,
+          description: city.formatted_address,
+          main_text: city.name,
+          secondary_text: `${city.wilaya}, Algeria`,
+          types: ['locality'],
+          isGoogle: false,
+          coordinates: {
+            lat: city.coordinates[0],
+            lng: city.coordinates[1]
+          },
+          city: city.name,
+          region: city.wilaya
+        }));
+
+        setGoogleSuggestions(cityResults);
+      } else {
+        setGoogleSuggestions([]);
+      }
     } catch (error) {
-      console.error('Error fetching Google suggestions:', error);
-      setIsLoadingSuggestions(false);
+      console.error('Error fetching city suggestions:', error);
       setGoogleSuggestions([]);
+    } finally {
+      setIsLoadingSuggestions(false);
     }
-  }, [isLoaded, language]);
+  }, []);
 
-  // Debounce the Google suggestions fetch
+  // Debounce the city suggestions fetch
   const debouncedFetchSuggestions = useCallback(
-    useDebounce(fetchGoogleSuggestions, 300),
-    [fetchGoogleSuggestions]
+    useDebounce(fetchCitySuggestions, 300),
+    [fetchCitySuggestions]
   );
-
-  // Hide Google's autocomplete dropdown when our custom dropdown is active
-  useEffect(() => {
-    if (activeSearchField === 'where') {
-      // Add CSS to hide Google's pac-container when our dropdown is active
-      const style = document.createElement('style');
-      style.innerHTML = `
-        .pac-container {
-          display: none !important;
-        }
-      `;
-      style.id = 'hide-google-autocomplete';
-      document.head.appendChild(style);
-
-      return () => {
-        // Clean up: remove the style when component unmounts or field changes
-        const existingStyle = document.getElementById('hide-google-autocomplete');
-        if (existingStyle) {
-          existingStyle.remove();
-        }
-      };
-    }
-  }, [activeSearchField]);
 
   const adjustGuestCount = (type: 'adults' | 'children' | 'infants' | 'pets', action: 'increase' | 'decrease') => {
     setSearchData(prev => {
@@ -1149,19 +1049,15 @@ const Header = React.memo(function Header({
                                         <button
                                           key={suggestion.place_id}
                                           onClick={async () => {
-                                            // Use Google Places service to get place details
-                                            if (window.google?.maps?.places?.PlacesService) {
-                                              setSearchData({
-                                                ...searchData,
-                                                location: suggestion.description,
-                                                placeId: suggestion.place_id
-                                              });
-                                            } else {
-                                              setSearchData({
-                                                ...searchData,
-                                                location: suggestion.description
-                                              });
-                                            }
+                                            // ✅ FREE Database API - No Google Maps!
+                                            setSearchData({
+                                              ...searchData,
+                                              location: suggestion.description,
+                                              placeId: suggestion.place_id,
+                                              coordinates: suggestion.coordinates || { lat: 36.7538, lng: 3.0588 },
+                                              city: suggestion.city || suggestion.main_text,
+                                              region: suggestion.region || suggestion.secondary_text
+                                            });
                                             setActiveSearchField(null);
                                             setGoogleSuggestions([]);
                                           }}
@@ -2004,51 +1900,59 @@ const Header = React.memo(function Header({
                 ))}
               </div>
 
-              {/* Mobile Search Fields - Enhanced */}
+              {/* Mobile Search Fields - Enhanced with FREE Database Autocomplete */}
               <div className="space-y-4">
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-900 mb-2">{t.where}</label>
-                  {isLoaded && !loadError ? (
-                    <Autocomplete
-                      onLoad={onAutocompleteLoad}
-                      onPlaceChanged={onPlaceChanged}
-                      options={autocompleteOptions}
-                    >
-                      <input
-                        type="text"
-                        placeholder={t.searchDestinationsAlgeria}
-                        value={searchData.location}
-                        onChange={(e) => setSearchData({...searchData, location: e.target.value})}
-                        className="w-full px-4 py-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent text-lg header-input transition-all duration-200"
-                        autoComplete="off"
-                        spellCheck={false}
-                        aria-label={t.searchForLocations}
-                      />
-                    </Autocomplete>
-                  ) : loadError ? (
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder={t.searchLocationsMapsUnavailable}
-                        value={searchData.location}
-                        onChange={(e) => setSearchData({...searchData, location: e.target.value})}
-                        className="w-full px-4 py-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent text-lg header-input transition-all duration-200"
-                        aria-label={t.searchLocations}
-                      />
-                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-red-400 text-lg">⚠</div>
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder={t.loadingMaps}
-                        value={searchData.location}
-                        onChange={(e) => setSearchData({...searchData, location: e.target.value})}
-                        className="w-full px-4 py-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent text-lg header-input transition-all duration-200"
-                        disabled
-                        aria-label={t.searchLocationsLoading}
-                      />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder={t.searchDestinationsAlgeria || 'Search cities in Algeria...'}
+                      value={searchData.location}
+                      onChange={(e) => {
+                        setSearchData({...searchData, location: e.target.value});
+                        debouncedFetchSuggestions(e.target.value);
+                      }}
+                      onFocus={() => {
+                        if (searchData.location.length >= 2) {
+                          fetchCitySuggestions(searchData.location);
+                        }
+                      }}
+                      className="w-full px-4 py-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent text-lg header-input transition-all duration-200"
+                      autoComplete="off"
+                      spellCheck={false}
+                      aria-label={t.searchForLocations}
+                    />
+                    {isLoadingSuggestions && (
                       <div className="absolute right-4 top-1/2 transform -translate-y-1/2 animate-spin h-4 w-4 border border-gray-300 border-t-[#FF6B35] rounded-full"></div>
+                    )}
+                  </div>
+
+                  {/* Autocomplete Dropdown */}
+                  {googleSuggestions.length > 0 && searchData.location.length >= 2 && (
+                    <div className="absolute z-[9999] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                      {googleSuggestions.map((suggestion: any, index: number) => (
+                        <button
+                          key={suggestion.place_id || index}
+                          onClick={() => {
+                            setSearchData(prev => ({
+                              ...prev,
+                              location: suggestion.main_text,
+                              city: suggestion.city || suggestion.main_text,
+                              region: suggestion.region || suggestion.secondary_text,
+                              coordinates: suggestion.coordinates || { lat: 36.7538, lng: 3.0588 }
+                            }));
+                            setGoogleSuggestions([]);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start space-x-3 border-b border-gray-100 last:border-0"
+                        >
+                          <MapPin className="h-4 w-4 text-[#FF6B35] mt-1 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900 truncate">{suggestion.main_text}</div>
+                            <div className="text-sm text-gray-600 truncate">{suggestion.secondary_text}</div>
+                          </div>
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>

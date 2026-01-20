@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Maximize2, Minimize2, MapPin } from 'lucide-react';
-import EnhancedMapView from './EnhancedMapView';
+import LeafletMapView from './LeafletMapView';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation'; // Translation hook
 
@@ -237,7 +237,7 @@ export default function MapModal({
           )}
 
           {filteredListings.length > 0 ? (
-            <EnhancedMapView
+            <LeafletMapView
               listings={filteredListings}
               center={mapCenter}
               zoom={mapZoom}

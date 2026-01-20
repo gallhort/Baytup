@@ -16,14 +16,15 @@ import { MapPin, Grid3X3, SlidersHorizontal } from 'lucide-react';
 // Enhanced lazy loading with better error boundaries
 import dynamic from 'next/dynamic';
 
-const EnhancedMapView = dynamic(
-  () => import('@/components/search/EnhancedMapView'),
+const LeafletMapView = dynamic(
+  () => import('@/components/search/LeafletMapView'),
   {
+    ssr: false,
     loading: () => (
       <div className="w-full h-full bg-gray-100 rounded-2xl flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B35] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading enhanced map...</p>
+          <p className="text-gray-600">Loading map...</p>
         </div>
       </div>
     ),
@@ -723,7 +724,7 @@ function SearchPageContent() {
             {(viewMode === 'split' || viewMode === 'map') && (
               <div className={viewMode === 'split' ? 'w-1/2 flex-shrink-0 h-full pr-12 py-6' : 'w-full h-full px-12 py-6'}>
                 <div className="h-full rounded-2xl overflow-hidden shadow-xl">
-                  <EnhancedMapView
+                  <LeafletMapView
                     listings={listings}
                     center={mapCenter}
                     zoom={10}
@@ -733,8 +734,6 @@ function SearchPageContent() {
                     onVisibleListingsChange={handleVisibleListingsChange}
                     currency={currency}
                     className="w-full h-full"
-                    showCluster={false}
-                    showHeatmap={false}
                     interactive={true}
                     fitBounds={false}
                   />

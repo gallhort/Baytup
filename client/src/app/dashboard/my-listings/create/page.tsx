@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import GoogleMapsScriptLoader from '@/components/listing/GoogleMapsScriptLoader';
-import GoogleMapsAutocomplete from '@/components/listing/GoogleMapsAutocomplete';
+import CityAutocomplete from '@/components/listing/CityAutocomplete';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFeature } from '@/contexts/FeatureFlagsContext'; // ✅ Feature flags
 import PriceInput from '@/components/common/PriceInput';
@@ -534,12 +534,12 @@ export default function CreateListingPage() {
           {(t as any).location.sectionTitle}
         </h3>
 
-        {/* Google Maps Autocomplete */}
+        {/* City Autocomplete (Database) - 100% FREE */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-3">
             {(t as any).location.searchLocation} <span className="text-red-500">*</span>
           </label>
-          <GoogleMapsAutocomplete
+          <CityAutocomplete
             onPlaceSelected={handlePlaceSelected}
             placeholder={(t as any).location.searchPlaceholder}
           />

@@ -16,7 +16,7 @@ import dynamic from 'next/dynamic';
 import WishlistButton from '@/components/WishlistButton';
 import { formatPrice as formatPriceUtil } from '@/utils/priceUtils';
 
-const EnhancedMapView = dynamic(() => import('@/components/search/EnhancedMapView'), {
+const LeafletMapView = dynamic(() => import('@/components/search/LeafletMapView'), {
   ssr: false,
   loading: () => {
     const t = useTranslation('home') as any;
@@ -1135,7 +1135,7 @@ export default function HomePage() {
 
               {/* Enhanced Map Container - FULLY INTERACTIVE */}
               <div className="pt-20 sm:pt-24 h-full">
-                <EnhancedMapView
+                <LeafletMapView
                   listings={filteredProperties}
                   center={[28.0, 2.0]} // Center of Algeria [lat, lng]
                   zoom={5.5} // Show all Algeria

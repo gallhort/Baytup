@@ -21,15 +21,16 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import BookingModal from '@/components/booking/BookingModal';
 import dynamic from 'next/dynamic';
 
-// Dynamically import ListingMap to avoid SSR issues
-const ListingMap = dynamic(
-  () => import('@/components/listing/ListingMap'),
+// Dynamically import LeafletMap to avoid SSR issues (100% FREE - no Google Maps)
+const LeafletMap = dynamic(
+  () => import('@/components/listing/LeafletMap'),
   {
+    ssr: false,
     loading: () => (
       <div className="w-full h-[480px] bg-gray-100 rounded-2xl flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B35] mx-auto mb-4"></div>
-          <p className="text-gray-600">{/* Loading map text will be handled by component */}</p>
+          <p className="text-gray-600">Loading map...</p>
         </div>
       </div>
     ),
@@ -1038,10 +1039,10 @@ export default function ListingDetailPage() {
             <div className="pb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">{(t as any)?.location?.title || 'Location'}</h2>
 
-              {/* Google Maps */}
+              {/* Leaflet Map (100% FREE - OpenStreetMap) */}
               {listing.location?.coordinates && (
                 <div className="mb-6">
-                  <ListingMap
+                  <LeafletMap
                     coordinates={listing.location.coordinates}
                     title={listing.title}
                     address={listing.address || {}}

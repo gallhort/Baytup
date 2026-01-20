@@ -2,12 +2,12 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import '../styles/globals.css'
 import '../styles/variables.css'
+import 'leaflet/dist/leaflet.css' // ✅ Leaflet CSS - 100% FREE Maps
 import '../utils/consoleFilter' // Filter third-party extension errors in development
 import { AppProvider } from '@/contexts/AppContext'
 import { LanguageProvider } from '@/contexts/LanguageContext'
-import { GoogleMapsProvider } from '@/contexts/GoogleMapsContext'
 import { SocketProvider } from '@/contexts/SocketContext'
-import { WishlistProvider } from '@/contexts/WishlistContext' // ✅ NOUVEAU
+import { WishlistProvider } from '@/contexts/WishlistContext'
 import { FeatureFlagsProvider } from '@/contexts/FeatureFlagsContext' // ✅ Feature Flags
 import LayoutContent from '@/components/LayoutContent'
 
@@ -53,11 +53,9 @@ function ClientLayout({ children }: { children: React.ReactNode }) {
       <AppProvider>
         <FeatureFlagsProvider> {/* ✅ Feature flags disponibles dès le début */}
           <SocketProvider>
-            <GoogleMapsProvider>
-              <WishlistProvider>
-                <LayoutContent>{children}</LayoutContent>
-              </WishlistProvider>
-            </GoogleMapsProvider>
+            <WishlistProvider>
+              <LayoutContent>{children}</LayoutContent>
+            </WishlistProvider>
           </SocketProvider>
         </FeatureFlagsProvider>
       </AppProvider>
