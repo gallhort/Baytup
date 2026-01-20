@@ -600,14 +600,14 @@ function SearchPageContent() {
         </div>
       </div>
 
-      {/* Abritel-style Split Screen Layout: 40% List + 60% Map (Fixed) */}
+      {/* Abritel-style Split Screen Layout: 45% List + 55% Map avec marge */}
       <div className="flex-1 overflow-hidden w-full flex">
-        {/* Left: Listings Panel (40% - Scrollable) */}
+        {/* Left: Listings Panel (45% - Scrollable avec marge droite) */}
         <div
           ref={listContainerRef}
-          className="w-full lg:w-[40%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
+          className="w-full lg:w-[45%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
         >
-          <div className="px-4 sm:px-6 lg:px-8 py-6">
+          <div className="px-4 sm:px-6 lg:px-6 lg:pr-4 py-6">
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
                 {error}
@@ -616,8 +616,8 @@ function SearchPageContent() {
 
             {loading && listingsToDisplay.length === 0 ? (
               <div className="space-y-4">
-                {[...Array(7)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[185px]">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[240px]">
                     <div className="w-[280px] lg:w-[300px] bg-gray-200 animate-pulse" />
                     <div className="flex-1 p-4 flex justify-between gap-4">
                       <div className="flex-1 space-y-2.5">
@@ -679,8 +679,8 @@ function SearchPageContent() {
           </div>
         </div>
 
-        {/* Right: Map Panel (60% - Fixed, hidden on mobile) */}
-        <div className="hidden lg:block lg:w-[60%] flex-shrink-0 h-full relative bg-gray-100">
+        {/* Right: Map Panel (55% - Fixed, hidden on mobile) */}
+        <div className="hidden lg:block lg:w-[55%] flex-shrink-0 h-full relative bg-gray-100">
           <div className="h-full w-full">
             <LeafletMapView
               listings={listings}

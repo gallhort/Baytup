@@ -41,8 +41,8 @@ export default function SearchResults({
   if (loading) {
     return (
       <div className="space-y-4">
-        {[...Array(7)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[185px]">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[240px]">
             <div className="w-[280px] lg:w-[300px] bg-gray-200 animate-pulse" />
             <div className="flex-1 p-4 flex justify-between gap-4">
               <div className="flex-1 space-y-2.5">
@@ -112,8 +112,8 @@ export default function SearchResults({
               onMouseEnter={() => onListingHover?.(listingId)}
               onMouseLeave={() => onListingHover?.(null)}
             >
-              {/* Card container - Abritel exact size */}
-              <div className={`bg-white rounded-lg overflow-hidden transition-all duration-200 flex flex-col sm:flex-row h-auto sm:h-[185px] border ${
+              {/* Card container - Hauteur augmentée */}
+              <div className={`bg-white rounded-lg overflow-hidden transition-all duration-200 flex flex-col sm:flex-row h-auto sm:h-[240px] border ${
                 hoveredListing === listingId
                   ? 'shadow-lg border-gray-400'
                   : 'shadow-sm hover:shadow-md border-gray-200 hover:border-gray-300'
