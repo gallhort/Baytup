@@ -480,18 +480,18 @@ export default function ReviewsPage() {
                             {person.avatar ? (
                               <img
                                 src={person.avatar}
-                                alt={person.firstName}
+                                alt={person.firstName || 'User'}
                                 className="w-full h-full object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-[#FF6B35] font-bold text-sm">
-                                {person.firstName[0]}{person.lastName[0]}
+                                {person.firstName?.[0] || 'U'}{person.lastName?.[0] || ''}
                               </div>
                             )}
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-gray-900 truncate">
-                              {person.firstName} {person.lastName}
+                              {person.firstName || 'User'} {person.lastName || ''}
                             </p>
                             <p className="text-xs text-gray-500">{formatTimeAgo(review.createdAt)}</p>
                           </div>
