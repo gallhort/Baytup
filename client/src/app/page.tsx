@@ -527,27 +527,7 @@ export default function HomePage() {
                   {(t as any).hero?.subtitle || 'Discover authentic Algerian hospitality from the Sahara to the Mediterranean'}
                 </p>
 
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 animate-fade-in-up delay-600">
-                  <Link
-                    href="/search?category=stay"
-                    className="group inline-flex items-center space-x-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/25"
-                  >
-                    <Building className="w-6 h-6" />
-                    <span>{(t as any).hero?.exploreStays || 'Explore Stays'}</span>
-                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                  {vehiclesEnabled && (
-                    <Link
-                      href="/search?category=vehicle"
-                      className="group inline-flex items-center space-x-3 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105"
-                    >
-                      <Car className="w-6 h-6" />
-                      <span>{(t as any).hero?.rentVehicles || 'Rent Vehicles'}</span>
-                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  )}
-                </div>
+                {/* CTA Buttons removed - use search bar instead to avoid radius issues */}
               </div>
 
               {/* Stats Section */}
