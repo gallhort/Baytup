@@ -1949,10 +1949,10 @@ const Header = React.memo(function Header({
         </div>
       </header>
 
-      {/* Enhanced Backdrop for expanded search */}
+      {/* Enhanced Backdrop for expanded search - Desktop only */}
       {headerState.searchExpanded && (
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[55] animate-in fade-in duration-300"
+          className="hidden lg:block fixed inset-0 bg-black/20 backdrop-blur-sm z-[55] animate-in fade-in duration-300"
           onClick={handleClickOutside}
         />
       )}
