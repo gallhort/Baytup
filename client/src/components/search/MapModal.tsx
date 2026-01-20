@@ -234,8 +234,6 @@ export default function MapModal({
               }}
               currency={currency}
               className="w-full h-full rounded-b-3xl"
-              showCluster={false} // ✅ FIX: Airbnb doesn't use clustering - show all markers
-              showHeatmap={false}
               interactive={true} // ALWAYS interactive in modal
               fitBounds={false} // Don't auto-fit to show Algeria
             />
