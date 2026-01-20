@@ -43,7 +43,7 @@ export default function SearchResults({
       <div className="space-y-4">
         {[...Array(7)].map((_, i) => (
           <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[185px]">
-            <div className="w-[140px] lg:w-[150px] bg-gray-200 animate-pulse" />
+            <div className="w-[280px] lg:w-[300px] bg-gray-200 animate-pulse" />
             <div className="flex-1 p-4 flex justify-between gap-4">
               <div className="flex-1 space-y-2.5">
                 <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
@@ -119,8 +119,8 @@ export default function SearchResults({
                   : 'shadow-sm hover:shadow-md border-gray-200 hover:border-gray-300'
               }`}>
 
-                {/* Image Section - Abritel exact size (140-150px) */}
-                <div className="relative w-full sm:w-[140px] lg:w-[150px] h-44 sm:h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                {/* Image Section - Largeur augmentée x2 (280-300px) */}
+                <div className="relative w-full sm:w-[280px] lg:w-[300px] h-44 sm:h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                   <img
                     src={getListingImageUrl(listing, 0)}
                     alt={listing.title}

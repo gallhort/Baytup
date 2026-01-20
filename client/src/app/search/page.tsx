@@ -618,7 +618,7 @@ function SearchPageContent() {
               <div className="space-y-4">
                 {[...Array(7)].map((_, i) => (
                   <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[185px]">
-                    <div className="w-[140px] lg:w-[150px] bg-gray-200 animate-pulse" />
+                    <div className="w-[280px] lg:w-[300px] bg-gray-200 animate-pulse" />
                     <div className="flex-1 p-4 flex justify-between gap-4">
                       <div className="flex-1 space-y-2.5">
                         <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
