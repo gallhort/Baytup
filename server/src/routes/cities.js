@@ -3,6 +3,14 @@ const router = express.Router();
 const algerianCities = require('../data/algerianCities');
 
 /**
+ * Fonction pour retirer les accents d'une chaîne
+ * Permet de chercher "bejaia" et trouver "Béjaïa"
+ */
+const removeAccents = (str) => {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+};
+
+/**
  * GET /api/cities/search
  * Recherche de villes algériennes (alternative gratuite à Google Places Autocomplete)
  *
@@ -27,15 +35,25 @@ router.get('/search', (req, res) => {
     }
 
     const searchTerm = q.toLowerCase().trim();
+    const searchTermNoAccents = removeAccents(searchTerm);
 
-    // Recherche dans les noms français et arabes
+    // Recherche dans les noms français et arabes (avec et sans accents)
     const results = algerianCities
       .filter(city => {
+        // Recherche avec accents
         const nameMatch = city.name.toLowerCase().includes(searchTerm);
-        const nameArMatch = city.nameAr.includes(q.trim());
         const wilayaMatch = city.wilaya.toLowerCase().includes(searchTerm);
 
-        return nameMatch || nameArMatch || wilayaMatch;
+        // Recherche sans accents (bejaia trouve Béjaïa)
+        const nameNoAccents = removeAccents(city.name.toLowerCase());
+        const wilayaNoAccents = removeAccents(city.wilaya.toLowerCase());
+        const nameMatchNoAccents = nameNoAccents.includes(searchTermNoAccents);
+        const wilayaMatchNoAccents = wilayaNoAccents.includes(searchTermNoAccents);
+
+        // Recherche en arabe
+        const nameArMatch = city.nameAr.includes(q.trim());
+
+        return nameMatch || wilayaMatch || nameMatchNoAccents || wilayaMatchNoAccents || nameArMatch;
       })
       // Trier par population (villes principales en premier)
       .sort((a, b) => b.population - a.population)
