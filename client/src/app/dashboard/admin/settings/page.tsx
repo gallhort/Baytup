@@ -20,11 +20,11 @@ export default function AdminSettingsPage() {
 
   // Redirect non-admins
   useEffect(() => {
-    if (!state.loading && state.user && state.user.role !== 'admin') {
+    if (!state.isLoading && state.user && state.user.role !== 'admin') {
       toast.error('Accès non autorisé');
       router.push('/dashboard');
     }
-  }, [state.loading, state.user, router]);
+  }, [state.isLoading, state.user, router]);
 
   // Fetch change history
   const fetchHistory = async () => {
@@ -92,7 +92,7 @@ export default function AdminSettingsPage() {
     }
   };
 
-  if (state.loading || !state.user) {
+  if (state.isLoading || !state.user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <FaSpinner className="animate-spin text-4xl text-[#FF6B35]" />
