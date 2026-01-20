@@ -212,30 +212,7 @@ export default function MapModal({
 
         {/* Enhanced Map Container */}
         <div className={`relative ${isFullscreen ? 'h-[calc(100vh-120px)]' : 'h-[calc(90vh-140px)]'}`}>
-          {/* Floating counter badge - Ultra compact on mobile, centered to avoid zoom buttons */}
-          {currentMapBounds && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 sm:left-20 sm:translate-x-0 z-10 pointer-events-none">
-              <div className="bg-white/95 backdrop-blur-lg rounded-lg shadow-md px-1.5 py-0.5 sm:px-3 sm:py-2 flex items-center gap-1 sm:gap-2 pointer-events-auto">
-                <div className="p-0.5 sm:p-1 bg-gradient-to-br from-[#FF6B35] to-orange-600 rounded">
-                  <MapPin className="w-2 h-2 sm:w-3 sm:h-3 text-white" />
-                </div>
-                <div>
-                  <p className="text-xs sm:text-base font-bold text-gray-900 leading-none">
-                    {visibleListingsCount}
-                  </p>
-                  {/* Hide text on mobile, show on desktop */}
-                  <p className="hidden sm:block text-[9px] text-gray-600 whitespace-nowrap leading-tight">
-                    {visibleListingsCount === 1 ? ((t as any)?.mapDetails?.propertyFound || 'Property found') : ((t as any)?.mapDetails?.propertiesFound || 'Properties found')}
-                  </p>
-                </div>
-                {visibleListingsCount === 0 && (
-                  <p className="hidden sm:block text-[9px] text-orange-600 font-medium">
-                    {(t as any)?.map?.panZoom || 'Pan or zoom out'}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Badge removed - count already shown above list */}
 
           {filteredListings.length > 0 ? (
             <LeafletMapView
