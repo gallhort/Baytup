@@ -945,14 +945,7 @@ export default function HomePage() {
                                 {formatPrice(property, currency)}
                               </span>
                               <span className="text-gray-500 text-sm font-medium">
-                                {
-                                  property.pricing?.pricingType === 'per_day' ? 'par jour' :
-                                  property.pricing?.pricingType === 'per_night' ? 'par nuit' :
-                                  property.pricing?.pricingType === 'per_hour' ? 'par heure' :
-                                  property.pricing?.pricingType === 'per_week' ? 'par semaine' :
-                                  property.pricing?.pricingType === 'per_month' ? 'par mois' :
-                                  (property.category === 'vehicle' ? 'par jour' : 'par nuit')
-                                }
+                                {property.category === 'vehicle' ? 'par jour' : 'par nuit'}
                               </span>
                             </div>
                             <span className="text-xs text-gray-400 font-medium">{(t as any).pricing?.total || 'total before taxes'}</span>
