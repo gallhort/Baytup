@@ -1125,8 +1125,6 @@ export default function HomePage() {
                     // Optional: Add hover effects or preview
                   }}
                   onMapBoundsChange={handleMapBoundsChange}
-                  showCluster={true}
-                  showHeatmap={false}
                   interactive={true}
                   fitBounds={false}
                   className="w-full h-full rounded-b-3xl"
