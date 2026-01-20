@@ -384,6 +384,7 @@ export default function LeafletMapView({
               key={listing._id}
               position={[listing.displayCoordinates[0], listing.displayCoordinates[1]]}
               icon={createPriceMarkerIcon(price, isSelected, isHovered)}
+              zIndexOffset={isHovered ? 1000 : 0}
               eventHandlers={{
                 click: () => handleMarkerClick(listing._id),
                 mouseover: () => {
