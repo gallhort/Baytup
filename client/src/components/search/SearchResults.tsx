@@ -163,9 +163,9 @@ export default function SearchResults({
               className="group cursor-pointer h-full"
               prefetch={true}
             >
-              <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden border border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-500 hover:translate-y-[-4px] hover:scale-[1.01] group-hover:ring-2 group-hover:ring-[#FF6B35]/20 flex flex-row md:flex-col h-full">
-                {/* Enhanced Image Carousel - Horizontal on mobile, vertical on desktop */}
-                <div className="relative w-32 h-32 md:w-full md:aspect-[3/2] flex-shrink-0 bg-gray-100 overflow-hidden">
+              <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300 hover:translate-y-[-2px] group-hover:border-[#FF6B35]/30 flex flex-row md:flex-col h-full">
+                {/* Enhanced Image Carousel - Larger horizontal image on mobile */}
+                <div className="relative w-48 h-40 md:w-full md:aspect-[4/3] flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                   <img
                     src={getListingImageUrl(listing, imageIndex)}
                     alt={listing.title}
@@ -243,40 +243,38 @@ export default function SearchResults({
                   </div>
                 </div>
 
-                {/* Enhanced Content Section - Compact on mobile, full on desktop */}
-                <div className="p-3 md:p-8 flex flex-col flex-1">
-                  {/* Title & Rating Row */}
-                  <div className="flex justify-between items-start mb-2 md:mb-4">
-                    <h3 className="font-bold text-gray-900 flex-1 line-clamp-1 md:line-clamp-2 text-sm md:text-xl leading-tight hover:text-[#FF6B35] transition-colors duration-200">
-                      {listing.title}
-                    </h3>
-                    {/* Only show rating if there are actual reviews */}
-                    {(() => {
-                      const reviewCount = listing.stats?.reviewCount || listing.stats?.totalReviews || 0;
-                      const avgRating = listing.stats?.averageRating || 0;
+                {/* Enhanced Content Section - Better proportions */}
+                <div className="p-4 md:p-6 flex flex-col flex-1">
+                  <div className="flex-1 space-y-2">
+                    {/* Title & Rating */}
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-bold text-gray-900 line-clamp-2 text-sm md:text-xl leading-tight flex-1">
+                        {listing.title}
+                      </h3>
+                      {/* Only show rating if there are actual reviews */}
+                      {(() => {
+                        const reviewCount = listing.stats?.reviewCount || listing.stats?.totalReviews || 0;
+                        const avgRating = listing.stats?.averageRating || 0;
 
-                      // Don't show badge if no reviews or rating is 0
-                      if (reviewCount === 0 || avgRating === 0) return null;
+                        // Don't show badge if no reviews or rating is 0
+                        if (reviewCount === 0 || avgRating === 0) return null;
 
-                      return (
-                        <div className="flex items-center gap-0.5 md:gap-1 ml-2 md:ml-3 flex-shrink-0 bg-gradient-to-r from-amber-50 to-orange-50 px-1.5 md:px-3 py-1 md:py-2 rounded-full border border-amber-200">
-                          <Star className="w-3 h-3 md:w-4 md:h-4 fill-current text-[#FF6B35]" />
-                          <span className="text-xs md:text-sm font-bold text-gray-900">{avgRating.toFixed(1)}</span>
-                          <span className="hidden md:inline text-xs text-gray-600">({reviewCount})</span>
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Location with enhanced styling */}
-                  <div className="flex items-center gap-1 md:gap-2 mb-2 md:mb-4">
-                    <div className="p-0.5 md:p-1 bg-[#FF6B35]/10 rounded-lg">
-                      <MapPin className="w-3 h-3 md:w-4 md:h-4 text-[#FF6B35]" />
+                        return (
+                          <div className="flex items-center gap-1 flex-shrink-0 bg-white border border-gray-200 px-2 py-1 rounded-lg shadow-sm">
+                            <Star className="w-3 h-3 md:w-4 md:h-4 fill-current text-[#FF6B35]" />
+                            <span className="text-xs md:text-sm font-bold text-gray-900">{avgRating.toFixed(1)}</span>
+                          </div>
+                        );
+                      })()}
                     </div>
-                    <p className="text-gray-700 text-xs md:text-sm font-medium line-clamp-1">
-                      {listing.address?.city || (t as any)?.listing?.city || 'City'}{listing.address?.state ? `, ${listing.address.state}` : ''}
-                    </p>
-                  </div>
+
+                    {/* Location */}
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                      <p className="text-gray-600 text-xs md:text-sm line-clamp-1">
+                        {listing.address?.city || (t as any)?.listing?.city || 'City'}{listing.address?.state ? `, ${listing.address.state}` : ''}
+                      </p>
+                    </div>
 
                   {/* Enhanced Category Details - Hidden on mobile for compact layout */}
                   {listing.category === 'stay' ? (
@@ -351,15 +349,17 @@ export default function SearchResults({
                     </div>
                   )}
 
-                  {/* Enhanced Price Section - Compact on mobile */}
-                  <div className="pt-2 md:pt-6 border-t md:border-t-2 border-gray-100 mt-auto">
+                  </div>
+
+                  {/* Enhanced Price Section - Always visible */}
+                  <div className="pt-3 md:pt-4 border-t border-gray-200 mt-3 md:mt-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-baseline gap-1 md:gap-2">
-                        <span className="font-bold text-base md:text-3xl text-gray-900">
+                      <div className="flex items-baseline gap-1">
+                        <span className="font-bold text-lg md:text-2xl text-gray-900">
                           {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')}
                         </span>
-                        <span className="text-gray-600 text-xs md:text-base font-medium">
-                          /{listing.category === 'stay' ? ((t as any)?.listing?.night || 'night') : ((t as any)?.listing?.day || 'day')}
+                        <span className="text-gray-500 text-xs md:text-sm font-medium">
+                          /{listing.category === 'stay' ? ((t as any)?.listing?.night || 'nuit') : ((t as any)?.listing?.day || 'jour')}
                         </span>
                       </div>
                       {listing.pricing?.convertedPrice && listing.pricing.convertedPrice > (listing.pricing?.basePrice || 0) && (
