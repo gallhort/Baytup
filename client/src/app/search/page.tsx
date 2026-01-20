@@ -27,8 +27,7 @@ const LeafletMapView = dynamic(
           <p className="text-gray-600">Loading map...</p>
         </div>
       </div>
-    ),
-    ssr: false
+    )
   }
 );
 
