@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Search, MapPin, Calendar, Users, ChevronDown, X } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface AbritelSearchBarProps {
   location?: string;
@@ -26,12 +27,14 @@ const CalendarPicker = ({
   checkIn,
   checkOut,
   onSelect,
-  onClose
+  onClose,
+  t
 }: {
   checkIn: string;
   checkOut: string;
   onSelect: (dates: { checkIn: string; checkOut: string }) => void;
   onClose: () => void;
+  t: any;
 }) => {
   const [selectedCheckIn, setSelectedCheckIn] = useState<Date | null>(
     checkIn ? new Date(checkIn) : null
@@ -45,12 +48,25 @@ const CalendarPicker = ({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const months = [
+  const months = t.calendar?.months ? [
+    t.calendar.months.january,
+    t.calendar.months.february,
+    t.calendar.months.march,
+    t.calendar.months.april,
+    t.calendar.months.may,
+    t.calendar.months.june,
+    t.calendar.months.july,
+    t.calendar.months.august,
+    t.calendar.months.september,
+    t.calendar.months.october,
+    t.calendar.months.november,
+    t.calendar.months.december
+  ] : [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
 
-  const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+  const daysOfWeek = t.calendar?.daysOfWeek || ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -178,14 +194,14 @@ const CalendarPicker = ({
           }}
           className="text-sm font-medium text-gray-600 hover:text-gray-900 underline"
         >
-          Effacer les dates
+          {t.calendar?.clearDates || 'Effacer les dates'}
         </button>
 
         <button
           onClick={onClose}
           className="px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
         >
-          Fermer
+          {t.calendar?.close || 'Fermer'}
         </button>
       </div>
     </div>
@@ -196,11 +212,13 @@ const CalendarPicker = ({
 const GuestSelector = ({
   guests,
   onGuestsChange,
-  onClose
+  onClose,
+  t
 }: {
   guests: number;
   onGuestsChange: (guests: number) => void;
   onClose: () => void;
+  t: any;
 }) => {
   const [adults, setAdults] = useState(guests || 1);
   const [children, setChildren] = useState(0);
@@ -215,7 +233,7 @@ const GuestSelector = ({
       <div className="space-y-4 mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-medium text-gray-900">Adultes</div>
+            <div className="font-medium text-gray-900">{t.guests?.adults || 'Adultes'}</div>
             <div className="text-sm text-gray-500">13 ans et plus</div>
           </div>
           <div className="flex items-center gap-3">
@@ -238,7 +256,7 @@ const GuestSelector = ({
 
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-medium text-gray-900">Enfants</div>
+            <div className="font-medium text-gray-900">{t.guests?.children || 'Enfants'}</div>
             <div className="text-sm text-gray-500">De 2 à 12 ans</div>
           </div>
           <div className="flex items-center gap-3">
@@ -265,7 +283,7 @@ const GuestSelector = ({
           onClick={handleApply}
           className="px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
         >
-          Appliquer
+          {t.guests?.apply || 'Appliquer'}
         </button>
       </div>
     </div>
@@ -282,6 +300,7 @@ export default function AbritelSearchBar({
   onDatesChange,
   onGuestsChange
 }: AbritelSearchBarProps) {
+  const t = useTranslation('search');
   const [activeField, setActiveField] = useState<string | null>(null);
   const [localLocation, setLocalLocation] = useState(location);
   const [localCheckIn, setLocalCheckIn] = useState(checkIn);
@@ -316,7 +335,7 @@ export default function AbritelSearchBar({
   }, [activeField]);
 
   const formatDateRange = () => {
-    if (!localCheckIn || !localCheckOut) return 'Sélectionner des dates';
+    if (!localCheckIn || !localCheckOut) return t.calendar?.selectDates || 'Sélectionner des dates';
 
     const checkInDate = new Date(localCheckIn);
     const checkOutDate = new Date(localCheckOut);
@@ -361,10 +380,10 @@ export default function AbritelSearchBar({
                 <MapPin className="w-5 h-5 text-gray-600 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-semibold text-gray-700 mb-0.5">
-                    Où allez-vous ?
+                    {t.searchBar?.whereGoing || 'Où allez-vous ?'}
                   </div>
                   <div className="text-sm text-gray-900 truncate">
-                    {localLocation || 'Rechercher une destination'}
+                    {localLocation || t.searchBar?.enterDestination || 'Rechercher une destination'}
                   </div>
                 </div>
               </div>
@@ -381,12 +400,12 @@ export default function AbritelSearchBar({
                       setLocalLocation(e.target.value);
                       onLocationChange?.(e.target.value);
                     }}
-                    placeholder="Ville, région..."
+                    placeholder={t.searchBar?.enterDestination || 'Ville, région...'}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent"
                     autoFocus
                   />
                   <div className="mt-3 text-sm text-gray-500">
-                    Entrez une destination pour rechercher
+                    {t.searchBar?.enterToSearch || 'Entrez une destination pour rechercher'}
                   </div>
                 </div>
               </div>
@@ -419,7 +438,7 @@ export default function AbritelSearchBar({
 
             {/* Dates dropdown */}
             {activeField === 'dates' && (
-              <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 z-50">
+              <div className="absolute top-full ltr:left-0 rtl:right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 z-50">
                 <CalendarPicker
                   checkIn={localCheckIn}
                   checkOut={localCheckOut}
@@ -430,6 +449,7 @@ export default function AbritelSearchBar({
                     setActiveField(null);
                   }}
                   onClose={() => setActiveField(null)}
+                  t={t}
                 />
               </div>
             )}
@@ -450,10 +470,10 @@ export default function AbritelSearchBar({
                 <Users className="w-5 h-5 text-gray-600 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-semibold text-gray-700 mb-0.5">
-                    Voyageurs
+                    {t.guests?.travelers || 'Voyageurs'}
                   </div>
                   <div className="text-sm text-gray-900 truncate">
-                    {localGuests} {localGuests === 1 ? 'personne' : 'personnes'}
+                    {localGuests} {localGuests === 1 ? (t.guests?.person || 'personne') : (t.guests?.people || 'personnes')}
                   </div>
                 </div>
               </div>
@@ -469,6 +489,7 @@ export default function AbritelSearchBar({
                     onGuestsChange?.(newGuests);
                   }}
                   onClose={() => setActiveField(null)}
+                  t={t}
                 />
               </div>
             )}

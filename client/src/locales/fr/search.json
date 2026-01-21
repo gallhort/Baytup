@@ -11,6 +11,99 @@
     "stay": "séjour",
     "vehicle": "véhicule"
   },
+  "calendar": {
+    "months": {
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin",
+      "july": "Juillet",
+      "august": "Août",
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre"
+    },
+    "daysOfWeek": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+    "clearDates": "Effacer les dates",
+    "close": "Fermer",
+    "selectDates": "Sélectionner des dates"
+  },
+  "guests": {
+    "adults": "Adultes",
+    "children": "Enfants",
+    "person": "personne",
+    "people": "personnes",
+    "travelers": "Voyageurs",
+    "apply": "Appliquer"
+  },
+  "searchBar": {
+    "whereGoing": "Où allez-vous ?",
+    "enterDestination": "Ville, région...",
+    "enterToSearch": "Entrez une destination pour rechercher"
+  },
+  "ratings": {
+    "exceptional": "Exceptionnel",
+    "veryGood": "Très bien",
+    "good": "Bien",
+    "correct": "Correct",
+    "reviews": "avis",
+    "noReviews": "Pas encore d'avis"
+  },
+  "listingCard": {
+    "featured": "En vedette",
+    "apartment": "Appartement",
+    "bedroom": "chambre",
+    "bedrooms": "chambres",
+    "bathroom": "salle de bain",
+    "bathrooms": "salles de bain",
+    "vehicle": "Véhicule",
+    "seats": "places",
+    "professionalHost": "Hôte professionnel",
+    "perNight": "par nuit",
+    "taxes": "taxes et frais compris",
+    "forOneNight": "pour 1 nuit, 1",
+    "loading": "Chargement...",
+    "showMore": "Afficher plus de résultats"
+  },
+  "filterModal": {
+    "title": "Filtres",
+    "searchRadius": "Rayon de recherche",
+    "km": "km",
+    "priceRange": "Fourchette de prix",
+    "pricePerNight": "Prix par nuit, tous frais compris",
+    "pricePerDay": "Prix par jour, tous frais compris",
+    "roomsAndBeds": "Chambres et lits",
+    "bedrooms": "Chambres",
+    "beds": "Lits",
+    "bathrooms": "Salles de bain",
+    "everything": "Tout",
+    "amenities": "Équipements",
+    "bookingOptions": "Options de réservation",
+    "clearAll": "Tout effacer",
+    "showResults": "Afficher {count} logement",
+    "showResultsPlural": "Afficher {count} logements",
+    "showAllResults": "Afficher les résultats",
+    "instantBookDesc": "Réservez sans attendre la confirmation",
+    "superhostDesc": "Hôtes avec excellentes évaluations"
+  },
+  "filterChips": {
+    "filters": "Filtres",
+    "recommended": "Recommandés",
+    "priceLow": "Prix croissant",
+    "priceHigh": "Prix décroissant",
+    "bestRated": "Meilleures notes",
+    "searchOnMapMove": "Rechercher lorsque je déplace la carte"
+  },
+  "offline": {
+    "mode": "Mode hors ligne.",
+    "realtimeDisabled": "Mises à jour en temps réel désactivées.",
+    "clearLocation": "Effacer la localisation",
+    "noListingsFound": "Aucun logement trouvé",
+    "adjustFilters": "Essayez d'ajuster vos filtres ou de chercher dans une autre zone"
+  },
   "view": {
     "list": "Liste",
     "map": "Carte"
@@ -22,7 +115,9 @@
     "total": "total",
     "amazing": "nombreux hébergements incroyables",
     "showingCount": "Affichage de {count} parmi de nombreux hébergements incroyables",
-    "inAlgeria": "en Algérie"
+    "inAlgeria": "en Algérie",
+    "accommodations": "logements",
+    "accommodation": "logement"
   },
   "map": {
     "withinMap": "Dans la zone de la carte",
@@ -34,7 +129,10 @@
     "panZoom": "Déplacer ou dézoomer",
     "mapFilterMessage": "Affichage uniquement des annonces visibles sur la carte. Fermez la carte pour voir tous les résultats.",
     "visibleOnMap": "visible sur la carte",
-    "moveMapToUpdate": "Déplacer la carte pour mettre à jour"
+    "moveMapToUpdate": "Déplacer la carte pour mettre à jour",
+    "buttonText": "Carte",
+    "loadingMap": "Chargement de la carte...",
+    "loadingMapModal": "Chargement de la carte modale..."
   },
   "empty": {
     "title": "Aucun résultat trouvé",
@@ -60,10 +158,12 @@
     "maximum": "Maximum",
     "dzd": "DZD",
     "perDay": "par jour",
+    "perNight": "par nuit",
     "budget": "Budget",
     "midRange": "Gamme moyenne",
     "luxury": "Luxe",
     "propertyType": "Type de propriété",
+    "vehicleType": "Type de véhicule",
     "vehicleTypes": "Types de véhicules",
     "chooseYourStyle": "Choisissez votre style",
     "roomsAndBeds": "Chambres et lits",
@@ -71,6 +171,7 @@
     "bedrooms": "Chambres",
     "bathrooms": "Salles de bain",
     "any": "Tout",
+    "all": "Toutes",
     "amenities": "Équipements",
     "features": "Caractéristiques",
     "essentialFeatures": "Caractéristiques essentielles",
@@ -80,7 +181,16 @@
     "instantBookDesc": "Réservez sans attendre l'approbation",
     "superhost": "Super hôte",
     "superhostDesc": "Séjournez avec des hôtes reconnus",
-    "showResults": "Afficher les résultats"
+    "showResults": "Afficher les résultats",
+    "priceMinimum": "Prix minimum (DZD)",
+    "priceMaximum": "Prix maximum (DZD)",
+    "price": "Prix",
+    "bedroomsMinimum": "Chambres minimum",
+    "bathroomsMinimum": "Salles de bain minimum",
+    "moreFilters": "Plus de filtres",
+    "moreOptions": "Plus d'options",
+    "typeOfAccommodation": "Type de logement",
+    "typeOfVehicle": "Type de véhicule"
   },
   "sort": {
     "recommended": "Recommandé",

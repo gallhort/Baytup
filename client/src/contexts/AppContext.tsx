@@ -6,8 +6,6 @@ import { getCurrentUser } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
 interface AppState {
-  language: 'en' | 'fr' | 'ar';
-  currency: 'DZD' | 'EUR';
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -15,8 +13,6 @@ interface AppState {
 }
 
 type AppAction =
-  | { type: 'SET_LANGUAGE'; payload: 'en' | 'fr' | 'ar' }
-  | { type: 'SET_CURRENCY'; payload: 'DZD' | 'EUR' }
   | { type: 'SET_USER'; payload: User | null }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_INITIALIZED'; payload: boolean }
@@ -24,8 +20,6 @@ type AppAction =
 
 interface AppContextType {
   state: AppState;
-  setLanguage: (language: 'en' | 'fr' | 'ar') => void;
-  setCurrency: (currency: 'DZD' | 'EUR') => void;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   logout: () => void;
@@ -35,8 +29,6 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const initialState: AppState = {
-  language: 'en',
-  currency: 'DZD',
   user: null,
   isAuthenticated: false,
   isLoading: false,
@@ -45,10 +37,6 @@ const initialState: AppState = {
 
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case 'SET_LANGUAGE':
-      return { ...state, language: action.payload };
-    case 'SET_CURRENCY':
-      return { ...state, currency: action.payload };
     case 'SET_USER':
       return {
         ...state,
@@ -89,14 +77,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (response.status === 'success' && response.data?.user) {
         dispatch({ type: 'SET_USER', payload: response.data.user });
-
-        // Update language and currency from user preferences
-        if (response.data.user.language) {
-          dispatch({ type: 'SET_LANGUAGE', payload: response.data.user.language });
-        }
-        if (response.data.user.currency) {
-          dispatch({ type: 'SET_CURRENCY', payload: response.data.user.currency });
-        }
       }
     } catch (error: any) {
       console.error('Failed to load user:', error);
@@ -113,21 +93,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Load saved preferences and user from localStorage on mount
+  // Load user from localStorage on mount
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        // Load language and currency preferences
-        const savedLanguage = localStorage.getItem('baytup_language') as 'en' | 'fr' | 'ar';
-        const savedCurrency = localStorage.getItem('baytup_currency') as 'DZD' | 'EUR';
-
-        if (savedLanguage) {
-          dispatch({ type: 'SET_LANGUAGE', payload: savedLanguage });
-        }
-        if (savedCurrency) {
-          dispatch({ type: 'SET_CURRENCY', payload: savedCurrency });
-        }
-
         // Load user from token
         await loadUserFromToken();
       } catch (error) {
@@ -140,49 +109,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     loadInitialData();
   }, []);
 
-  // Save preferences to localStorage when they change
-  useEffect(() => {
-    if (state.isInitialized) {
-      localStorage.setItem('baytup_language', state.language);
-    }
-  }, [state.language, state.isInitialized]);
-
-  useEffect(() => {
-    if (state.isInitialized) {
-      localStorage.setItem('baytup_currency', state.currency);
-    }
-  }, [state.currency, state.isInitialized]);
-
-  // Apply RTL for Arabic
-  useEffect(() => {
-    if (state.language === 'ar') {
-      document.documentElement.dir = 'rtl';
-      document.documentElement.lang = 'ar';
-    } else {
-      document.documentElement.dir = 'ltr';
-      document.documentElement.lang = state.language;
-    }
-  }, [state.language]);
-
-  const setLanguage = (language: 'en' | 'fr' | 'ar') => {
-    dispatch({ type: 'SET_LANGUAGE', payload: language });
-  };
-
-  const setCurrency = (currency: 'DZD' | 'EUR') => {
-    dispatch({ type: 'SET_CURRENCY', payload: currency });
-  };
+  // Note: Language and currency management moved to LanguageContext
 
   const setUser = (user: User | null) => {
     dispatch({ type: 'SET_USER', payload: user });
-    if (user) {
-      // Update user preferences from profile
-      if (user.language) {
-        dispatch({ type: 'SET_LANGUAGE', payload: user.language });
-      }
-      if (user.currency) {
-        dispatch({ type: 'SET_CURRENCY', payload: user.currency });
-      }
-    }
   };
 
   const setLoading = (loading: boolean) => {
@@ -235,8 +165,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ...state,
       isLoading: state.isLoading || isCheckingAuth
     },
-    setLanguage,
-    setCurrency,
     setUser,
     setLoading,
     logout,

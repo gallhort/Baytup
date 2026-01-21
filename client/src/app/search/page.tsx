@@ -69,6 +69,16 @@ function SearchPageContent() {
   const t = useTranslation('search') as any;
   const vehiclesEnabled = useFeature('vehiclesEnabled'); // ✅ Feature flag
 
+  // ✅ Force LTR for search page only (even in Arabic)
+  useEffect(() => {
+    document.documentElement.dir = 'ltr';
+    return () => {
+      // Restore original direction when leaving search page
+      const dir = language === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.dir = dir;
+    };
+  }, []); // Run only once on mount/unmount
+
   // Socket.IO hooks
   const { isConnected, connectionError } = useSocketConnection();
   const {
@@ -92,6 +102,8 @@ function SearchPageContent() {
     return typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'split' : 'list';
   });
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  // Mobile/Tablet view toggle (liste or carte)
+  const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [selectedListing, setSelectedListing] = useState<string | null>(null);
   const [hoveredListing, setHoveredListing] = useState<string | null>(null);
@@ -347,7 +359,7 @@ function SearchPageContent() {
         setRestApiLoading(false);
       }
     }
-  }, [filters, searchListings, isConnected, useRestAPI, vehiclesEnabled]);
+  }, [filters, searchListings, isConnected, useRestAPI, vehiclesEnabled, searchRadius, searchParams]);
 
   // Update filters when URL params change
   useEffect(() => {
@@ -577,7 +589,7 @@ function SearchPageContent() {
               ) : (
                 <>
                   <span className="font-semibold">{listingsToDisplay.length}</span>
-                  {' '}{listingsToDisplay.length > 1 ? 'logements' : 'logement'}
+                  {' '}{listingsToDisplay.length > 1 ? (t.results?.accommodations || 'logements') : (t.results?.accommodation || 'logement')}
                   {filters.location && (
                     <>
                       {' '}• <span className="font-normal">{filters.location.split(',')[0]}</span>
@@ -605,9 +617,9 @@ function SearchPageContent() {
         {/* Left: Listings Panel (45% - Scrollable avec marge droite) */}
         <div
           ref={listContainerRef}
-          className="w-full lg:w-[45%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
+          className="w-full xl:w-[45%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
         >
-          <div className="px-4 sm:px-6 lg:px-6 lg:pr-4 py-6">
+          <div className="px-4 sm:px-6 xl:px-6 xl:pr-4 py-6">
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
                 {error}
@@ -617,8 +629,8 @@ function SearchPageContent() {
             {loading && listingsToDisplay.length === 0 ? (
               <div className="space-y-4">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[240px]">
-                    <div className="w-[280px] lg:w-[300px] bg-gray-200 animate-pulse" />
+                  <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex flex-col xl:flex-row h-auto xl:h-[240px]">
+                    <div className="w-full xl:w-[280px] 2xl:w-[300px] h-56 xl:h-full bg-gray-200 animate-pulse" />
                     <div className="flex-1 p-4 flex justify-between gap-4">
                       <div className="flex-1 space-y-2.5">
                         <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
@@ -642,16 +654,16 @@ function SearchPageContent() {
                   <MapPin className="w-12 h-12 text-gray-400" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Aucun logement trouvé
+                  {t.offline?.noListingsFound || 'Aucun logement trouvé'}
                 </h2>
                 <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                  Essayez d'ajuster vos filtres ou de chercher dans une autre zone
+                  {t.offline?.adjustFilters || 'Essayez d\'ajuster vos filtres ou de chercher dans une autre zone'}
                 </p>
                 <button
                   onClick={() => handleFilterChange({ ...filters, location: '' })}
                   className="px-6 py-3 bg-[#FF6B35] hover:bg-orange-600 text-white rounded-xl font-medium transition-colors duration-200"
                 >
-                  Effacer la localisation
+                  {t.offline?.clearLocation || 'Effacer la localisation'}
                 </button>
               </div>
             ) : (
@@ -659,7 +671,7 @@ function SearchPageContent() {
                 {/* Connection Status */}
                 {!isConnected && (
                   <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm">
-                    Mode hors ligne. Mises à jour en temps réel désactivées.
+                    {t.offline?.mode || 'Mode hors ligne.'} {t.offline?.realtimeDisabled || 'Mises à jour en temps réel désactivées.'}
                   </div>
                 )}
 
@@ -679,8 +691,8 @@ function SearchPageContent() {
           </div>
         </div>
 
-        {/* Right: Map Panel (55% - Fixed, hidden on mobile avec marge droite) */}
-        <div className="hidden lg:block lg:w-[55%] flex-shrink-0 h-full relative bg-gray-100 pr-6">
+        {/* Right: Map Panel (55% - Fixed, hidden on mobile/tablet avec marge droite) */}
+        <div className="hidden xl:block xl:w-[55%] flex-shrink-0 h-full relative bg-gray-100 pr-6">
           <div className="h-full w-full">
             <LeafletMapView
               listings={listings}
@@ -699,14 +711,14 @@ function SearchPageContent() {
           </div>
         </div>
 
-        {/* Mobile: Floating Map Button (only visible on mobile) */}
-        <div className="lg:hidden fixed bottom-6 right-6 z-30">
+        {/* Mobile + Tablet: Floating Map Button (visible until 1280px) */}
+        <div className="xl:hidden fixed bottom-6 right-6 z-30">
           <button
             onClick={() => setIsMapModalOpen(true)}
             className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-full shadow-2xl transition-all duration-300"
           >
             <MapPin className="w-5 h-5" />
-            <span className="font-bold">Carte</span>
+            <span className="font-bold">{t.map?.buttonText || 'Carte'}</span>
             {listingsToDisplay.length > 0 && (
               <span className="bg-white/20 text-white text-sm font-semibold px-2 py-0.5 rounded-full">
                 {listingsToDisplay.length}

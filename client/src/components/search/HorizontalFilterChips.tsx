@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface HorizontalFilterChipsProps {
   onFiltersClick: () => void;
@@ -20,16 +21,17 @@ export default function HorizontalFilterChips({
   searchOnMapMove = false,
   onSearchOnMapMoveChange
 }: HorizontalFilterChipsProps) {
+  const t = useTranslation('search') as any;
   const [showSortMenu, setShowSortMenu] = useState(false);
 
   const sortOptions = [
-    { value: 'recommended', label: 'Recommandés' },
-    { value: 'price_low', label: 'Prix croissant' },
-    { value: 'price_high', label: 'Prix décroissant' },
-    { value: 'rating', label: 'Meilleures notes' },
+    { value: 'recommended', label: t.filterChips?.recommended || 'Recommandés' },
+    { value: 'price_low', label: t.filterChips?.priceLow || 'Prix croissant' },
+    { value: 'price_high', label: t.filterChips?.priceHigh || 'Prix décroissant' },
+    { value: 'rating', label: t.filterChips?.bestRated || 'Meilleures notes' },
   ];
 
-  const currentSortLabel = sortOptions.find(opt => opt.value === sortValue)?.label || 'Recommandés';
+  const currentSortLabel = sortOptions.find(opt => opt.value === sortValue)?.label || (t.filterChips?.recommended || 'Recommandés');
 
   return (
     <div className="flex items-center gap-2 py-3 overflow-x-auto hide-scrollbar">
@@ -43,7 +45,7 @@ export default function HorizontalFilterChips({
         }`}
       >
         <SlidersHorizontal className="w-4 h-4" />
-        <span className="font-medium">Filtres</span>
+        <span className="font-medium">{t.filterChips?.filters || 'Filtres'}</span>
         {activeFiltersCount > 0 && (
           <span className="bg-white text-gray-900 text-xs font-bold px-2 py-0.5 rounded-full">
             {activeFiltersCount}
@@ -96,7 +98,7 @@ export default function HorizontalFilterChips({
           onChange={(e) => onSearchOnMapMoveChange?.(e.target.checked)}
           className="w-4 h-4 rounded border-gray-300 text-[#FF6B35] focus:ring-[#FF6B35] cursor-pointer"
         />
-        <span className="font-medium">Rechercher lorsque je déplace la carte</span>
+        <span className="font-medium">{t.filterChips?.searchOnMapMove || 'Rechercher lorsque je déplace la carte'}</span>
       </label>
     </div>
   );

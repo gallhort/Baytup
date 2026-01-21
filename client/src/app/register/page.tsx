@@ -9,6 +9,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import toast from 'react-hot-toast';
 
 import { useApp } from '@/contexts/AppContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { register as registerUser, googleLogin } from '@/lib/auth';
 import { useTranslation } from '@/hooks/useTranslation';
 import { RegisterForm } from '@/types';
@@ -17,6 +18,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { state, setUser, setLoading } = useApp();
+  const { language, currency } = useLanguage();
   const t = useTranslation('register');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -87,8 +89,8 @@ export default function RegisterPage() {
       const formData = {
         ...registrationData,
         role: 'guest' as const, // All users register as guests
-        language: state.language,
-        currency: state.currency,
+        language: language,
+        currency: currency,
       };
 
       const response = await registerUser(formData);

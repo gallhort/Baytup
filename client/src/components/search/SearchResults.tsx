@@ -42,8 +42,8 @@ export default function SearchResults({
     return (
       <div className="space-y-4">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex h-[240px]">
-            <div className="w-[280px] lg:w-[300px] bg-gray-200 animate-pulse" />
+          <div key={i} className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 flex flex-col h-auto">
+            <div className="w-full h-56 bg-gray-200 animate-pulse" />
             <div className="flex-1 p-4 flex justify-between gap-4">
               <div className="flex-1 space-y-2.5">
                 <div className="h-3 bg-gray-200 rounded animate-pulse w-1/4" />
@@ -95,10 +95,10 @@ export default function SearchResults({
           // Determine rating badge style (Abritel uses green badges)
           const getRatingBadge = () => {
             if (!hasRatings) return null;
-            if (avgRating >= 9) return { label: 'Exceptionnel', color: 'bg-green-600' };
-            if (avgRating >= 8) return { label: 'Très bien', color: 'bg-green-500' };
-            if (avgRating >= 7) return { label: 'Bien', color: 'bg-blue-500' };
-            return { label: 'Correct', color: 'bg-gray-500' };
+            if (avgRating >= 9) return { label: t.ratings?.exceptional || 'Exceptionnel', color: 'bg-green-600' };
+            if (avgRating >= 8) return { label: t.ratings?.veryGood || 'Très bien', color: 'bg-green-500' };
+            if (avgRating >= 7) return { label: t.ratings?.good || 'Bien', color: 'bg-blue-500' };
+            return { label: t.ratings?.correct || 'Correct', color: 'bg-gray-500' };
           };
 
           const ratingBadge = getRatingBadge();
@@ -112,15 +112,15 @@ export default function SearchResults({
               onMouseEnter={() => onListingHover?.(listingId)}
               onMouseLeave={() => onListingHover?.(null)}
             >
-              {/* Card container - Hauteur augmentée */}
-              <div className={`bg-white rounded-lg overflow-hidden transition-all duration-200 flex flex-col sm:flex-row h-auto sm:h-[240px] border ${
+              {/* Card container - Always vertical for readability */}
+              <div className={`bg-white rounded-lg overflow-hidden transition-all duration-200 flex flex-col h-auto border ${
                 hoveredListing === listingId
                   ? 'shadow-lg border-gray-400'
                   : 'shadow-sm hover:shadow-md border-gray-200 hover:border-gray-300'
               }`}>
 
-                {/* Image Section - Largeur augmentée x2 (280-300px) */}
-                <div className="relative w-full sm:w-[280px] lg:w-[300px] h-44 sm:h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                {/* Image Section - Full width, consistent height */}
+                <div className="relative w-full h-56 flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                   <img
                     src={getListingImageUrl(listing, 0)}
                     alt={listing.title}
@@ -133,7 +133,7 @@ export default function SearchResults({
                   {/* Featured badge */}
                   {listing.featured && (
                     <div className="absolute top-2 left-2 px-2 py-1 bg-gradient-to-r from-[#FF6B35] to-orange-500 text-white rounded-md text-xs font-bold shadow-lg">
-                      En vedette
+                      {t.listingCard?.featured || 'En vedette'}
                     </div>
                   )}
 
@@ -152,13 +152,13 @@ export default function SearchResults({
                 </div>
 
                 {/* Content Section - Abritel layout: LEFT content + RIGHT price */}
-                <div className="flex-1 p-4 flex justify-between gap-4 min-w-0">
+                <div className="flex-1 p-4 flex flex-row justify-between gap-4 min-w-0">
                   {/* LEFT: Main content (ville, titre, détails, badge) */}
-                  <div className="flex-1 flex flex-col justify-between min-w-0">
+                  <div className="flex-1 flex flex-col justify-between min-w-0 text-left">
                     <div className="space-y-1.5">
                       {/* Arrondissement/Ville - Taille augmentée */}
                       <div className="text-sm text-gray-600 truncate">
-                        {listing.address?.city || 'Ville'}
+                        {listing.address?.city || t.listing?.city || 'Ville'}
                       </div>
 
                       {/* Title (bold, 2 lines) - Taille augmentée */}
@@ -170,18 +170,18 @@ export default function SearchResults({
                       <div className="text-base text-gray-600 line-clamp-1">
                         {listing.category === 'stay' ? (
                           <>
-                            Appartement • {listing.stayDetails?.bedrooms || 1} {listing.stayDetails?.bedrooms === 1 ? 'chambre' : 'chambres'}
-                            {listing.stayDetails?.bathrooms && ` • ${listing.stayDetails.bathrooms} salle${listing.stayDetails.bathrooms > 1 ? 's' : ''} de bain`}
+                            {t.listingCard?.apartment || 'Appartement'} • {listing.stayDetails?.bedrooms || 1} {listing.stayDetails?.bedrooms === 1 ? (t.listingCard?.bedroom || 'chambre') : (t.listingCard?.bedrooms || 'chambres')}
+                            {listing.stayDetails?.bathrooms && ` • ${listing.stayDetails.bathrooms} ${listing.stayDetails.bathrooms > 1 ? (t.listingCard?.bathrooms || 'salles de bain') : (t.listingCard?.bathroom || 'salle de bain')}`}
                           </>
                         ) : (
-                          <>Véhicule • {listing.vehicleDetails?.seats || 4} places</>
+                          <>{t.listingCard?.vehicle || 'Véhicule'} • {listing.vehicleDetails?.seats || 4} {t.listingCard?.seats || 'places'}</>
                         )}
                       </div>
 
                       {/* Badge "Hôte professionnel" - Taille augmentée */}
                       {typeof listing.host === 'object' && listing.host.hostInfo?.superhost && (
                         <div className="text-sm text-gray-700 font-medium mt-1">
-                          Hôte professionnel
+                          {t.listingCard?.professionalHost || 'Hôte professionnel'}
                         </div>
                       )}
                     </div>
@@ -193,11 +193,11 @@ export default function SearchResults({
                           {avgRating.toFixed(1)}
                         </div>
                         <span className="text-sm font-semibold text-gray-900">{ratingBadge?.label}</span>
-                        <span className="text-sm text-gray-500">{reviewCount} avis</span>
+                        <span className="text-sm text-gray-500">{reviewCount} {t.ratings?.reviews || 'avis'}</span>
                       </div>
                     ) : (
                       <div className="text-sm text-gray-500 mt-2">
-                        Pas encore d'avis
+                        {t.ratings?.noReviews || 'Pas encore d\'avis'}
                       </div>
                     )}
                   </div>
@@ -218,17 +218,17 @@ export default function SearchResults({
 
                     {/* "pour X nuits, 1 appartement" - Taille augmentée */}
                     <div className="text-sm text-gray-600 mt-0.5">
-                      pour 1 nuit, 1 {listing.category === 'stay' ? 'appartement' : 'véhicule'}
+                      {t.listingCard?.forOneNight || 'pour 1 nuit, 1'} {listing.category === 'stay' ? (t.listingCard?.apartment || 'appartement') : (t.listingCard?.vehicle || 'véhicule')}
                     </div>
 
                     {/* "X € par nuit" - Taille augmentée */}
                     <div className="text-sm text-gray-600">
-                      {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')} par nuit
+                      {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')} {t.listingCard?.perNight || 'par nuit'}
                     </div>
 
                     {/* "taxes et frais compris" - Taille augmentée */}
                     <div className="text-sm text-gray-500">
-                      taxes et frais compris
+                      {t.listingCard?.taxes || 'taxes et frais compris'}
                     </div>
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export default function SearchResults({
             disabled={loading}
             className="px-8 py-3 bg-gradient-to-r from-[#FF6B35] to-orange-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {loading ? 'Chargement...' : 'Afficher plus de résultats'}
+            {loading ? (t.listingCard?.loading || 'Chargement...') : (t.listingCard?.showMore || 'Afficher plus de résultats')}
           </button>
         </div>
       )}

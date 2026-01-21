@@ -42,25 +42,25 @@ export default function HorizontalFilters({
   // ✅ FEATURE FLAG: Conditionally show vehicle types only if enabled
   const propertyTypes = useMemo(() => {
     const stayTypes = [
-      { value: 'apartment', label: 'Appartement' },
-      { value: 'house', label: 'Maison' },
-      { value: 'villa', label: 'Villa' },
-      { value: 'studio', label: 'Studio' },
-      { value: 'riad', label: 'Riad' },
+      { value: 'apartment', label: t.propertyTypes?.apartment || 'Appartement' },
+      { value: 'house', label: t.propertyTypes?.house || 'Maison' },
+      { value: 'villa', label: t.propertyTypes?.villa || 'Villa' },
+      { value: 'studio', label: t.propertyTypes?.studio || 'Studio' },
+      { value: 'riad', label: t.propertyTypes?.riad || 'Riad' },
     ];
 
     const vehicleTypes = [
-      { value: 'car', label: 'Voiture' },
-      { value: 'suv', label: 'SUV/4x4' },
-      { value: 'van', label: 'Van' },
-      { value: 'motorcycle', label: 'Moto' },
+      { value: 'car', label: t.propertyTypes?.car || 'Voiture' },
+      { value: 'suv', label: t.propertyTypes?.suv || 'SUV/4x4' },
+      { value: 'van', label: t.propertyTypes?.van || 'Van' },
+      { value: 'motorcycle', label: t.propertyTypes?.motorcycle || 'Moto' },
     ];
 
     // Return stay types if category is 'stay'
     // Return vehicle types only if category is 'vehicle' AND feature is enabled
     return category === 'stay' ? stayTypes :
            (vehiclesEnabled ? vehicleTypes : []);
-  }, [category, vehiclesEnabled]);
+  }, [category, vehiclesEnabled, t]);
 
   const hasActiveFilters = filters.minPrice || filters.maxPrice ||
     (filters.propertyTypes && filters.propertyTypes.length > 0) ||
@@ -99,18 +99,18 @@ export default function HorizontalFilters({
               <span className="text-sm font-medium">
                 {filters.minPrice || filters.maxPrice ?
                   `${filters.minPrice || 0}K - ${filters.maxPrice || '∞'}K` :
-                  'Prix'
+                  t.filters?.price || 'Prix'
                 }
               </span>
               <ChevronDown className={`w-4 h-4 transition-transform ${openFilter === 'price' ? 'rotate-180' : ''}`} />
             </button>
 
             {openFilter === 'price' && (
-              <div className="absolute top-full mt-2 left-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 w-80 z-50">
-                <h3 className="font-bold text-lg mb-4">Gamme de prix</h3>
+              <div className="absolute top-full mt-2 ltr:left-0 rtl:right-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 w-80 z-50">
+                <h3 className="font-bold text-lg mb-4">{t.filters?.priceRange || 'Gamme de prix'}</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Prix minimum (DZD)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t.filters?.priceMinimum || 'Prix minimum (DZD)'}</label>
                     <input
                       type="number"
                       value={filters.minPrice || ''}
@@ -120,7 +120,7 @@ export default function HorizontalFilters({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Prix maximum (DZD)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t.filters?.priceMaximum || 'Prix maximum (DZD)'}</label>
                     <input
                       type="number"
                       value={filters.maxPrice || ''}
@@ -148,15 +148,15 @@ export default function HorizontalFilters({
               <span className="text-sm font-medium">
                 {filters.propertyTypes && filters.propertyTypes.length > 0
                   ? `Type (${filters.propertyTypes.length})`
-                  : 'Type de logement'
+                  : (category === 'stay' ? (t.filters?.typeOfAccommodation || 'Type de logement') : (t.filters?.typeOfVehicle || 'Type de véhicule'))
                 }
               </span>
               <ChevronDown className={`w-4 h-4 transition-transform ${openFilter === 'type' ? 'rotate-180' : ''}`} />
             </button>
 
             {openFilter === 'type' && (
-              <div className="absolute top-full mt-2 left-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 w-72 z-50">
-                <h3 className="font-bold text-lg mb-4">Type de {category === 'stay' ? 'logement' : 'véhicule'}</h3>
+              <div className="absolute top-full mt-2 ltr:left-0 rtl:right-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 w-72 z-50">
+                <h3 className="font-bold text-lg mb-4">{category === 'stay' ? (t.filters?.typeOfAccommodation || 'Type de logement') : (t.filters?.typeOfVehicle || 'Type de véhicule')}</h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {propertyTypes.map((type) => (
                     <label key={type.value} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
@@ -196,24 +196,24 @@ export default function HorizontalFilters({
                 <span className="text-sm font-medium">
                   {filters.bedrooms || filters.bathrooms
                     ? `${filters.bedrooms || 0} ch, ${filters.bathrooms || 0} sdb`
-                    : 'Chambres & salles de bain'
+                    : t.filters?.roomsAndBeds || 'Chambres & salles de bain'
                   }
                 </span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${openFilter === 'rooms' ? 'rotate-180' : ''}`} />
               </button>
 
               {openFilter === 'rooms' && (
-                <div className="absolute top-full mt-2 left-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 w-80 z-50">
-                  <h3 className="font-bold text-lg mb-4">Chambres et salles de bain</h3>
+                <div className="absolute top-full mt-2 ltr:left-0 rtl:right-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 w-80 z-50">
+                  <h3 className="font-bold text-lg mb-4">{t.filters?.roomsAndBeds || 'Chambres et salles de bain'}</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Chambres minimum</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t.filters?.bedroomsMinimum || 'Chambres minimum'}</label>
                       <select
                         value={filters.bedrooms || ''}
                         onChange={(e) => onFilterChange({ ...filters, bedrooms: e.target.value ? parseInt(e.target.value) : undefined })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
                       >
-                        <option value="">Toutes</option>
+                        <option value="">{t.filters?.all || 'Toutes'}</option>
                         <option value="1">1+</option>
                         <option value="2">2+</option>
                         <option value="3">3+</option>
@@ -222,13 +222,13 @@ export default function HorizontalFilters({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Salles de bain minimum</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t.filters?.bathroomsMinimum || 'Salles de bain minimum'}</label>
                       <select
                         value={filters.bathrooms || ''}
                         onChange={(e) => onFilterChange({ ...filters, bathrooms: e.target.value ? parseInt(e.target.value) : undefined })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
                       >
-                        <option value="">Toutes</option>
+                        <option value="">{t.filters?.all || 'Toutes'}</option>
                         <option value="1">1+</option>
                         <option value="2">2+</option>
                         <option value="3">3+</option>
@@ -251,13 +251,13 @@ export default function HorizontalFilters({
               }`}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              <span className="text-sm font-medium">Plus de filtres</span>
+              <span className="text-sm font-medium">{t.filters?.moreFilters || 'Plus de filtres'}</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${openFilter === 'more' ? 'rotate-180' : ''}`} />
             </button>
 
             {openFilter === 'more' && (
-              <div className="absolute top-full mt-2 left-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 w-80 z-50">
-                <h3 className="font-bold text-lg mb-4">Plus d'options</h3>
+              <div className="absolute top-full mt-2 ltr:left-0 rtl:right-0 bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 w-80 z-50">
+                <h3 className="font-bold text-lg mb-4">{t.filters?.moreOptions || 'Plus d\'options'}</h3>
                 <div className="space-y-4">
                   <label className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
                     <input
@@ -269,9 +269,9 @@ export default function HorizontalFilters({
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <Zap className="w-4 h-4 text-green-600" />
-                        <span className="font-medium">Réservation instantanée</span>
+                        <span className="font-medium">{t.filters?.instantBook || 'Réservation instantanée'}</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Réservez sans attendre la confirmation</p>
+                      <p className="text-xs text-gray-500 mt-1">{t.filters?.instantBookDesc || 'Réservez sans attendre la confirmation'}</p>
                     </div>
                   </label>
 
@@ -285,16 +285,16 @@ export default function HorizontalFilters({
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        <span className="font-medium">Superhôte uniquement</span>
+                        <span className="font-medium">{t.filters?.superhost || 'Superhôte uniquement'}</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Hôtes avec excellentes évaluations</p>
+                      <p className="text-xs text-gray-500 mt-1">{t.filters?.superhostDesc || 'Hôtes avec excellentes évaluations'}</p>
                     </div>
                   </label>
 
                   {onRadiusChange && (
                     <div className="pt-4 border-t border-gray-200">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Rayon de recherche: {searchRadius}km
+                        {t.filterModal?.searchRadius || 'Rayon de recherche'}: {searchRadius}km
                       </label>
                       <input
                         type="range"
@@ -323,7 +323,7 @@ export default function HorizontalFilters({
               className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-300 hover:border-gray-400 transition-all whitespace-nowrap text-sm font-medium"
             >
               <X className="w-4 h-4" />
-              Effacer tout
+              {t.filters?.clearAll || 'Effacer tout'}
             </button>
           )}
         </div>

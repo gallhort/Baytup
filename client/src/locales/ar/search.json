@@ -11,6 +11,99 @@
     "stay": "إقامة",
     "vehicle": "مركبة"
   },
+  "calendar": {
+    "months": {
+      "january": "يناير",
+      "february": "فبراير",
+      "march": "مارس",
+      "april": "أبريل",
+      "may": "مايو",
+      "june": "يونيو",
+      "july": "يوليو",
+      "august": "أغسطس",
+      "september": "سبتمبر",
+      "october": "أكتوبر",
+      "november": "نوفمبر",
+      "december": "ديسمبر"
+    },
+    "daysOfWeek": ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"],
+    "clearDates": "مسح التواريخ",
+    "close": "إغلاق",
+    "selectDates": "اختر التواريخ"
+  },
+  "guests": {
+    "adults": "البالغين",
+    "children": "الأطفال",
+    "person": "شخص",
+    "people": "أشخاص",
+    "travelers": "المسافرون",
+    "apply": "تطبيق"
+  },
+  "searchBar": {
+    "whereGoing": "إلى أين تذهب؟",
+    "enterDestination": "المدينة، المنطقة...",
+    "enterToSearch": "أدخل وجهة للبحث"
+  },
+  "ratings": {
+    "exceptional": "استثنائي",
+    "veryGood": "جيد جداً",
+    "good": "جيد",
+    "correct": "عادل",
+    "reviews": "مراجعات",
+    "noReviews": "لا توجد مراجعات بعد"
+  },
+  "listingCard": {
+    "featured": "مميز",
+    "apartment": "شقة",
+    "bedroom": "غرفة نوم",
+    "bedrooms": "غرف نوم",
+    "bathroom": "حمام",
+    "bathrooms": "حمامات",
+    "vehicle": "مركبة",
+    "seats": "مقاعد",
+    "professionalHost": "مضيف محترف",
+    "perNight": "لكل ليلة",
+    "taxes": "الضرائب والرسوم متضمنة",
+    "forOneNight": "لليلة واحدة، 1",
+    "loading": "جاري التحميل...",
+    "showMore": "عرض المزيد من النتائج"
+  },
+  "filterModal": {
+    "title": "الفلاتر",
+    "searchRadius": "نطاق البحث",
+    "km": "كم",
+    "priceRange": "نطاق السعر",
+    "pricePerNight": "السعر لكل ليلة، جميع الرسوم متضمنة",
+    "pricePerDay": "السعر لكل يوم، جميع الرسوم متضمنة",
+    "roomsAndBeds": "الغرف والأسرة",
+    "bedrooms": "غرف النوم",
+    "beds": "أسرة",
+    "bathrooms": "حمامات",
+    "everything": "الكل",
+    "amenities": "المرافق",
+    "bookingOptions": "خيارات الحجز",
+    "clearAll": "مسح الكل",
+    "showResults": "عرض {count} إعلان",
+    "showResultsPlural": "عرض {count} إعلانات",
+    "showAllResults": "عرض النتائج",
+    "instantBookDesc": "احجز بدون انتظار التأكيد",
+    "superhostDesc": "مضيفون بتقييمات ممتازة"
+  },
+  "filterChips": {
+    "filters": "الفلاتر",
+    "recommended": "موصى به",
+    "priceLow": "السعر: من الأقل للأعلى",
+    "priceHigh": "السعر: من الأعلى للأقل",
+    "bestRated": "الأفضل تقييماً",
+    "searchOnMapMove": "البحث أثناء تحريك الخريطة"
+  },
+  "offline": {
+    "mode": "وضع عدم الاتصال.",
+    "realtimeDisabled": "تم تعطيل التحديثات في الوقت الفعلي.",
+    "clearLocation": "مسح الموقع",
+    "noListingsFound": "لم يتم العثور على إعلانات",
+    "adjustFilters": "حاول تعديل الفلاتر أو البحث في منطقة أخرى"
+  },
   "view": {
     "list": "قائمة",
     "map": "خريطة"

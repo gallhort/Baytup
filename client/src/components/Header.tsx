@@ -402,6 +402,7 @@ const Header = React.memo(function Header({
   // Refs
   const headerRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const languageButtonRef = useRef<HTMLButtonElement>(null);
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
@@ -515,7 +516,25 @@ const Header = React.memo(function Header({
 
   // Click away handlers
   useClickAway(searchRef, handleClickOutside);
-  useClickAway(languageMenuRef, () => setIsLanguageMenuOpen(false));
+
+  // Custom click away for language menu (handles button + portal menu)
+  useEffect(() => {
+    if (!isLanguageMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const clickedButton = languageButtonRef.current?.contains(target);
+      const clickedMenu = languageMenuRef.current?.contains(target);
+
+      if (!clickedButton && !clickedMenu) {
+        setIsLanguageMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isLanguageMenuOpen]);
+
   useClickAway(userMenuRef, () => setIsUserMenuOpen(false));
   useClickAway(notificationMenuRef, () => setIsNotificationMenuOpen(false));
 
@@ -1635,9 +1654,13 @@ const Header = React.memo(function Header({
                 )}
 
                 {/* Language/Globe Selector - Enhanced - Hidden on Mobile */}
-                <div className="hidden sm:block relative" ref={languageMenuRef}>
+                <div className="hidden sm:block relative">
                   <button
-                    onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
+                    ref={languageButtonRef}
+                    onClick={() => {
+                      console.log('🌍 Header: Globe button clicked, current state:', isLanguageMenuOpen);
+                      setIsLanguageMenuOpen(!isLanguageMenuOpen);
+                    }}
                     className="p-2 sm:p-2.5 lg:p-3 rounded-full hover:bg-gray-50 transition-all duration-200 hover:scale-110"
                     aria-label={t.languageAndRegion}
                   >
@@ -1645,65 +1668,66 @@ const Header = React.memo(function Header({
                   </button>
                 </div>
 
-                {/* Language Menu Portal - Rendered at body level to avoid z-index issues */}
+                {/* Language Menu Portal - Rendered at body level */}
                 {isLanguageMenuOpen && typeof document !== 'undefined' && createPortal(
-                  <div className="fixed inset-0 z-[99999]" onClick={() => setIsLanguageMenuOpen(false)}>
-                    <div
-                      className="absolute right-4 top-16 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 animate-in slide-in-from-top-2 duration-200"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <div className="text-sm font-semibold text-gray-900">{t.languageAndRegion}</div>
-                      </div>
-                      <div className="py-2">
-                        {languages.map((lang, index) => (
+                  <div
+                    ref={languageMenuRef}
+                    className="fixed right-4 top-16 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 z-[99999]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="text-sm font-semibold text-gray-900">{t.languageAndRegion}</div>
+                    </div>
+                    <div className="py-2">
+                      {languages.map((lang, index) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            console.log('🖱️ Header: Language clicked in desktop menu:', lang.code);
+                            console.log('🔍 Header: onLanguageChange callback exists?', !!onLanguageChange);
+                            onLanguageChange?.(lang.code as 'en' | 'fr' | 'ar');
+                            setIsLanguageMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-all duration-200 hover:scale-105 ${
+                            language === lang.code ? 'bg-orange-50 border-l-2 border-[#FF6B35]' : ''
+                          }`}
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          <span className="text-lg">{lang.flag}</span>
+                          <div className="flex-1 text-left">
+                            <span className="text-sm text-gray-700 font-medium">{lang.name}</span>
+                            <div className="text-xs text-gray-500">{lang.nativeName}</div>
+                          </div>
+                          {language === lang.code && (
+                            <div className="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="px-4 py-3 border-t border-gray-100">
+                      <div className="text-xs text-gray-500 mb-2">{t.currency}</div>
+                      <div className="space-y-1">
+                        {currencies.map((curr) => (
                           <button
-                            key={lang.code}
+                            key={curr.code}
                             onClick={() => {
-                              onLanguageChange?.(lang.code as 'en' | 'fr' | 'ar');
+                              onCurrencyChange?.(curr.code as 'DZD' | 'EUR');
                               setIsLanguageMenuOpen(false);
                             }}
-                            className={`w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-all duration-200 hover:scale-105 ${
-                              language === lang.code ? 'bg-orange-50 border-l-2 border-[#FF6B35]' : ''
+                            className={`w-full flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 hover:scale-105 ${
+                              currency === curr.code ? 'bg-orange-50 border border-[#FF6B35]' : ''
                             }`}
-                            style={{ animationDelay: `${index * 50}ms` }}
                           >
-                            <span className="text-lg">{lang.flag}</span>
+                            <span className="text-sm font-medium">{curr.code}</span>
+                            <span className="text-sm text-gray-600">{curr.symbol}</span>
                             <div className="flex-1 text-left">
-                              <span className="text-sm text-gray-700 font-medium">{lang.name}</span>
-                              <div className="text-xs text-gray-500">{lang.nativeName}</div>
+                              <span className="text-xs text-gray-500">{getCurrencyName(curr)}</span>
                             </div>
-                            {language === lang.code && (
-                              <div className="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse" />
+                            {currency === curr.code && (
+                              <div className="w-2 h-2 bg-[#FF6B35] rounded-full" />
                             )}
                           </button>
                         ))}
-                      </div>
-                      <div className="px-4 py-3 border-t border-gray-100">
-                        <div className="text-xs text-gray-500 mb-2">{t.currency}</div>
-                        <div className="space-y-1">
-                          {currencies.map((curr) => (
-                            <button
-                              key={curr.code}
-                              onClick={() => {
-                                onCurrencyChange?.(curr.code as 'DZD' | 'EUR');
-                                setIsLanguageMenuOpen(false);
-                              }}
-                              className={`w-full flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 hover:scale-105 ${
-                                currency === curr.code ? 'bg-orange-50 border border-[#FF6B35]' : ''
-                              }`}
-                            >
-                              <span className="text-sm font-medium">{curr.code}</span>
-                              <span className="text-sm text-gray-600">{curr.symbol}</span>
-                              <div className="flex-1 text-left">
-                                <span className="text-xs text-gray-500">{getCurrencyName(curr)}</span>
-                              </div>
-                              {currency === curr.code && (
-                                <div className="w-2 h-2 bg-[#FF6B35] rounded-full" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
                       </div>
                     </div>
                   </div>,
@@ -1830,6 +1854,8 @@ const Header = React.memo(function Header({
                             <button
                               key={lang.code}
                               onClick={() => {
+                                console.log('🖱️ Header: Language clicked in mobile menu:', lang.code);
+                                console.log('🔍 Header: onLanguageChange callback exists?', !!onLanguageChange);
                                 onLanguageChange?.(lang.code as 'en' | 'fr' | 'ar');
                                 setIsUserMenuOpen(false);
                               }}

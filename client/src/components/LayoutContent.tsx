@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import HeaderWrapper from './HeaderWrapper';
 import Footer from './Footer';
 import { Toaster } from 'react-hot-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LayoutContent({ children }: { children: React.ReactNode }) {
   const [headerHeight, setHeaderHeight] = React.useState(0);

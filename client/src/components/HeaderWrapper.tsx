@@ -57,6 +57,8 @@ export default function HeaderWrapper() {
   };
 
   const handleLanguageChange = (lang: 'en' | 'fr' | 'ar') => {
+    console.log('🔄 HeaderWrapper: handleLanguageChange called with:', lang);
+    console.log('📋 HeaderWrapper: Current language before change:', language);
     setLanguage(lang);
     toast.success(
       lang === 'ar' ? 'تم تغيير اللغة بنجاح' :
