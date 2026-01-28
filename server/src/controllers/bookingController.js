@@ -180,7 +180,14 @@ const createBooking = catchAsync(async (req, res, next) => {
       status: 'pending'
     },
     status: listingDoc.availability.instantBook ? 'confirmed' : 'pending',
-    specialRequests: specialRequests || ''
+    specialRequests: specialRequests || '',
+    // ✅ NEW: Set 24h deadline for host response if not instant book
+    hostResponse: listingDoc.availability.instantBook ? {} : {
+      deadline: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+      reminder12hSent: false,
+      reminder22hSent: false,
+      autoExpired: false
+    }
   });
 
   // Populate booking
@@ -1058,6 +1065,11 @@ const updateBookingStatus = catchAsync(async (req, res, next) => {
   booking.status = status;
   if (hostMessage) {
     booking.hostMessage = hostMessage;
+  }
+
+  // ✅ NEW: Record host response time when they approve or reject
+  if (booking.hostResponse && (status === 'confirmed' || status === 'cancelled_by_host')) {
+    booking.hostResponse.respondedAt = new Date();
   }
 
   await booking.save({ validateBeforeSave: false });

@@ -3411,6 +3411,160 @@ const sendBookingCancelledEmail = async (user, booking, userType = 'guest', canc
   }
 };
 
+// ✅ NEW: Pre-arrival reminder email (J-7, J-3, J-1)
+const sendPreArrivalReminderEmail = async (guest, booking, daysUntilCheckIn) => {
+  try {
+    const transporter = createTransporter();
+
+    const checkInDate = new Date(booking.startDate).toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const checkOutDate = new Date(booking.endDate).toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // Dynamic content based on days
+    let subjectText, headerText, urgencyClass, reminderText;
+
+    if (daysUntilCheckIn === 7) {
+      subjectText = 'Votre séjour approche ! (J-7)';
+      headerText = 'Plus que 7 jours avant votre arrivée !';
+      urgencyClass = '#4CAF50'; // Green
+      reminderText = 'C\'est le moment idéal pour préparer votre voyage et contacter votre hôte si vous avez des questions.';
+    } else if (daysUntilCheckIn === 3) {
+      subjectText = 'Préparez-vous ! Arrivée dans 3 jours';
+      headerText = 'Plus que 3 jours avant votre arrivée !';
+      urgencyClass = '#FF9800'; // Orange
+      reminderText = 'N\'oubliez pas de confirmer votre heure d\'arrivée avec votre hôte.';
+    } else if (daysUntilCheckIn === 1) {
+      subjectText = 'C\'est demain ! Derniers préparatifs';
+      headerText = 'C\'est demain ! Préparez-vous !';
+      urgencyClass = '#FF6B35'; // Red-orange
+      reminderText = 'Vérifiez que vous avez toutes les informations nécessaires pour votre arrivée.';
+    }
+
+    const mailOptions = {
+      from: `"Baytup" <${process.env.EMAIL_FROM}>`,
+      to: guest.email,
+      subject: `${subjectText} - ${booking.listing?.title || 'Votre réservation'}`,
+      html: `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Rappel de réservation - Baytup</title>
+          <style>
+            body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, ${urgencyClass}, #F7931E); color: white; padding: 30px 20px; border-radius: 8px 8px 0 0; text-align: center; }
+            .logo { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+            .countdown { font-size: 48px; font-weight: bold; margin: 20px 0; }
+            .content { background: white; padding: 30px; border: 1px solid #e5e5e5; border-top: none; border-radius: 0 0 8px 8px; }
+            .info-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e5e5; }
+            .info-row:last-child { border-bottom: none; }
+            .info-label { color: #666; }
+            .info-value { font-weight: 600; color: #333; }
+            .button { display: inline-block; background: linear-gradient(135deg, #FF6B35, #F7931E); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+            .checklist { background: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .checklist-item { padding: 8px 0; display: flex; align-items: center; }
+            .checklist-item::before { content: "☐"; margin-right: 10px; font-size: 18px; }
+            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">Baytup</div>
+            <div class="countdown">J-${daysUntilCheckIn}</div>
+            <h2 style="margin: 0;">${headerText}</h2>
+          </div>
+          <div class="content">
+            <p>Bonjour ${guest.firstName || 'Voyageur'},</p>
+            <p>${reminderText}</p>
+
+            <div class="info-box">
+              <h3 style="margin-top: 0;">📍 Détails de votre réservation</h3>
+              <div class="info-row">
+                <span class="info-label">Logement</span>
+                <span class="info-value">${booking.listing?.title || 'Votre hébergement'}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Arrivée</span>
+                <span class="info-value">${checkInDate} à ${booking.checkInTime || '15:00'}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Départ</span>
+                <span class="info-value">${checkOutDate} à ${booking.checkOutTime || '11:00'}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Voyageurs</span>
+                <span class="info-value">${booking.guestCount?.adults || 1} adulte(s)${booking.guestCount?.children ? `, ${booking.guestCount.children} enfant(s)` : ''}</span>
+              </div>
+            </div>
+
+            <div class="checklist">
+              <h3 style="margin-top: 0;">✅ Checklist avant le départ</h3>
+              <div class="checklist-item">Confirmer l'heure d'arrivée avec l'hôte</div>
+              <div class="checklist-item">Vérifier les instructions d'accès</div>
+              <div class="checklist-item">Préparer les documents d'identité</div>
+              <div class="checklist-item">Sauvegarder le contact de l'hôte</div>
+              ${daysUntilCheckIn === 1 ? '<div class="checklist-item">Charger votre téléphone</div>' : ''}
+            </div>
+
+            <p style="text-align: center;">
+              <a href="${process.env.CLIENT_URL}/dashboard/bookings/${booking._id}" class="button">
+                Voir ma réservation
+              </a>
+            </p>
+
+            <p style="text-align: center; color: #666;">
+              <a href="${process.env.CLIENT_URL}/dashboard/messages" style="color: #FF6B35;">
+                💬 Contacter l'hôte
+              </a>
+            </p>
+          </div>
+          <div class="footer">
+            <p>Besoin d'aide ? Contactez-nous à <a href="mailto:support@baytup.fr" style="color: #FF6B35;">support@baytup.fr</a></p>
+            <p style="color: #999;">© ${new Date().getFullYear()} Baytup. Tous droits réservés.</p>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+Bonjour ${guest.firstName || 'Voyageur'},
+
+${headerText}
+
+${reminderText}
+
+Détails de votre réservation:
+- Logement: ${booking.listing?.title || 'Votre hébergement'}
+- Arrivée: ${checkInDate} à ${booking.checkInTime || '15:00'}
+- Départ: ${checkOutDate} à ${booking.checkOutTime || '11:00'}
+
+Voir votre réservation: ${process.env.CLIENT_URL}/dashboard/bookings/${booking._id}
+
+Bon voyage !
+L'équipe Baytup
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Pre-arrival email (J-${daysUntilCheckIn}) sent to ${guest.email}`);
+    return { success: true };
+  } catch (error) {
+    console.error(`Error sending pre-arrival email (J-${daysUntilCheckIn}):`, error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendEmailVerification,
   sendPasswordResetEmail,
@@ -3435,5 +3589,6 @@ module.exports = {
   sendListingDeletedEmail,
   sendPasswordChangedEmail,
   sendEmailChangedEmail,
-  sendBookingCancelledEmail
+  sendBookingCancelledEmail,
+  sendPreArrivalReminderEmail  // ✅ NEW
 };

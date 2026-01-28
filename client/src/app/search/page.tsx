@@ -65,7 +65,7 @@ interface SearchFilters {
 function SearchPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { language, currency } = useLanguage();
+  const { language, currency, isReady: contextReady } = useLanguage();
   const t = useTranslation('search') as any;
   const vehiclesEnabled = useFeature('vehiclesEnabled'); // ✅ Feature flag
 
@@ -109,17 +109,23 @@ function SearchPageContent() {
   const [hoveredListing, setHoveredListing] = useState<string | null>(null);
   // ✅ NEW: Track visible listings from map for dynamic list synchronization
   const [mapVisibleListings, setMapVisibleListings] = useState<Listing[]>([]);
+  const [mapHasInitialized, setMapHasInitialized] = useState(false); // Track if map sent first update
   // ✅ Abritel-style: Search on map move
   const [searchOnMapMove, setSearchOnMapMove] = useState(false);
+  // ✅ NEW: Trigger map to fit all listings after filters applied
+  const [shouldFitBounds, setShouldFitBounds] = useState(false);
 
-  // ✅ SIMPLIFIED: Simple radius-based search only
-  const [searchRadius, setSearchRadius] = useState(50); // km
-  const initialCoordinatesRef = useRef<{ lat: number; lng: number } | null>(null);
+  // ✅ SIMPLIFIED: Simple radius-based search only - read from URL if present
+  const [searchRadius, setSearchRadius] = useState(() => {
+    const urlRadius = searchParams?.get('radius');
+    return urlRadius ? parseInt(urlRadius) : 50;
+  }); // km
 
   // ✅ NEW: Prevent scroll jump when list updates
   const listContainerRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number>(0);
   const isUpdatingListings = useRef<boolean>(false);
+  const prevListingsCountRef = useRef<number>(0); // Track listing count for fitBounds
 
   // Enhanced state for REST API fallback
   const [restApiListings, setRestApiListings] = useState<Listing[]>([]);
@@ -192,30 +198,24 @@ function SearchPageContent() {
       adults: filters.adults > 0 ? filters.adults : undefined,
       children: filters.children > 0 ? filters.children : undefined,
       page: pageNum,
-      limit: 20
+      limit: 20,
+      // ✅ NEW: Pass currency for multi-currency filtering
+      currency: currency
     };
 
-    // ✅ SIMPLIFIED: Simple lat/lng + radius search
-    if (filters.location) {
-      const lat = searchParams?.get('lat');
-      const lng = searchParams?.get('lng');
+    // ✅ SIMPLIFIED: Read lat/lng from URL, but use state for radius (state is source of truth)
+    const lat = searchParams?.get('lat');
+    const lng = searchParams?.get('lng');
 
-      // Store coordinates on first load
-      if (lat && lng && !initialCoordinatesRef.current) {
-        initialCoordinatesRef.current = {
-          lat: parseFloat(lat),
-          lng: parseFloat(lng)
-        };
-      }
-
-      // Use stored or URL coordinates
-      const coords = initialCoordinatesRef.current || (lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null);
-
-      if (coords) {
-        apiFilters.lat = coords.lat;
-        apiFilters.lng = coords.lng;
-        apiFilters.radius = searchRadius;
-      }
+    if (lat && lng) {
+      apiFilters.lat = parseFloat(lat);
+      apiFilters.lng = parseFloat(lng);
+      // ✅ FIX: Always use state searchRadius (not URL) - state is updated by slider in real-time
+      apiFilters.radius = searchRadius;
+      console.log('📍 Using coordinates from URL with state radius:', { lat: apiFilters.lat, lng: apiFilters.lng, radius: searchRadius });
+    } else if (filters.location) {
+      // Fallback to text-based search if no coordinates
+      console.log('📍 No coordinates in URL, using text-based search for:', filters.location);
     }
 
     // ✅ DEBUG: Log search parameters
@@ -224,6 +224,7 @@ function SearchPageContent() {
       lat: apiFilters.lat,
       lng: apiFilters.lng,
       category: apiFilters.category,
+      currency: apiFilters.currency, // ✅ Added currency to debug
       bounds: apiFilters.bounds,
       center: apiFilters.center,
       radius: apiFilters.radius,
@@ -359,7 +360,7 @@ function SearchPageContent() {
         setRestApiLoading(false);
       }
     }
-  }, [filters, searchListings, isConnected, useRestAPI, vehiclesEnabled, searchRadius, searchParams]);
+  }, [filters, searchListings, isConnected, useRestAPI, vehiclesEnabled, searchRadius, searchParams, currency]);
 
   // Update filters when URL params change
   useEffect(() => {
@@ -374,22 +375,41 @@ function SearchPageContent() {
         adults: parseInt(searchParams.get('adults') || '1') || prev.adults,
         children: parseInt(searchParams.get('children') || '0') || prev.children,
       }));
+      // ✅ FIX: Sync searchRadius from URL if present
+      const urlRadius = searchParams.get('radius');
+      if (urlRadius) {
+        setSearchRadius(parseInt(urlRadius));
+      }
     }
   }, [searchParams]);
 
-  // Search listings when filters change
+  // Search listings when filters change (wait for context to be ready)
   useEffect(() => {
+    if (!contextReady) {
+      console.log('⏳ Waiting for context to be ready before searching...');
+      return;
+    }
+    console.log('✅ Context ready, performing search with currency:', currency);
     performSearch(1, false);
-  }, [performSearch]);
-
-  // ✅ SIMPLIFIED: Reset coordinates when location changes
-  useEffect(() => {
-    initialCoordinatesRef.current = null;
-  }, [filters.location, filters.category, filters.checkIn, filters.checkOut]);
+  }, [performSearch, contextReady]); // currency is already in performSearch deps
 
   // ✅ SIMPLIFIED: Just update filtered listings
   useEffect(() => {
     setFilteredListings(listings);
+    // ✅ FIX: Sync mapVisibleListings with listings immediately
+    // The map will refine this when it calls onVisibleListingsChange
+    // This ensures the list shows correct data before the map syncs
+    setMapVisibleListings(listings);
+  }, [listings]);
+
+  // ✅ NEW: Fit bounds when listings change (e.g., after currency change)
+  useEffect(() => {
+    // Only trigger fitBounds if listings changed significantly (not just reordering)
+    if (listings.length > 0 && listings.length !== prevListingsCountRef.current) {
+      console.log('📍 Listings changed, triggering fitBounds');
+      setShouldFitBounds(true);
+    }
+    prevListingsCountRef.current = listings.length;
   }, [listings]);
 
   // ✅ SIMPLIFIED: Client-side filtering and sorting
@@ -437,8 +457,8 @@ function SearchPageContent() {
     }
   };
 
-  // Enhanced URL management
-  const updateURL = useCallback((newFilters: SearchFilters) => {
+  // Enhanced URL management - preserves lat/lng/radius from current URL
+  const updateURL = useCallback((newFilters: SearchFilters, options?: { preserveGeo?: boolean, radius?: number }) => {
     const params = new URLSearchParams();
     Object.entries(newFilters).forEach(([key, value]) => {
       if (value && value !== 'any' && value !== 0 && (Array.isArray(value) ? value.length > 0 : true)) {
@@ -449,13 +469,39 @@ function SearchPageContent() {
         }
       }
     });
+
+    // ✅ FIX: Preserve lat/lng from current URL when updating filters
+    if (options?.preserveGeo !== false) {
+      const currentLat = searchParams?.get('lat');
+      const currentLng = searchParams?.get('lng');
+      if (currentLat && currentLng) {
+        params.set('lat', currentLat);
+        params.set('lng', currentLng);
+      }
+    }
+
+    // ✅ FIX: Include radius in URL if provided
+    if (options?.radius !== undefined) {
+      params.set('radius', options.radius.toString());
+    }
+
     router.push(`/search?${params.toString()}`, { scroll: false });
-  }, [router]);
+  }, [router, searchParams]);
 
   // Handle filter changes
   const handleFilterChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
     updateURL(newFilters);
+  };
+
+  // ✅ NEW: Handle filter changes from modal - triggers fitBounds after applying
+  // ✅ FIX: Preserve geo params and include radius when updating URL from modal
+  const handleModalFilterChange = (newFilters: SearchFilters) => {
+    setFilters(newFilters);
+    // Pass radius and preserve geo coordinates when updating from modal
+    updateURL(newFilters, { preserveGeo: true, radius: searchRadius });
+    // Trigger map to fit all results after filters applied
+    setShouldFitBounds(true);
   };
 
   // ✅ Enhanced view mode handling with split-screen support (3 modes)
@@ -494,6 +540,8 @@ function SearchPageContent() {
 
     isUpdatingListings.current = true;
     setMapVisibleListings(visibleListings);
+    // Mark map as initialized after first update
+    setMapHasInitialized(true);
   }, []);
 
   // ✅ NEW: Restore scroll position after list updates
@@ -561,12 +609,18 @@ function SearchPageContent() {
   // ✅ NEW: Determine which listings to display in list based on view mode
   const listingsToDisplay = useMemo(() => {
     // In split view, show only listings visible on the map
-    if (viewMode === 'split' && mapVisibleListings.length > 0) {
-      return mapVisibleListings;
+    // But before map initializes, show all filtered listings to avoid empty initial state
+    if (viewMode === 'split') {
+      if (mapHasInitialized) {
+        // After map initialized: show exactly what's visible (even if empty)
+        return mapVisibleListings;
+      }
+      // Before map initialized: show all listings temporarily
+      return filteredListings;
     }
     // In list-only view, show all filtered listings
     return filteredListings;
-  }, [viewMode, mapVisibleListings, filteredListings]);
+  }, [viewMode, mapVisibleListings, filteredListings, mapHasInitialized]);
 
   return (
     <div className="bg-white flex flex-col" style={{ height: '100vh', paddingTop: '72px' }}>
@@ -588,8 +642,8 @@ function SearchPageContent() {
                 <span className="inline-block w-48 h-5 bg-gray-200 rounded animate-pulse" />
               ) : (
                 <>
-                  <span className="font-semibold">{listingsToDisplay.length}</span>
-                  {' '}{listingsToDisplay.length > 1 ? (t.results?.accommodations || 'logements') : (t.results?.accommodation || 'logement')}
+                  <span className="font-semibold">{filteredListings.length}</span>
+                  {' '}{filteredListings.length > 1 ? (t.results?.accommodations || 'logements') : (t.results?.accommodation || 'logement')}
                   {filters.location && (
                     <>
                       {' '}• <span className="font-normal">{filters.location.split(',')[0]}</span>
@@ -685,6 +739,13 @@ function SearchPageContent() {
                   language={language}
                   onListingHover={handleListingHover}
                   hoveredListing={hoveredListing}
+                  searchParams={{
+                    checkIn: filters.checkIn,
+                    checkOut: filters.checkOut,
+                    guests: filters.guests,
+                    adults: filters.adults,
+                    children: filters.children
+                  }}
                 />
               </div>
             )}
@@ -706,7 +767,8 @@ function SearchPageContent() {
               currency={currency}
               className="w-full h-full"
               interactive={true}
-              fitBounds={false}
+              fitBounds={shouldFitBounds}
+              onFitBoundsComplete={() => setShouldFitBounds(false)}
             />
           </div>
         </div>
@@ -749,11 +811,11 @@ function SearchPageContent() {
         isOpen={isFiltersModalOpen}
         onClose={() => setIsFiltersModalOpen(false)}
         filters={filters}
-        onFilterChange={handleFilterChange}
+        onFilterChange={handleModalFilterChange}
         category={filters.category}
         searchRadius={searchRadius}
         onRadiusChange={setSearchRadius}
-        totalResults={listingsToDisplay.length}
+        totalResults={filteredListings.length}
         allListings={filteredListings}
       />
     </div>

@@ -245,7 +245,39 @@ const BookingSchema = new mongoose.Schema({
     paymentReminder: { type: Boolean, default: false },
     checkInReminder: { type: Boolean, default: false },
     checkOutReminder: { type: Boolean, default: false },
-    reviewReminder: { type: Boolean, default: false }
+    reviewReminder: { type: Boolean, default: false },
+    // ✅ NEW: Pre-arrival email reminders
+    preArrival7Days: { type: Boolean, default: false },
+    preArrival3Days: { type: Boolean, default: false },
+    preArrival1Day: { type: Boolean, default: false }
+  },
+
+  // ✅ NEW: Host response deadline (24h system)
+  hostResponse: {
+    // Deadline for host to respond (createdAt + 24h)
+    deadline: {
+      type: Date,
+      default: null
+    },
+    // Track when host responded
+    respondedAt: {
+      type: Date,
+      default: null
+    },
+    // Reminders sent tracking
+    reminder12hSent: {
+      type: Boolean,
+      default: false
+    },
+    reminder22hSent: {
+      type: Boolean,
+      default: false
+    },
+    // Auto-expired flag
+    autoExpired: {
+      type: Boolean,
+      default: false
+    }
   }
 }, {
   timestamps: true,
@@ -260,6 +292,8 @@ BookingSchema.index({ host: 1, status: 1 });
 BookingSchema.index({ status: 1, startDate: 1 });
 BookingSchema.index({ 'payment.status': 1 });
 BookingSchema.index({ createdAt: -1 });
+// ✅ NEW: Index for host response deadline queries
+BookingSchema.index({ status: 1, 'hostResponse.deadline': 1 });
 
 // Virtual for duration in nights
 BookingSchema.virtual('duration').get(function() {

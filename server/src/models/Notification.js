@@ -84,7 +84,13 @@ const NotificationSchema = new mongoose.Schema({
       'user_created_by_admin',
       'user_profile_updated_by_admin',
       'email_verified_by_admin',
-      'payment_confirmed_by_host'
+      'payment_confirmed_by_host',
+      // ✅ NEW: Host response deadline notifications
+      'host_response_reminder',
+      'host_response_urgent',
+      'booking_expired',
+      'booking_expired_host',
+      'booking_started'
     ],
     required: [true, 'Notification type is required'],
     index: true

@@ -729,16 +729,41 @@ const Header = React.memo(function Header({
   };
 
   // Enhanced search handler with complete data collection
-  const handleSearch = useCallback(() => {
+  const handleSearch = useCallback(async () => {
     const params = new URLSearchParams();
 
     // Common parameters
     if (searchData.location) params.set('location', searchData.location);
 
+    // ✅ FIX: If no coordinates but location exists, try to lookup coordinates from our cities API
+    let coordinates = searchData.coordinates;
+    if (!coordinates && searchData.location) {
+      try {
+        // Extract city name (first part before comma)
+        const cityName = searchData.location.split(',')[0].trim();
+        console.log('🔍 Looking up coordinates for:', cityName);
+
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cities/search`, {
+          params: { q: cityName, limit: 1 }
+        });
+
+        if (response.data.status === 'success' && response.data.data.cities.length > 0) {
+          const city = response.data.data.cities[0];
+          coordinates = {
+            lat: city.coordinates[0],
+            lng: city.coordinates[1]
+          };
+          console.log('✅ Found coordinates for', cityName, ':', coordinates);
+        }
+      } catch (error) {
+        console.error('Failed to lookup city coordinates:', error);
+      }
+    }
+
     // ✅ FIX: Send GPS coordinates for radius-based search
-    if (searchData.coordinates && searchData.coordinates.lat && searchData.coordinates.lng) {
-      params.set('lat', searchData.coordinates.lat.toString());
-      params.set('lng', searchData.coordinates.lng.toString());
+    if (coordinates && coordinates.lat && coordinates.lng) {
+      params.set('lat', coordinates.lat.toString());
+      params.set('lng', coordinates.lng.toString());
       params.set('radius', '50'); // 50km default radius
     }
 
@@ -766,10 +791,7 @@ const Header = React.memo(function Header({
 
     // Enhanced location data
     if (searchData.placeId) params.set('placeId', searchData.placeId);
-    if (searchData.coordinates) {
-      params.set('lat', searchData.coordinates.lat.toString());
-      params.set('lng', searchData.coordinates.lng.toString());
-    }
+    // Note: lat/lng already set above with the coordinates lookup
     if (searchData.city) params.set('city', searchData.city);
     if (searchData.region) params.set('region', searchData.region);
 

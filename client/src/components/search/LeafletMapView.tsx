@@ -32,6 +32,7 @@ interface LeafletMapViewProps {
   className?: string;
   interactive?: boolean;
   fitBounds?: boolean;
+  onFitBoundsComplete?: () => void; // ✅ NEW: Callback when fitBounds is done
   selectedCategory?: 'stay' | 'vehicle' | 'all';
 }
 
@@ -174,11 +175,26 @@ function VisibleListingsHandler({
 }
 
 // Composant pour fit bounds automatiquement
-function AutoFitBounds({ listings, fitBounds }: { listings: any[]; fitBounds: boolean }) {
+function AutoFitBounds({
+  listings,
+  fitBounds,
+  onFitBoundsComplete
+}: {
+  listings: any[];
+  fitBounds: boolean;
+  onFitBoundsComplete?: () => void;
+}) {
   const map = useMap();
   const hasFitted = useRef(false);
+  const prevFitBounds = useRef(fitBounds);
 
   useEffect(() => {
+    // ✅ Reset hasFitted when fitBounds changes from false to true
+    if (fitBounds && !prevFitBounds.current) {
+      hasFitted.current = false;
+    }
+    prevFitBounds.current = fitBounds;
+
     if (fitBounds && listings.length > 0 && !hasFitted.current) {
       const bounds = L.latLngBounds(
         listings.map(listing => {
@@ -189,8 +205,16 @@ function AutoFitBounds({ listings, fitBounds }: { listings: any[]; fitBounds: bo
 
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
       hasFitted.current = true;
+
+      // ✅ Call callback after fitBounds
+      if (onFitBoundsComplete) {
+        // Small delay to ensure map has finished animating
+        setTimeout(() => {
+          onFitBoundsComplete();
+        }, 300);
+      }
     }
-  }, [listings, fitBounds, map]);
+  }, [listings, fitBounds, map, onFitBoundsComplete]);
 
   return null;
 }
@@ -209,6 +233,7 @@ export default function LeafletMapView({
   className = '',
   interactive = true,
   fitBounds = true,
+  onFitBoundsComplete,
   selectedCategory = 'all'
 }: LeafletMapViewProps) {
   const t = useTranslation('search');
@@ -371,7 +396,11 @@ export default function LeafletMapView({
         />
 
         {/* Auto fit bounds */}
-        <AutoFitBounds listings={processedListings} fitBounds={fitBounds} />
+        <AutoFitBounds
+          listings={processedListings}
+          fitBounds={fitBounds}
+          onFitBoundsComplete={onFitBoundsComplete}
+        />
 
         {/* Render markers */}
         {processedListings.map((listing) => {

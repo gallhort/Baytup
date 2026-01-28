@@ -178,6 +178,12 @@ const getListings = async (req, res, next) => {
       query['stats.averageRating'] = { $gte: parseFloat(rating) };
     }
 
+    // ✅ NEW: Currency filter - Show listings in selected currency
+    // If currency is specified, filter listings by their pricing currency
+    if (currency && currency !== 'all') {
+      query['pricing.currency'] = currency;
+    }
+
     // Instant book filter
     if (instantBook === 'true') {
       query['availability.instantBook'] = true;
@@ -211,6 +217,16 @@ const getListings = async (req, res, next) => {
     }
 
     // ✅ Enhanced location-based search with bounds support (Airbnb-style)
+    console.log('🔍 Location search check:', {
+      bounds: !!bounds,
+      center: !!center,
+      lat: lat,
+      lng: lng,
+      radius: radius,
+      location: location,
+      willEnterGeoBlock: !!(bounds || center || (lat && lng) || location)
+    });
+
     if (bounds || center || (lat && lng) || location) {
       // PRIORITY 1: Bounds-based search (most precise - Airbnb style map drag)
       if (bounds) {
@@ -286,10 +302,20 @@ const getListings = async (req, res, next) => {
           }
         };
 
-        console.log('📍 Using lat/lng + radius search:', { lat, lng, radius: `${radiusInKm}km` });
+        console.log('📍 Using lat/lng + radius search:', { lat, lng, radius: `${radiusInKm}km`, radiusInRadians });
+        console.log('📍 MongoDB query will be:', JSON.stringify({
+          $geoWithin: {
+            $centerSphere: [
+              [parseFloat(lng), parseFloat(lat)],
+              radiusInRadians
+            ]
+          }
+        }));
       }
       // PRIORITY 4: Text-based location search (fallback)
       else if (location) {
+        console.log('⚠️ FALLING BACK to text-based search! lat/lng/radius were not used.');
+        console.log('⚠️ This means lat=', lat, 'lng=', lng, 'radius=', radius, 'are not all truthy');
         // ✅ FIX: Split location by comma to handle "Alger, Algérie" format
         // Google Places API returns "City, Country" format
         const locationParts = location.split(',').map(part => part.trim());
@@ -441,6 +467,30 @@ const getListings = async (req, res, next) => {
     // ✅ DEBUG: Log results count
     console.log('✅ Found', listings.docs.length, 'listings out of', listings.totalDocs, 'total');
     console.log('📄 Page', listings.page, 'of', listings.totalPages);
+
+    // ✅ DEBUG: Log listing locations and distances if geo search was used
+    if (lat && lng) {
+      const searchLat = parseFloat(lat);
+      const searchLng = parseFloat(lng);
+      console.log('📍 Listings found with their distances from search center:');
+      listings.docs.forEach(doc => {
+        if (doc.location?.coordinates) {
+          const [lngDoc, latDoc] = doc.location.coordinates;
+          // Haversine formula inline
+          const R = 6371;
+          const dLat = (latDoc - searchLat) * Math.PI / 180;
+          const dLon = (lngDoc - searchLng) * Math.PI / 180;
+          const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(searchLat * Math.PI / 180) * Math.cos(latDoc * Math.PI / 180) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = R * c;
+          console.log(`   - ${doc.title} (${doc.address?.city}): [${latDoc}, ${lngDoc}] → ${distance.toFixed(1)} km`);
+        } else {
+          console.log(`   - ${doc.title} (${doc.address?.city}): NO COORDINATES`);
+        }
+      });
+    }
 
     // Filter out listings where host is null (superhost filter)
     let filteredListings = listings.docs;

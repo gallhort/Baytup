@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   Share2, Star, MapPin, Users, Bed, Bath, Home,
   Wifi, Car, Calendar, Clock, Shield, Award, ChevronLeft,
@@ -90,6 +90,7 @@ const amenityIcons: { [key: string]: any } = {
 export default function ListingDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { language, currency } = useLanguage();
   const t = useTranslation('listing');
 
@@ -105,7 +106,7 @@ export default function ListingDetailPage() {
   const [copied, setCopied] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
-  // Booking state
+  // Booking state - initialized from URL params if available
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guestDetails, setGuestDetails] = useState({
@@ -113,6 +114,25 @@ export default function ListingDetailPage() {
     children: 0,
     infants: 0
   });
+
+  // ✅ NEW: Initialize booking state from URL params (from search page)
+  useEffect(() => {
+    const urlCheckIn = searchParams?.get('checkIn');
+    const urlCheckOut = searchParams?.get('checkOut');
+    const urlGuests = searchParams?.get('guests');
+    const urlAdults = searchParams?.get('adults');
+    const urlChildren = searchParams?.get('children');
+
+    if (urlCheckIn) setCheckIn(urlCheckIn);
+    if (urlCheckOut) setCheckOut(urlCheckOut);
+    if (urlAdults || urlChildren || urlGuests) {
+      setGuestDetails({
+        adults: urlAdults ? parseInt(urlAdults) : (urlGuests ? parseInt(urlGuests) : 1),
+        children: urlChildren ? parseInt(urlChildren) : 0,
+        infants: 0
+      });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (params?.id) {

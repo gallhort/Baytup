@@ -82,7 +82,9 @@ export const listingsAPI = {
       if (filters.vehicleTypes?.length > 0) params.append('vehicleTypes', filters.vehicleTypes.join(','));
       if (filters.features?.length > 0) params.append('features', filters.features.join(','));
       if (filters.search) params.append('search', filters.search);
-      
+      // ✅ NEW: Currency filter for multi-currency support
+      if (filters.currency) params.append('currency', filters.currency);
+
       const response = await api.get(`/listings?${params.toString()}`);
       
       return {

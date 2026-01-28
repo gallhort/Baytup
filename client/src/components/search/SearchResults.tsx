@@ -17,6 +17,14 @@ interface SearchResultsProps {
   language?: string;
   onListingHover?: (id: string | null) => void;
   hoveredListing?: string | null;
+  // ✅ NEW: Search params to pass to listing detail page
+  searchParams?: {
+    checkIn?: string;
+    checkOut?: string;
+    guests?: number;
+    adults?: number;
+    children?: number;
+  };
 }
 
 export default function SearchResults({
@@ -27,7 +35,8 @@ export default function SearchResults({
   currency = 'DZD',
   language = 'en',
   onListingHover,
-  hoveredListing
+  hoveredListing,
+  searchParams
 }: SearchResultsProps) {
   const t = useTranslation('search');
 
@@ -36,6 +45,19 @@ export default function SearchResults({
       return `${price.toLocaleString('fr-FR')} دج`;
     }
     return `€${price.toLocaleString('fr-FR')}`;
+  };
+
+  // ✅ NEW: Build listing URL with search params for booking pre-fill
+  const getListingUrl = (listingId: string) => {
+    const params = new URLSearchParams();
+    if (searchParams?.checkIn) params.set('checkIn', searchParams.checkIn);
+    if (searchParams?.checkOut) params.set('checkOut', searchParams.checkOut);
+    if (searchParams?.guests) params.set('guests', searchParams.guests.toString());
+    if (searchParams?.adults) params.set('adults', searchParams.adults.toString());
+    if (searchParams?.children) params.set('children', searchParams.children.toString());
+
+    const queryString = params.toString();
+    return `/listing/${listingId}${queryString ? `?${queryString}` : ''}`;
   };
 
   if (loading) {
@@ -106,7 +128,7 @@ export default function SearchResults({
           return (
             <Link
               key={listingId}
-              href={`/listing/${listingId}`}
+              href={getListingUrl(listingId)}
               className="group block"
               prefetch={true}
               onMouseEnter={() => onListingHover?.(listingId)}

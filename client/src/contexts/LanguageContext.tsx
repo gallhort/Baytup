@@ -8,6 +8,7 @@ interface LanguageContextType {
   setLanguage: (lang: Language) => void;
   currency: 'DZD' | 'EUR';
   setCurrency: (curr: 'DZD' | 'EUR') => void;
+  isReady: boolean; // ✅ NEW: Context is fully loaded from localStorage
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -15,6 +16,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
   const [currency, setCurrencyState] = useState<'DZD' | 'EUR'>('DZD');
+  const [isReady, setIsReady] = useState(false); // ✅ NEW: Track if context is loaded
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -37,6 +39,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     } else {
       console.log('⚠️ LanguageContext: No valid saved currency, using default: DZD');
     }
+
+    // ✅ Mark context as ready after loading from localStorage
+    setIsReady(true);
+    console.log('✅ LanguageContext: Ready!');
   }, []);
 
   // Update HTML direction and language when language changes
@@ -68,7 +74,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, currency, setCurrency }}>
+    <LanguageContext.Provider value={{ language, setLanguage, currency, setCurrency, isReady }}>
       {children}
     </LanguageContext.Provider>
   );
