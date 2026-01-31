@@ -712,7 +712,7 @@ export default function AdminDisputesPage() {
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Preuves fournies</h3>
                   <EvidenceGallery
                     evidence={selectedDispute.evidence}
-                    currentUserId={user?._id}
+                    currentUserId={(user as any)?._id}
                   />
                 </div>
               )}
