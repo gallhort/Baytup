@@ -62,7 +62,6 @@ export default function HostPaymentsPage() {
   const router = useRouter();
   const { state } = useApp();
   const user = state.user;
-  const t = useTranslation('hostPayments');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
