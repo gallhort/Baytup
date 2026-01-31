@@ -233,7 +233,7 @@ const GuestSelector = ({
       <div className="space-y-4 mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-medium text-gray-900">{t.guests?.adults || 'Adultes'}</div>
+            <div className="font-medium text-gray-900">{(t as any).guests?.adults || 'Adultes'}</div>
             <div className="text-sm text-gray-500">13 ans et plus</div>
           </div>
           <div className="flex items-center gap-3">
@@ -256,7 +256,7 @@ const GuestSelector = ({
 
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-medium text-gray-900">{t.guests?.children || 'Enfants'}</div>
+            <div className="font-medium text-gray-900">{(t as any).guests?.children || 'Enfants'}</div>
             <div className="text-sm text-gray-500">De 2 à 12 ans</div>
           </div>
           <div className="flex items-center gap-3">
@@ -283,7 +283,7 @@ const GuestSelector = ({
           onClick={handleApply}
           className="px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
         >
-          {t.guests?.apply || 'Appliquer'}
+          {(t as any).guests?.apply || 'Appliquer'}
         </button>
       </div>
     </div>
@@ -470,10 +470,10 @@ export default function AbritelSearchBar({
                 <Users className="w-5 h-5 text-gray-600 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-semibold text-gray-700 mb-0.5">
-                    {t.guests?.travelers || 'Voyageurs'}
+                    {(t as any).guests?.travelers || 'Voyageurs'}
                   </div>
                   <div className="text-sm text-gray-900 truncate">
-                    {localGuests} {localGuests === 1 ? (t.guests?.person || 'personne') : (t.guests?.people || 'personnes')}
+                    {localGuests} {localGuests === 1 ? ((t as any).guests?.person || 'personne') : ((t as any).guests?.people || 'personnes')}
                   </div>
                 </div>
               </div>
