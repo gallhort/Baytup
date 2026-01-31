@@ -15,7 +15,7 @@ import {
   Search,
   Filter
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useApp } from '@/contexts/AppContext';
 
 interface StripeHost {
   _id: string;
@@ -47,7 +47,7 @@ interface Stats {
 }
 
 export default function StripeConnectAdmin() {
-  const { token } = useAuth();
+  const { state } = useApp();
   const [hosts, setHosts] = useState<StripeHost[]>([]);
   const [balance, setBalance] = useState<StripeBalance | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -63,6 +63,7 @@ export default function StripeConnectAdmin() {
     try {
       setError(null);
 
+      const token = localStorage.getItem('token');
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '10'
@@ -87,11 +88,12 @@ export default function StripeConnectAdmin() {
     } catch (err: any) {
       setError(err.message);
     }
-  }, [token, page, statusFilter]);
+  }, [page, statusFilter]);
 
   // Fetch platform balance
   const fetchBalance = useCallback(async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/admin/stripe-connect/balance', {
         headers: {
           Authorization: `Bearer ${token}`
@@ -106,7 +108,7 @@ export default function StripeConnectAdmin() {
     } catch (err) {
       console.error('Error fetching balance:', err);
     }
-  }, [token]);
+  }, []);
 
   // Initial fetch
   useEffect(() => {
