@@ -117,10 +117,10 @@ export default function SearchResults({
           // Determine rating badge style (Abritel uses green badges)
           const getRatingBadge = () => {
             if (!hasRatings) return null;
-            if (avgRating >= 9) return { label: t.ratings?.exceptional || 'Exceptionnel', color: 'bg-green-600' };
-            if (avgRating >= 8) return { label: t.ratings?.veryGood || 'Très bien', color: 'bg-green-500' };
-            if (avgRating >= 7) return { label: t.ratings?.good || 'Bien', color: 'bg-blue-500' };
-            return { label: t.ratings?.correct || 'Correct', color: 'bg-gray-500' };
+            if (avgRating >= 9) return { label: (t as any).ratings?.exceptional || 'Exceptionnel', color: 'bg-green-600' };
+            if (avgRating >= 8) return { label: (t as any).ratings?.veryGood || 'Très bien', color: 'bg-green-500' };
+            if (avgRating >= 7) return { label: (t as any).ratings?.good || 'Bien', color: 'bg-blue-500' };
+            return { label: (t as any).ratings?.correct || 'Correct', color: 'bg-gray-500' };
           };
 
           const ratingBadge = getRatingBadge();
@@ -155,7 +155,7 @@ export default function SearchResults({
                   {/* Featured badge */}
                   {listing.featured && (
                     <div className="absolute top-2 left-2 px-2 py-1 bg-gradient-to-r from-[#FF6B35] to-orange-500 text-white rounded-md text-xs font-bold shadow-lg">
-                      {t.listingCard?.featured || 'En vedette'}
+                      {(t as any).listingCard?.featured || 'En vedette'}
                     </div>
                   )}
 
@@ -180,7 +180,7 @@ export default function SearchResults({
                     <div className="space-y-1.5">
                       {/* Arrondissement/Ville - Taille augmentée */}
                       <div className="text-sm text-gray-600 truncate">
-                        {listing.address?.city || t.listing?.city || 'Ville'}
+                        {listing.address?.city || (t as any).listing?.city || 'Ville'}
                       </div>
 
                       {/* Title (bold, 2 lines) - Taille augmentée */}
@@ -192,18 +192,18 @@ export default function SearchResults({
                       <div className="text-base text-gray-600 line-clamp-1">
                         {listing.category === 'stay' ? (
                           <>
-                            {t.listingCard?.apartment || 'Appartement'} • {listing.stayDetails?.bedrooms || 1} {listing.stayDetails?.bedrooms === 1 ? (t.listingCard?.bedroom || 'chambre') : (t.listingCard?.bedrooms || 'chambres')}
-                            {listing.stayDetails?.bathrooms && ` • ${listing.stayDetails.bathrooms} ${listing.stayDetails.bathrooms > 1 ? (t.listingCard?.bathrooms || 'salles de bain') : (t.listingCard?.bathroom || 'salle de bain')}`}
+                            {(t as any).listingCard?.apartment || 'Appartement'} • {listing.stayDetails?.bedrooms || 1} {listing.stayDetails?.bedrooms === 1 ? ((t as any).listingCard?.bedroom || 'chambre') : ((t as any).listingCard?.bedrooms || 'chambres')}
+                            {listing.stayDetails?.bathrooms && ` • ${listing.stayDetails.bathrooms} ${listing.stayDetails.bathrooms > 1 ? ((t as any).listingCard?.bathrooms || 'salles de bain') : ((t as any).listingCard?.bathroom || 'salle de bain')}`}
                           </>
                         ) : (
-                          <>{t.listingCard?.vehicle || 'Véhicule'} • {listing.vehicleDetails?.seats || 4} {t.listingCard?.seats || 'places'}</>
+                          <>{(t as any).listingCard?.vehicle || 'Véhicule'} • {listing.vehicleDetails?.seats || 4} {(t as any).listingCard?.seats || 'places'}</>
                         )}
                       </div>
 
                       {/* Badge "Hôte professionnel" - Taille augmentée */}
                       {typeof listing.host === 'object' && listing.host.hostInfo?.superhost && (
                         <div className="text-sm text-gray-700 font-medium mt-1">
-                          {t.listingCard?.professionalHost || 'Hôte professionnel'}
+                          {(t as any).listingCard?.professionalHost || 'Hôte professionnel'}
                         </div>
                       )}
                     </div>
@@ -215,11 +215,11 @@ export default function SearchResults({
                           {avgRating.toFixed(1)}
                         </div>
                         <span className="text-sm font-semibold text-gray-900">{ratingBadge?.label}</span>
-                        <span className="text-sm text-gray-500">{reviewCount} {t.ratings?.reviews || 'avis'}</span>
+                        <span className="text-sm text-gray-500">{reviewCount} {(t as any).ratings?.reviews || 'avis'}</span>
                       </div>
                     ) : (
                       <div className="text-sm text-gray-500 mt-2">
-                        {t.ratings?.noReviews || 'Pas encore d\'avis'}
+                        {(t as any).ratings?.noReviews || 'Pas encore d\'avis'}
                       </div>
                     )}
                   </div>
@@ -233,17 +233,17 @@ export default function SearchResults({
 
                     {/* "pour X nuits, 1 appartement" - Taille augmentée */}
                     <div className="text-sm text-gray-600 mt-0.5">
-                      {t.listingCard?.forOneNight || 'pour 1 nuit, 1'} {listing.category === 'stay' ? (t.listingCard?.apartment || 'appartement') : (t.listingCard?.vehicle || 'véhicule')}
+                      {(t as any).listingCard?.forOneNight || 'pour 1 nuit, 1'} {listing.category === 'stay' ? ((t as any).listingCard?.apartment || 'appartement') : ((t as any).listingCard?.vehicle || 'véhicule')}
                     </div>
 
                     {/* "X € par nuit" - Taille augmentée */}
                     <div className="text-sm text-gray-600">
-                      {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')} {t.listingCard?.perNight || 'par nuit'}
+                      {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')} {(t as any).listingCard?.perNight || 'par nuit'}
                     </div>
 
                     {/* "taxes et frais compris" - Taille augmentée */}
                     <div className="text-sm text-gray-500">
-                      {t.listingCard?.taxes || 'taxes et frais compris'}
+                      {(t as any).listingCard?.taxes || 'taxes et frais compris'}
                     </div>
                   </div>
                 </div>
@@ -261,7 +261,7 @@ export default function SearchResults({
             disabled={loading}
             className="px-8 py-3 bg-gradient-to-r from-[#FF6B35] to-orange-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {loading ? (t.listingCard?.loading || 'Chargement...') : (t.listingCard?.showMore || 'Afficher plus de résultats')}
+            {loading ? ((t as any).listingCard?.loading || 'Chargement...') : ((t as any).listingCard?.showMore || 'Afficher plus de résultats')}
           </button>
         </div>
       )}
