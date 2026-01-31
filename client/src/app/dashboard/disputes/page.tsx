@@ -47,6 +47,13 @@ interface Dispute {
     message: string;
     createdAt: string;
   }>;
+  evidence?: Array<{
+    url: string;
+    type: 'image' | 'document' | 'video';
+    uploadedBy: string;
+    uploadedAt: string;
+    description?: string;
+  }>;
   createdAt: string;
   resolvedAt?: string;
 }
