@@ -380,10 +380,10 @@ export default function AbritelSearchBar({
                 <MapPin className="w-5 h-5 text-gray-600 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-semibold text-gray-700 mb-0.5">
-                    {t.searchBar?.whereGoing || 'Où allez-vous ?'}
+                    {(t as any).searchBar?.whereGoing || 'Où allez-vous ?'}
                   </div>
                   <div className="text-sm text-gray-900 truncate">
-                    {localLocation || t.searchBar?.enterDestination || 'Rechercher une destination'}
+                    {localLocation || (t as any).searchBar?.enterDestination || 'Rechercher une destination'}
                   </div>
                 </div>
               </div>
@@ -400,12 +400,12 @@ export default function AbritelSearchBar({
                       setLocalLocation(e.target.value);
                       onLocationChange?.(e.target.value);
                     }}
-                    placeholder={t.searchBar?.enterDestination || 'Ville, région...'}
+                    placeholder={(t as any).searchBar?.enterDestination || 'Ville, région...'}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent"
                     autoFocus
                   />
                   <div className="mt-3 text-sm text-gray-500">
-                    {t.searchBar?.enterToSearch || 'Entrez une destination pour rechercher'}
+                    {(t as any).searchBar?.enterToSearch || 'Entrez une destination pour rechercher'}
                   </div>
                 </div>
               </div>
