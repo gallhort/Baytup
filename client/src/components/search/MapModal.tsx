@@ -18,6 +18,14 @@ interface MapModalProps {
   filters: any;
   onFilterChange?: (filters: any) => void;
   title?: string;
+  // ✅ NEW: Search params to pass to listing detail page
+  searchParams?: {
+    checkIn?: string;
+    checkOut?: string;
+    guests?: number;
+    adults?: number;
+    children?: number;
+  };
 }
 
 export default function MapModal({
@@ -30,7 +38,8 @@ export default function MapModal({
   onMapBoundsChange,
   filters,
   onFilterChange,
-  title
+  title,
+  searchParams
 }: MapModalProps) {
   const { language, currency } = useLanguage();
   const t = useTranslation('search');
@@ -236,6 +245,7 @@ export default function MapModal({
               className="w-full h-full rounded-b-3xl"
               interactive={true} // ALWAYS interactive in modal
               fitBounds={false} // Don't auto-fit to show Algeria
+              searchParams={searchParams}
             />
           ) : (
             /* Enhanced Empty State */

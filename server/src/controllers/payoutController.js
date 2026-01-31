@@ -6,6 +6,23 @@ const Booking = require('../models/Booking');
 const Notification = require('../models/Notification');
 const { sendPayoutRequestEmail, sendPayoutCompletedEmail, sendPayoutRejectedEmail } = require('../utils/emailService');
 
+/**
+ * Calculate host earning for a booking
+ * Baytup Fee Structure: 8% guest service fee + 3% host commission
+ * Host receives: subtotal + cleaningFee - 3% commission
+ * @param {Object} booking - The booking document
+ * @returns {Number} - The amount host receives after commission
+ */
+const calculateHostEarning = (booking) => {
+  const baseAmount = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
+  // Use hostPayout if available (new bookings), otherwise calculate with 3% commission
+  if (booking.pricing.hostPayout) {
+    return booking.pricing.hostPayout;
+  }
+  const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * 0.03);
+  return baseAmount - hostCommission;
+};
+
 // @desc    Request a payout/withdrawal
 // @route   POST /api/payouts/request
 // @access  Private (Host only)
@@ -27,7 +44,7 @@ exports.requestPayout = catchAsync(async (req, res, next) => {
     return next(new AppError('RIB must be exactly 20 digits', 400));
   }
 
-  // Get host's available balance
+  // Get host's available balance (with 3% commission deducted)
   const completedBookings = await Booking.find({
     host: hostId,
     status: 'completed',
@@ -35,8 +52,7 @@ exports.requestPayout = catchAsync(async (req, res, next) => {
   });
 
   const availableBalance = completedBookings.reduce((sum, booking) => {
-    const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-    return sum + hostEarning;
+    return sum + calculateHostEarning(booking);
   }, 0);
 
   // Check if host has already withdrawn this amount
@@ -520,8 +536,7 @@ exports.getAvailableBalance = catchAsync(async (req, res, next) => {
   });
 
   const totalEarnings = completedBookings.reduce((sum, booking) => {
-    const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-    return sum + hostEarning;
+    return sum + calculateHostEarning(booking);
   }, 0);
 
   // Get all payouts (completed, processing, or pending)

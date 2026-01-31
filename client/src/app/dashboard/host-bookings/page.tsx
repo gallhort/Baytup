@@ -11,6 +11,7 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import ReportDisputeModal from '@/components/dispute/ReportDisputeModal';
 
 export default function HostBookingsPage() {
   const { state } = useApp();
@@ -22,10 +23,6 @@ export default function HostBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
-  const [disputeForm, setDisputeForm] = useState({
-    reason: '',
-    description: ''
-  });
 
   useEffect(() => {
     if (!user || user.role !== 'host') {
@@ -214,43 +211,6 @@ export default function HostBookingsPage() {
   const handleReportProblem = (booking: any) => {
     setSelectedBooking(booking);
     setShowDisputeModal(true);
-  };
-
-  const handleSubmitDispute = async () => {
-    if (!disputeForm.reason || !disputeForm.description) {
-      toast.error('Veuillez remplir tous les champs');
-      return;
-    }
-
-    if (disputeForm.description.length < 20) {
-      toast.error('La description doit contenir au moins 20 caractères');
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/disputes`,
-        {
-          bookingId: selectedBooking._id,
-          reason: disputeForm.reason,
-          description: disputeForm.description
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-      
-      toast.success('Problème signalé avec succès');
-      setShowDisputeModal(false);
-      setDisputeForm({ reason: '', description: '' });
-      fetchBookings();
-    } catch (error: any) {
-      console.error('Error creating dispute:', error);
-      toast.error(error.response?.data?.message || 'Erreur lors du signalement');
-    }
   };
 
   if (loading) {
@@ -676,95 +636,15 @@ export default function HostBookingsPage() {
 
       {/* Modal Dispute */}
       {showDisputeModal && selectedBooking && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-t-xl">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold flex items-center">
-                  <FaExclamationTriangle className="mr-3" />
-                  Signaler un Problème
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowDisputeModal(false);
-                    setDisputeForm({ reason: '', description: '' });
-                  }}
-                  className="text-white hover:text-gray-200 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-4">
-              {/* Raison */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Raison du problème *
-                </label>
-                <select
-                  value={disputeForm.reason}
-                  onChange={(e) => setDisputeForm({ ...disputeForm, reason: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="">Sélectionner une raison</option>
-                  <option value="property_damage">Dégâts causés par le voyageur</option>
-                  <option value="excessive_mess">Saleté excessive laissée par le voyageur</option>
-                  <option value="guest_behavior">Comportement inapproprié du voyageur</option>
-                  <option value="unauthorized_guests">Nombre de personnes non respecté</option>
-                  <option value="noise_party">Bruit excessif / Fête non autorisée</option>
-                  <option value="rule_violation">Non-respect des règles de la maison</option>
-                  <option value="early_late">Arrivée/Départ non respecté</option>
-                  <option value="smoking">Fumer dans le logement (interdit)</option>
-                  <option value="other">Autre</option>
-                </select>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description détaillée * (min. 20 caractères)
-                </label>
-                <textarea
-                  value={disputeForm.description}
-                  onChange={(e) => setDisputeForm({ ...disputeForm, description: e.target.value })}
-                  rows={6}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Décrivez le problème en détail..."
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  {disputeForm.description.length} / 20 caractères minimum
-                </p>
-              </div>
-
-              {/* Info */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ En signalant un problème, l'auto-completion de cette réservation sera bloquée jusqu'à résolution.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-6 rounded-b-xl flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowDisputeModal(false);
-                  setDisputeForm({ reason: '', description: '' });
-                }}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleSubmitDispute}
-                disabled={!disputeForm.reason || disputeForm.description.length < 20}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Signaler le problème
-              </button>
-            </div>
-          </div>
-        </div>
+        <ReportDisputeModal
+          booking={selectedBooking}
+          userRole="host"
+          onClose={() => setShowDisputeModal(false)}
+          onSuccess={() => {
+            fetchBookings();
+            setSelectedBooking(null);
+          }}
+        />
       )}
     </div>
   );

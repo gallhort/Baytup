@@ -182,6 +182,14 @@ const MessageSchema = new mongoose.Schema({
     default: false
   },
   flagReason: String,
+  moderationFlags: [{
+    type: String,
+    enum: ['insult', 'spam', 'external_contact', 'inappropriate', 'other']
+  }],
+  moderationScore: {
+    type: Number,
+    default: 0
+  },
   moderatedBy: {
     type: mongoose.Schema.ObjectId,
     ref: 'User'

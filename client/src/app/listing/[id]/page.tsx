@@ -402,12 +402,13 @@ export default function ListingDetailPage() {
 
     if (nights <= 0) return 0;
 
-    const basePrice = (listing.pricing?.basePrice || 0) * nights;
+    const subtotal = (listing.pricing?.basePrice || 0) * nights;
     const cleaningFee = listing.pricing?.cleaningFee || 0;
-    const serviceFee = Math.round(basePrice * 0.10); // 10% service fee
-    const taxes = Math.round((basePrice + cleaningFee + serviceFee) * 0.05); // 5% taxes
+    // Baytup fee: 8% on (subtotal + cleaning), no taxes
+    const baseAmount = subtotal + cleaningFee;
+    const serviceFee = Math.round(baseAmount * 0.08); // 8% service fee
 
-    return basePrice + cleaningFee + serviceFee + taxes;
+    return subtotal + cleaningFee + serviceFee;
   };
 
   // ✅ FIX: Calculate max capacity based on listing details
@@ -1257,8 +1258,9 @@ export default function ListingDetailPage() {
                       const basePrice = listing.pricing?.basePrice || 0;
                       const subtotal = basePrice * nights;
                       const cleaningFee = listing.pricing?.cleaningFee || 0;
-                      const serviceFee = Math.round(subtotal * 0.10);
-                      const taxes = Math.round((subtotal + cleaningFee + serviceFee) * 0.05);
+                      // Baytup fee: 8% on (subtotal + cleaning), no taxes
+                      const baseAmount = subtotal + cleaningFee;
+                      const serviceFee = Math.round(baseAmount * 0.08);
 
                       return (
                         <>
@@ -1273,12 +1275,8 @@ export default function ListingDetailPage() {
 </div>
 )}
 <div className="flex justify-between text-gray-700">
-<span>{(t as any)?.booking?.serviceFee || 'Service fee (10%)'}</span>
+<span>{(t as any)?.booking?.serviceFee || 'Frais de service (8%)'}</span>
 <span>{formatPrice(serviceFee, listing.pricing?.currency || 'DZD')}</span>
-</div>
-<div className="flex justify-between text-gray-700">
-<span>{(t as any)?.booking?.taxes || 'Taxes (5%)'}</span>
-<span>{formatPrice(taxes, listing.pricing?.currency || 'DZD')}</span>
 </div>
 <div className="pt-3 border-t border-gray-200 flex justify-between font-bold text-lg">
 <span>{(t as any)?.booking?.total || 'Total'}</span>

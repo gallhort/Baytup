@@ -41,7 +41,7 @@ export default function SearchResults({
   const t = useTranslation('search');
 
   const formatPrice = (price: number, listingCurrency: string) => {
-    if (currency === 'DZD' || listingCurrency === 'DZD') {
+    if (listingCurrency === 'DZD') {
       return `${price.toLocaleString('fr-FR')} دج`;
     }
     return `€${price.toLocaleString('fr-FR')}`;
@@ -226,14 +226,7 @@ export default function SearchResults({
 
                   {/* RIGHT: Price section - Tailles augmentées */}
                   <div className="flex flex-col items-end justify-end text-right flex-shrink-0">
-                    {/* Prix barré si discount */}
-                    {listing.pricing?.convertedPrice && listing.pricing.convertedPrice > (listing.pricing?.basePrice || 0) && (
-                      <div className="text-base text-gray-500 line-through">
-                        {formatPrice(listing.pricing.convertedPrice, listing.pricing?.currency || 'DZD')}
-                      </div>
-                    )}
-
-                    {/* Prix principal (GROS) - Taille augmentée */}
+                    {/* Prix principal */}
                     <div className="font-bold text-2xl text-gray-900">
                       {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')}
                     </div>

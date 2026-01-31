@@ -90,7 +90,12 @@ const NotificationSchema = new mongoose.Schema({
       'host_response_urgent',
       'booking_expired',
       'booking_expired_host',
-      'booking_started'
+      'booking_started',
+      // ✅ NEW: Stripe Connect notifications
+      'stripe_onboarding_required',
+      'stripe_onboarding_completed',
+      'stripe_account_restricted',
+      'stripe_account_disconnected'
     ],
     required: [true, 'Notification type is required'],
     index: true

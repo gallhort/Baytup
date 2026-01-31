@@ -31,12 +31,16 @@
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "node-cron": "^3.0.3",
-    "nodemailer": "^7.0.9",
+    "nodemailer": "^7.0.13",
+    "qrcode": "^1.5.4",
     "sharp": "^0.33.2",
     "socket.io": "^4.8.1",
+    "speakeasy": "^2.0.0",
+    "stripe": "^20.3.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.3"
+    "nodemon": "^3.0.3",
+    "puppeteer": "^24.36.1"
   }
 }

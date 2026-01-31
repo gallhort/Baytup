@@ -223,3 +223,83 @@ export function formatPriceCompact(
   }
   return formatPrice(amount, currency);
 }
+
+/**
+ * Currency conversion constants
+ */
+export const EXCHANGE_RATE = 150; // 1 EUR = 150 DZD
+
+/**
+ * Convert price from one currency to another
+ *
+ * @param amount - The price amount
+ * @param fromCurrency - Source currency
+ * @param toCurrency - Target currency
+ * @returns Converted price
+ */
+export function convertCurrency(
+  amount: number,
+  fromCurrency: 'DZD' | 'EUR',
+  toCurrency: 'DZD' | 'EUR'
+): number {
+  if (fromCurrency === toCurrency) {
+    return amount;
+  }
+
+  if (fromCurrency === 'EUR' && toCurrency === 'DZD') {
+    return Math.round(amount * EXCHANGE_RATE);
+  }
+
+  if (fromCurrency === 'DZD' && toCurrency === 'EUR') {
+    return Math.round((amount / EXCHANGE_RATE) * 100) / 100;
+  }
+
+  return amount;
+}
+
+/**
+ * Format price with conversion display
+ * Shows original price and converted price if currencies differ
+ *
+ * @param amount - The price amount
+ * @param currency - Currency of the price
+ * @param userCurrency - User's preferred currency
+ * @param showConversion - Whether to show conversion
+ * @returns Object with formatted original and converted prices
+ *
+ * @example
+ * formatPriceWithConversion(100, 'EUR', 'DZD')
+ * → { original: "€100.00", converted: "15,000 DZD", shouldShow: true }
+ */
+export function formatPriceWithConversion(
+  amount: number,
+  currency: 'DZD' | 'EUR',
+  userCurrency: 'DZD' | 'EUR' = 'DZD',
+  showConversion: boolean = true
+): {
+  original: string;
+  converted: string | null;
+  shouldShowConversion: boolean;
+  convertedAmount: number | null;
+} {
+  const original = formatPrice(amount, currency);
+
+  if (!showConversion || currency === userCurrency) {
+    return {
+      original,
+      converted: null,
+      shouldShowConversion: false,
+      convertedAmount: null
+    };
+  }
+
+  const convertedAmount = convertCurrency(amount, currency, userCurrency);
+  const converted = formatPrice(convertedAmount, userCurrency);
+
+  return {
+    original,
+    converted,
+    shouldShowConversion: true,
+    convertedAmount
+  };
+}

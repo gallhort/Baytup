@@ -3,6 +3,7 @@ const Listing = require('../models/Listing');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const moderationService = require('../services/moderationService');
 const { sendReviewReceivedEmail } = require('../utils/emailService');
 
 // @desc    Get all reviews
@@ -174,7 +175,36 @@ const createReview = async (req, res, next) => {
       });
     }
 
-    // Create review
+    // ✅ NEW: Check content moderation (title + comment)
+    const contentToCheck = `${title || ''} ${comment}`.trim();
+    const moderation = await moderationService.checkContent(contentToCheck, 'review', {
+      userId: req.user.id,
+      metadata: { bookingId, listingId, revieweeId }
+    });
+
+    // If blocked, prevent review from being created
+    if (moderation.action === 'block') {
+      return res.status(400).json({
+        status: 'error',
+        message: moderation.message || 'Votre avis contient du contenu inapproprié et ne peut être publié'
+      });
+    }
+
+    // Prepare moderation data if flagged
+    let moderationData = {};
+    if (moderation.action === 'flag') {
+      moderationData = {
+        flagged: true,
+        moderationFlags: moderation.flags,
+        moderationScore: moderation.totalScore,
+        flagReason: 'spam'
+      };
+    }
+
+    // ✅ NEW: Check if the other party has already left a review (double-blind system)
+    const pairedReview = await Review.findPairedReview(bookingId, type);
+
+    // Create review with waiting_pair status
     const review = await Review.create({
       listing: listingId,
       booking: bookingId,
@@ -185,39 +215,100 @@ const createReview = async (req, res, next) => {
       title,
       comment,
       photos,
-      status: 'published', // Auto-publish for now
-      publishedAt: new Date()
+      ...moderationData
+      // status and blindStatus are set by pre-save hook
     });
 
-    // Populate the review
-    await review.populate([
-      { path: 'reviewer', select: 'firstName lastName avatar' },
-      { path: 'reviewee', select: 'firstName lastName avatar' },
-      { path: 'listing', select: 'title category' }
-    ]);
+    // ✅ NEW: If paired review exists, publish both simultaneously
+    let bothPublished = false;
+    if (pairedReview) {
+      console.log(`📊 Paired review found for booking ${bookingId} - publishing both reviews`);
+
+      // Link the reviews
+      review.pairedReview = pairedReview._id;
+      pairedReview.pairedReview = review._id;
+      await pairedReview.save({ validateBeforeSave: false });
+      await review.save({ validateBeforeSave: false });
+
+      // Publish both reviews simultaneously
+      await Review.publishPair(review._id, pairedReview._id);
+      bothPublished = true;
+
+      // Reload the review with updated status
+      await review.populate([
+        { path: 'reviewer', select: 'firstName lastName avatar' },
+        { path: 'reviewee', select: 'firstName lastName avatar' },
+        { path: 'listing', select: 'title category' }
+      ]);
+    } else {
+      // Populate the review (still in waiting_pair status)
+      await review.populate([
+        { path: 'reviewer', select: 'firstName lastName avatar' },
+        { path: 'reviewee', select: 'firstName lastName avatar' },
+        { path: 'listing', select: 'title category' }
+      ]);
+    }
 
     // Create notification for reviewee
     try {
-      await Notification.createNotification({
-        recipient: revieweeId,
-        sender: req.user.id,
-        type: 'review_received',
-        title: 'New Review Received! ⭐',
-        message: `${review.reviewer.firstName} ${review.reviewer.lastName} left you a ${review.rating.overall}-star review${review.type === 'guest_to_host' ? ` for "${review.listing.title}"` : ''}.`,
-        data: {
-          reviewId: review._id,
-          rating: review.rating.overall,
-          reviewerName: `${review.reviewer.firstName} ${review.reviewer.lastName}`,
-          reviewType: type,
-          listingTitle: review.listing?.title
-        },
-        link: type === 'guest_to_host' ? `/dashboard/host/reviews` : `/dashboard/reviews`,
-        priority: 'normal'
-      });
+      if (bothPublished) {
+        // ✅ Notify both parties that reviews are now visible
+        await Notification.createNotification({
+          recipient: revieweeId,
+          sender: req.user.id,
+          type: 'review_revealed',
+          title: 'Les avis sont maintenant visibles! ⭐',
+          message: `Les deux avis ont été publiés. Vous pouvez maintenant voir l'avis de ${review.reviewer.firstName}${review.type === 'guest_to_host' ? ` pour "${review.listing.title}"` : ''}.`,
+          data: {
+            reviewId: review._id,
+            rating: review.rating.overall,
+            reviewerName: `${review.reviewer.firstName} ${review.reviewer.lastName}`,
+            reviewType: type,
+            listingTitle: review.listing?.title,
+            doubleBlind: true
+          },
+          link: type === 'guest_to_host' ? `/dashboard/host/reviews` : `/dashboard/reviews`,
+          priority: 'normal'
+        });
 
-      // Send email notification to reviewee
-      const reviewee = await User.findById(revieweeId);
-      await sendReviewReceivedEmail(reviewee, review);
+        // Notify the other reviewer too
+        await Notification.createNotification({
+          recipient: pairedReview.reviewer,
+          sender: req.user.id,
+          type: 'review_revealed',
+          title: 'Les avis sont maintenant visibles! ⭐',
+          message: `L'autre partie a aussi laissé un avis. Vous pouvez maintenant voir les deux avis.`,
+          data: {
+            reviewId: pairedReview._id,
+            doubleBlind: true
+          },
+          link: pairedReview.type === 'guest_to_host' ? `/dashboard/reviews` : `/dashboard/host/reviews`,
+          priority: 'normal'
+        });
+
+        // Send email notification to reviewee
+        const revieweeUser = await User.findById(revieweeId);
+        await sendReviewReceivedEmail(revieweeUser, review);
+      } else {
+        // ✅ Notify that review is submitted but waiting for the other party
+        await Notification.createNotification({
+          recipient: revieweeId,
+          sender: req.user.id,
+          type: 'review_pending_pair',
+          title: 'Un avis vous attend! ⏳',
+          message: `${review.reviewer.firstName} a laissé un avis. Il sera visible une fois que vous aurez aussi laissé le vôtre (ou dans 14 jours).`,
+          data: {
+            reviewId: review._id,
+            reviewerName: `${review.reviewer.firstName} ${review.reviewer.lastName}`,
+            reviewType: type,
+            listingTitle: review.listing?.title,
+            doubleBlind: true,
+            autoPublishAt: review.autoPublishAt
+          },
+          link: type === 'guest_to_host' ? `/dashboard/host/reviews` : `/dashboard/reviews`,
+          priority: 'normal'
+        });
+      }
     } catch (notificationError) {
       console.error('Error creating review notification:', notificationError);
     }
@@ -225,7 +316,14 @@ const createReview = async (req, res, next) => {
     res.status(201).json({
       status: 'success',
       data: {
-        review
+        review,
+        doubleBlind: {
+          status: bothPublished ? 'published' : 'waiting_pair',
+          message: bothPublished
+            ? 'Les deux avis sont maintenant visibles!'
+            : 'Votre avis sera visible une fois que l\'autre partie aura aussi laissé son avis (ou dans 14 jours).',
+          autoPublishAt: review.autoPublishAt
+        }
       }
     });
   } catch (error) {
@@ -264,6 +362,41 @@ const updateReview = async (req, res, next) => {
         updates[key] = req.body[key];
       }
     });
+
+    // Check content moderation if title or comment is being updated
+    if (updates.title || updates.comment) {
+      const contentToCheck = `${updates.title || review.title || ''} ${updates.comment || review.comment}`.trim();
+      const moderation = await moderationService.checkContent(contentToCheck, 'review', {
+        userId: req.user.id,
+        metadata: {
+          reviewId: req.params.id,
+          bookingId: review.booking,
+          listingId: review.listing
+        }
+      });
+
+      // If blocked, prevent update
+      if (moderation.action === 'block') {
+        return res.status(400).json({
+          status: 'error',
+          message: moderation.message || 'Votre avis contient du contenu inapproprié et ne peut être publié'
+        });
+      }
+
+      // Update moderation flags if content is flagged
+      if (moderation.action === 'flag') {
+        updates.flagged = true;
+        updates.moderationFlags = moderation.flags;
+        updates.moderationScore = moderation.totalScore;
+        updates.flagReason = 'spam';
+      } else {
+        // Clear flags if content is now clean
+        updates.flagged = false;
+        updates.moderationFlags = [];
+        updates.moderationScore = 0;
+        updates.flagReason = undefined;
+      }
+    }
 
     // Mark as edited
     updates.edited = true;

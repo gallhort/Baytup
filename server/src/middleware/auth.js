@@ -143,6 +143,7 @@ const optionalAuth = async (req, res, next) => {
 
 module.exports = {
   protect,
+  authenticate: protect, // Alias for 2FA routes
   authorize,
   hostOrAdmin,
   ownerOrAdmin,

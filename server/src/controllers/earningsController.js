@@ -4,6 +4,23 @@ const Booking = require('../models/Booking');
 const Listing = require('../models/Listing');
 const Payout = require('../models/Payout');
 
+/**
+ * Calculate host earning for a booking
+ * Baytup Fee Structure: 8% guest service fee + 3% host commission
+ * Host receives: subtotal + cleaningFee - 3% commission
+ * @param {Object} booking - The booking document
+ * @returns {Number} - The amount host receives after commission
+ */
+const calculateHostEarning = (booking) => {
+  const baseAmount = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
+  // Use hostPayout if available (new bookings), otherwise calculate with 3% commission
+  if (booking.pricing.hostPayout) {
+    return booking.pricing.hostPayout;
+  }
+  const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * 0.03);
+  return baseAmount - hostCommission;
+};
+
 // @desc    Get host's earnings overview
 // @route   GET /api/earnings/overview
 // @access  Private (Host only)
@@ -17,10 +34,9 @@ exports.getEarningsOverview = catchAsync(async (req, res, next) => {
     'payment.status': 'paid'
   }).populate('listing', 'title category');
 
-  // Calculate host's total earnings (subtotal + cleaningFee for each booking)
+  // Calculate host's total earnings (with 3% commission deducted)
   const totalEarnings = allPaidBookings.reduce((sum, booking) => {
-    const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-    return sum + hostEarning;
+    return sum + calculateHostEarning(booking);
   }, 0);
 
   // Get pending bookings (confirmed but payment not yet marked as paid)
@@ -31,8 +47,7 @@ exports.getEarningsOverview = catchAsync(async (req, res, next) => {
   });
 
   const pendingBalance = pendingBookings.reduce((sum, booking) => {
-    const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-    return sum + hostEarning;
+    return sum + calculateHostEarning(booking);
   }, 0);
 
   // Calculate this month's earnings (based on payment date)
@@ -45,8 +60,7 @@ exports.getEarningsOverview = catchAsync(async (req, res, next) => {
   });
 
   const monthlyEarnings = monthlyBookings.reduce((sum, booking) => {
-    const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-    return sum + hostEarning;
+    return sum + calculateHostEarning(booking);
   }, 0);
 
   // Get completed bookings (available for withdrawal)
@@ -57,8 +71,7 @@ exports.getEarningsOverview = catchAsync(async (req, res, next) => {
   });
 
   const completedEarnings = completedBookings.reduce((sum, booking) => {
-    const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-    return sum + hostEarning;
+    return sum + calculateHostEarning(booking);
   }, 0);
 
   // Get all payouts (completed, processing, or pending) to calculate actual available balance
@@ -148,9 +161,16 @@ exports.getEarningsTransactions = catchAsync(async (req, res, next) => {
   const total = await Booking.countDocuments(query);
 
   // Format transactions with correct earnings breakdown
+  // Baytup Fee Structure: 8% guest service fee + 3% host commission = 11% total
   const formattedTransactions = transactions.map(booking => {
-    const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-    const platformFee = booking.pricing.serviceFee + booking.pricing.taxes;
+    const baseAmount = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
+    // Host commission is 3% of baseAmount (deducted from host payout)
+    const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * 0.03);
+    // Host receives: baseAmount - 3% commission
+    const hostEarning = booking.pricing.hostPayout || (baseAmount - hostCommission);
+    // Platform revenue: 8% guest fee + 3% host commission
+    const guestServiceFee = booking.pricing.guestServiceFee || booking.pricing.serviceFee || 0;
+    const platformFee = booking.pricing.platformRevenue || (guestServiceFee + hostCommission);
 
     return {
       _id: booking._id,
@@ -164,7 +184,9 @@ exports.getEarningsTransactions = catchAsync(async (req, res, next) => {
       earnings: {
         subtotal: booking.pricing.subtotal,
         cleaningFee: booking.pricing.cleaningFee || 0,
+        hostCommission,
         hostEarning,
+        guestServiceFee,
         platformFee,
         totalAmount: booking.pricing.totalAmount,
         currency: booking.pricing.currency
@@ -215,8 +237,7 @@ exports.getEarningsByListing = catchAsync(async (req, res, next) => {
       });
 
       const totalEarnings = bookings.reduce((sum, booking) => {
-        const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-        return sum + hostEarning;
+        return sum + calculateHostEarning(booking);
       }, 0);
 
       const totalBookings = bookings.length;
@@ -278,8 +299,7 @@ exports.getMonthlyEarningsStats = catchAsync(async (req, res, next) => {
     });
 
     const earnings = monthBookings.reduce((sum, booking) => {
-      const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-      return sum + hostEarning;
+      return sum + calculateHostEarning(booking);
     }, 0);
 
     return {
@@ -320,7 +340,7 @@ exports.getEarningsByCategory = catchAsync(async (req, res, next) => {
 
   bookings.forEach(booking => {
     const category = booking.listing?.category || 'stay';
-    const hostEarning = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
+    const hostEarning = calculateHostEarning(booking);
 
     if (categories[category]) {
       categories[category].earnings += hostEarning;

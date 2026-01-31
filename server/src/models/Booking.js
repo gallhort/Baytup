@@ -87,6 +87,17 @@ const BookingSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
+    // Guest Service Fee - 8% charged to guest (added to their total)
+    guestServiceFee: {
+      type: Number,
+      default: 0
+    },
+    // Host Commission - 3% deducted from host payout (not shown to guest)
+    hostCommission: {
+      type: Number,
+      default: 0
+    },
+    // Legacy field - equals guestServiceFee for backward compatibility
     serviceFee: {
       type: Number,
       default: 0
@@ -98,6 +109,16 @@ const BookingSchema = new mongoose.Schema({
     totalAmount: {
       type: Number,
       required: [true, 'Total amount is required']
+    },
+    // What host receives after commission
+    hostPayout: {
+      type: Number,
+      default: 0
+    },
+    // Platform total revenue (guestServiceFee + hostCommission)
+    platformRevenue: {
+      type: Number,
+      default: 0
     },
     currency: {
       type: String,
@@ -114,7 +135,7 @@ const BookingSchema = new mongoose.Schema({
   payment: {
     method: {
       type: String,
-      enum: ['slickpay', 'bank_transfer', 'cash', 'card'],
+      enum: ['slickpay', 'bank_transfer', 'cash', 'card', 'stripe', 'nord_express'],
       required: [true, 'Payment method is required']
     },
     status: {
@@ -133,7 +154,23 @@ const BookingSchema = new mongoose.Schema({
       default: 0
     },
     refundReason: String,
-    refundedAt: Date
+    refundedAt: Date,
+    // Stripe-specific fields
+    stripePaymentIntentId: String,
+    stripeChargeId: String,
+    stripeRefundId: String
+  },
+
+  // Escrow reference (for fund holding)
+  escrow: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Escrow'
+  },
+
+  // Cash voucher reference (for Nord Express)
+  cashVoucher: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'CashVoucher'
   },
 
   // Booking Status
@@ -348,22 +385,40 @@ BookingSchema.pre('save', function(next) {
 });
 
 // Calculate pricing before saving
+// Fee Structure:
+// - Guest Service Fee: 8% of (subtotal + cleaningFee) - charged to guest
+// - Host Commission: 3% of (subtotal + cleaningFee) - deducted from host payout
+// - NO TAXES: Hosts are responsible for their own tax declarations
 BookingSchema.pre('save', function(next) {
-  if (this.isModified('startDate') || this.isModified('endDate') || this.isModified('pricing.basePrice')) {
+  if (this.isModified('startDate') || this.isModified('endDate') || this.isModified('pricing.basePrice') || this.isModified('pricing.cleaningFee')) {
     this.pricing.nights = this.duration;
     this.pricing.subtotal = this.pricing.basePrice * this.pricing.nights;
 
-    // Calculate service fee (10% of subtotal)
-    this.pricing.serviceFee = Math.round(this.pricing.subtotal * 0.10);
+    // Base amount for fee calculation (goes to host before commission)
+    const baseAmount = this.pricing.subtotal + (this.pricing.cleaningFee || 0);
 
-    // Calculate taxes (5% of subtotal + cleaningFee + serviceFee)
-    this.pricing.taxes = Math.round((this.pricing.subtotal + this.pricing.cleaningFee + this.pricing.serviceFee) * 0.05);
+    // Guest Service Fee - 8% (charged to guest, added to their total)
+    this.pricing.guestServiceFee = Math.round(baseAmount * 0.08);
 
-    // Calculate total
+    // Host Commission - 3% (deducted from host payout, not visible to guest)
+    this.pricing.hostCommission = Math.round(baseAmount * 0.03);
+
+    // Legacy serviceFee equals guestServiceFee for backward compatibility
+    this.pricing.serviceFee = this.pricing.guestServiceFee;
+
+    // No taxes - hosts handle their own tax obligations
+    this.pricing.taxes = 0;
+
+    // Total amount paid by guest (subtotal + cleaningFee + guestServiceFee)
     this.pricing.totalAmount = this.pricing.subtotal +
-                               this.pricing.cleaningFee +
-                               this.pricing.serviceFee +
-                               this.pricing.taxes;
+                               (this.pricing.cleaningFee || 0) +
+                               this.pricing.guestServiceFee;
+
+    // Host payout (what host receives after 3% commission)
+    this.pricing.hostPayout = baseAmount - this.pricing.hostCommission;
+
+    // Platform total revenue (8% from guest + 3% from host = 11% total)
+    this.pricing.platformRevenue = this.pricing.guestServiceFee + this.pricing.hostCommission;
   }
   next();
 });

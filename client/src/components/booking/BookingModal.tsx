@@ -1,12 +1,26 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import {
   X, Calendar, Users, DollarSign, Shield, AlertCircle,
-  Check, Loader, Clock, Home, CreditCard, Info
+  Check, Loader, Clock, Home, CreditCard, Info, Banknote
 } from 'lucide-react';
 import { Listing } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
+import PaymentMethodSelector from '@/components/payment/PaymentMethodSelector';
+
+// Dynamic import for Stripe to avoid SSR issues
+const StripePaymentForm = dynamic(
+  () => import('@/components/payment/StripePaymentForm'),
+  { ssr: false, loading: () => <div className="flex justify-center py-8"><Loader className="w-8 h-8 animate-spin text-[#FF6B35]" /></div> }
+);
+
+// Dynamic import for CashVoucherDisplay
+const CashVoucherDisplay = dynamic(
+  () => import('@/components/payment/CashVoucherDisplay'),
+  { ssr: false }
+);
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -32,6 +46,32 @@ interface PricingBreakdown {
   total: number;
 }
 
+// Stripe payment data from API response
+interface StripePaymentData {
+  clientSecret: string;
+  publishableKey: string;
+  paymentIntentId: string;
+  bookingId: string;
+  amount: number;
+  currency: string;
+}
+
+// Cash voucher data from API response
+interface CashVoucherData {
+  voucherNumber: string;
+  amount: number;
+  currency: string;
+  expiresAt: string;
+  status: 'pending' | 'paid' | 'expired' | 'cancelled';
+  qrCode?: string;
+  guestInfo: {
+    fullName: string;
+    phone: string;
+  };
+}
+
+type PaymentMethod = 'card' | 'cash';
+
 export default function BookingModal({
   isOpen,
   onClose,
@@ -48,6 +88,18 @@ export default function BookingModal({
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [pricing, setPricing] = useState<PricingBreakdown | null>(null);
 
+  // Payment method selection (card or cash - cash only for DZD)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+
+  // Stripe payment state
+  const [stripePayment, setStripePayment] = useState<StripePaymentData | null>(null);
+  const [showStripeForm, setShowStripeForm] = useState(false);
+
+  // Cash voucher state (Nord Express)
+  const [cashVoucher, setCashVoucher] = useState<CashVoucherData | null>(null);
+  const [showCashVoucher, setShowCashVoucher] = useState(false);
+  const [cashBookingId, setCashBookingId] = useState<string | null>(null);
+
   // Calculate pricing breakdown
   useEffect(() => {
     if (checkIn && checkOut && listing) {
@@ -59,9 +111,11 @@ export default function BookingModal({
         const basePrice = listing.pricing?.basePrice || 0;
         const subtotal = basePrice * nights;
         const cleaningFee = listing.pricing?.cleaningFee || 0;
-        const serviceFee = Math.round(subtotal * 0.10); // 10% service fee
-        const taxes = Math.round((subtotal + cleaningFee + serviceFee) * 0.05); // 5% taxes
-        const total = subtotal + cleaningFee + serviceFee + taxes;
+        // Baytup fee structure: 8% guest service fee (no taxes - hosts handle their own)
+        const baseAmount = subtotal + cleaningFee;
+        const serviceFee = Math.round(baseAmount * 0.08); // 8% service fee on (subtotal + cleaning)
+        const taxes = 0; // No taxes - hosts are responsible for their own tax declarations
+        const total = subtotal + cleaningFee + serviceFee;
 
         setPricing({
           basePrice,
@@ -126,7 +180,13 @@ export default function BookingModal({
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings/create-with-payment`, {
+      // Determine which endpoint to use based on payment method
+      const isCashPayment = paymentMethod === 'cash';
+      const endpoint = isCashPayment
+        ? `${process.env.NEXT_PUBLIC_API_URL}/bookings/create-with-cash`
+        : `${process.env.NEXT_PUBLIC_API_URL}/bookings/create-with-payment`;
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,17 +207,73 @@ export default function BookingModal({
         throw new Error(data.message || ((t as any)?.errors?.bookingFailed || 'Booking failed'));
       }
 
-      if (data.status === 'success' && data.data?.payment?.paymentUrl) {
-        // Redirect to Slick Pay payment page
-        window.location.href = data.data.payment.paymentUrl;
+      // Handle CASH payment (Nord Express)
+      if (isCashPayment && data.status === 'success' && data.data?.voucher) {
+        const voucher = data.data.voucher;
+        setCashVoucher({
+          voucherNumber: voucher.voucherNumber,
+          amount: voucher.amount,
+          currency: voucher.currency,
+          expiresAt: voucher.expiresAt,
+          status: voucher.status,
+          qrCode: voucher.qrCode,
+          guestInfo: voucher.guestInfo
+        });
+        setCashBookingId(data.data.booking._id);
+        setShowCashVoucher(true);
+        setLoading(false);
+        return;
+      }
+
+      // Handle CARD payment (Stripe/SlickPay)
+      if (data.status === 'success' && data.data?.payment) {
+        const payment = data.data.payment;
+
+        // STRIPE: Show embedded payment form (for EUR)
+        if (payment.provider === 'stripe' && payment.clientSecret) {
+          setStripePayment({
+            clientSecret: payment.clientSecret,
+            publishableKey: payment.publishableKey,
+            paymentIntentId: payment.paymentIntentId,
+            bookingId: data.data.booking._id,
+            amount: data.data.booking.pricing.totalAmount,
+            currency: data.data.booking.pricing.currency
+          });
+          setShowStripeForm(true);
+          setLoading(false);
+        }
+        // SLICKPAY: Redirect to payment page (for DZD)
+        else if (payment.provider === 'slickpay' && payment.paymentUrl) {
+          window.location.href = payment.paymentUrl;
+        }
+        else {
+          throw new Error((t as any)?.payment?.paymentUrlError || 'Payment method not available');
+        }
       } else {
-        throw new Error((t as any)?.payment?.paymentUrlError || 'Payment URL not available');
+        throw new Error((t as any)?.payment?.paymentUrlError || 'Payment initialization failed');
       }
     } catch (err: any) {
       console.error('Booking error:', err);
       setError(err.message || ((t as any)?.errors?.bookingFailedRetry || 'Booking failed. Please try again.'));
       setLoading(false);
     }
+  };
+
+  // ✅ NEW: Handle Stripe payment success
+  const handleStripeSuccess = () => {
+    setShowStripeForm(false);
+    // Redirect happens in StripePaymentForm
+  };
+
+  // ✅ NEW: Handle Stripe payment error
+  const handleStripeError = (errorMsg: string) => {
+    setError(errorMsg);
+  };
+
+  // ✅ NEW: Handle Stripe payment cancel
+  const handleStripeCancel = () => {
+    setShowStripeForm(false);
+    setStripePayment(null);
   };
 
   if (!isOpen) return null;
@@ -206,6 +322,48 @@ export default function BookingModal({
               </div>
             )}
 
+            {/* CASH VOUCHER DISPLAY (for Nord Express) */}
+            {showCashVoucher && cashVoucher && (
+              <CashVoucherDisplay
+                voucher={cashVoucher}
+                booking={{
+                  id: cashBookingId || '',
+                  listing: { title: listing.title },
+                  startDate: checkIn,
+                  endDate: checkOut
+                }}
+                onDownloadPDF={() => {
+                  // Open voucher PDF in new tab
+                  if (cashVoucher?.voucherNumber) {
+                    window.open(
+                      `${process.env.NEXT_PUBLIC_API_URL}/bookings/voucher/${cashVoucher.voucherNumber}/pdf`,
+                      '_blank'
+                    );
+                  }
+                }}
+              />
+            )}
+
+            {/* STRIPE PAYMENT FORM (for EUR listings) */}
+            {showStripeForm && stripePayment && !showCashVoucher && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-gray-900">Paiement sécurisé</h3>
+                <StripePaymentForm
+                  clientSecret={stripePayment.clientSecret}
+                  publishableKey={stripePayment.publishableKey}
+                  bookingId={stripePayment.bookingId}
+                  amount={stripePayment.amount}
+                  currency={stripePayment.currency}
+                  onSuccess={handleStripeSuccess}
+                  onError={handleStripeError}
+                  onCancel={handleStripeCancel}
+                />
+              </div>
+            )}
+
+            {/* NORMAL BOOKING FORM (hidden when Stripe form or Cash voucher is shown) */}
+            {!showStripeForm && !showCashVoucher && (
+              <>
             {/* Trip Details */}
             <div className="space-y-4 mb-6">
               <h3 className="text-lg font-bold text-gray-900">{(t as any)?.sections?.yourTrip || 'Your Trip'}</h3>
@@ -299,18 +457,27 @@ export default function BookingModal({
                     </div>
                   )}
                   <div className="flex justify-between text-gray-700">
-                    <span>{(t as any)?.labels?.serviceFee || 'Service fee'}</span>
+                    <span>{(t as any)?.labels?.serviceFee || 'Frais de service'} (8%)</span>
                     <span>{formatPrice(pricing.serviceFee)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span>{(t as any)?.labels?.taxes || 'Taxes'}</span>
-                    <span>{formatPrice(pricing.taxes)}</span>
                   </div>
                   <div className="pt-3 border-t border-gray-300 flex justify-between font-bold text-lg">
                     <span>{(t as any)?.labels?.total || 'Total'}</span>
                     <span>{formatPrice(pricing.total)}</span>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Payment Method Selection (only for DZD - cash option available) */}
+            {listing.pricing?.currency === 'DZD' && (
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Mode de paiement</h3>
+                <PaymentMethodSelector
+                  selectedMethod={paymentMethod}
+                  onSelect={setPaymentMethod}
+                  currency={listing.pricing?.currency || 'DZD'}
+                  disabled={loading}
+                />
               </div>
             )}
 
@@ -344,14 +511,20 @@ export default function BookingModal({
                 <div className="text-sm text-blue-900">
                   <p className="font-semibold mb-1">{(t as any)?.payment?.securePaymentTitle || 'Secure Payment'}</p>
                   <p className="text-blue-700">
-                    {(t as any)?.payment?.securePaymentDescription || 'Your payment will be processed securely through Slick Pay.'}
+                    {listing.pricing?.currency === 'EUR'
+                      ? 'Votre paiement sera traité de manière sécurisée via Stripe.'
+                      : ((t as any)?.payment?.securePaymentDescription || 'Your payment will be processed securely through Slick Pay.')
+                    }
                   </p>
                 </div>
               </div>
             </div>
+              </>
+            )}
           </div>
 
-          {/* Footer */}
+          {/* Footer - Hide when Stripe form or Cash voucher is shown */}
+          {!showStripeForm && !showCashVoucher && (
           <div className="flex items-center justify-between gap-4 p-6 border-t border-gray-200 bg-gray-50">
             <button
               onClick={onClose}
@@ -372,13 +545,33 @@ export default function BookingModal({
                 </>
               ) : (
                 <>
-                  <CreditCard className="w-5 h-5" />
-                  {listing.availability?.instantBook ? ((t as any)?.buttons?.confirmAndPay || 'Confirm and Pay') : ((t as any)?.buttons?.requestAndPay || 'Request and Pay')}
+                  {paymentMethod === 'cash' ? (
+                    <Banknote className="w-5 h-5" />
+                  ) : (
+                    <CreditCard className="w-5 h-5" />
+                  )}
+                  {paymentMethod === 'cash'
+                    ? 'Générer le bon de paiement'
+                    : (listing.availability?.instantBook ? ((t as any)?.buttons?.confirmAndPay || 'Confirm and Pay') : ((t as any)?.buttons?.requestAndPay || 'Request and Pay'))
+                  }
                   {pricing && ` ${formatPrice(pricing.total)}`}
                 </>
               )}
             </button>
           </div>
+          )}
+
+          {/* Footer for Cash Voucher - Close button only */}
+          {showCashVoucher && (
+          <div className="flex items-center justify-center gap-4 p-6 border-t border-gray-200 bg-gray-50">
+            <button
+              onClick={onClose}
+              className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl font-semibold transition-colors"
+            >
+              Fermer
+            </button>
+          </div>
+          )}
         </div>
       </div>
     </div>

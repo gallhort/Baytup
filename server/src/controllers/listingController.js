@@ -179,9 +179,12 @@ const getListings = async (req, res, next) => {
     }
 
     // ✅ NEW: Currency filter - Show listings in selected currency
-    // If currency is specified, filter listings by their pricing currency
+    // Show listings where currency matches either primary or alternative currency
     if (currency && currency !== 'all') {
-      query['pricing.currency'] = currency;
+      query.$or = [
+        { 'pricing.currency': currency },
+        { 'pricing.altCurrency': currency }
+      ];
     }
 
     // Instant book filter
@@ -502,13 +505,22 @@ const getListings = async (req, res, next) => {
     const processedListings = filteredListings.map(listing => {
       const listingObj = listing.toObject();
 
-      // Add currency conversion if needed
-      if (currency !== 'DZD') {
-        if (listing.pricing.currency === 'DZD' && currency === 'EUR') {
-          listingObj.pricing.convertedPrice = listing.priceInEUR;
-        } else if (listing.pricing.currency === 'EUR' && currency === 'DZD') {
-          listingObj.pricing.convertedPrice = listing.priceInDZD;
-        }
+      // If user searches in a currency that matches altCurrency, swap prices
+      // This ensures the listing shows the price in the searched currency
+      if (currency && listing.pricing.altCurrency === currency && listing.pricing.currency !== currency) {
+        // Swap: make alternative currency the primary one for this response
+        const tempBase = listingObj.pricing.basePrice;
+        const tempCurr = listingObj.pricing.currency;
+        const tempClean = listingObj.pricing.cleaningFee;
+
+        listingObj.pricing.basePrice = listingObj.pricing.altBasePrice;
+        listingObj.pricing.currency = listingObj.pricing.altCurrency;
+        listingObj.pricing.cleaningFee = listingObj.pricing.altCleaningFee || 0;
+
+        // Store original as alternative
+        listingObj.pricing.altBasePrice = tempBase;
+        listingObj.pricing.altCurrency = tempCurr;
+        listingObj.pricing.altCleaningFee = tempClean;
       }
 
       // Add computed fields for better frontend integration

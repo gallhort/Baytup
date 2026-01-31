@@ -36,8 +36,26 @@ const io = socketIo(server, {
 
 // Connect to MongoDB
 // ✅ MODIFICATION: Initialize cron jobs after DB connection
-connectDB().then(() => {
+connectDB().then(async () => {
   console.log('✅ MongoDB connected successfully');
+
+  // Seed default moderation rules (only if not already seeded)
+  try {
+    const ModerationRule = require('./src/models/ModerationRule');
+    const count = await ModerationRule.countDocuments();
+
+    if (count === 0) {
+      console.log('⚙️  Seeding default moderation rules...');
+      const moderationService = require('./src/services/moderationService');
+      await moderationService.seedDefaultRules();
+      console.log('✅ Default moderation rules seeded successfully');
+    } else {
+      console.log(`✅ Moderation rules already exist (${count} rules)`);
+    }
+  } catch (error) {
+    console.error('⚠️  Failed to seed moderation rules:', error.message);
+  }
+
   // Initialize booking automation cron jobs
   initBookingAutomation();
 }).catch(err => {
@@ -446,6 +464,11 @@ app.use(cors({
 app.options('*', cors());
 app.use(compression());
 app.use(morgan('combined'));
+
+// Stripe webhook needs raw body for signature verification
+// This MUST come BEFORE express.json()
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -477,6 +500,7 @@ app.use('/api/auth/reset-password', authLimiter);
 
 // API Routes (will be added)
 app.use('/api/auth', require('./src/routes/auth'));
+app.use('/api/auth/2fa', limiter, require('./src/routes/twoFactor')); // ✅ NEW: Two-Factor Authentication
 
 // Apply general rate limiter to other routes
 app.use('/api/users', limiter, require('./src/routes/users'));
@@ -497,8 +521,15 @@ app.use('/api/notifications', limiter, require('./src/routes/notifications'));
 app.use('/api/webhooks', require('./src/routes/webhooks')); // Webhook routes (no rate limiting for external services)
 // ✅ NOUVELLE ROUTE: Disputes
 app.use('/api/disputes', limiter, require('./src/routes/disputes'));
+// ✅ NOUVELLE ROUTE: Moderation (Admin)
+app.use('/api/moderation', limiter, require('./src/routes/moderation'));
+// ✅ NOUVELLE ROUTE: Support Tickets
+app.use('/api/tickets', limiter, require('./src/routes/tickets'));
 // ✅ NOUVELLE ROUTE: Cities (alternative gratuite à Google Places Autocomplete)
 app.use('/api/cities', require('./src/routes/cities'));
+app.use('/api/faq', require('./src/routes/faq')); // ✅ NEW: FAQ / Knowledge Base
+app.use('/api/escrow', limiter, require('./src/routes/escrow')); // ✅ NEW: Escrow / Séquestre
+app.use('/api/stripe-connect', limiter, require('./src/routes/stripeConnect')); // ✅ NEW: Stripe Connect for host payouts
 
 // 404 handler
 app.use('*', (req, res) => {

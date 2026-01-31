@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Listing = require('../models/Listing');
 const Booking = require('../models/Booking');
 const Notification = require('../models/Notification');
+const moderationService = require('../services/moderationService');
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
 
@@ -244,13 +245,38 @@ const sendMessage = catchAsync(async (req, res, next) => {
     return next(new AppError('You are not authorized to send messages in this conversation', 403));
   }
 
+  // Check content moderation (only for text messages)
+  let moderationData = {};
+  if (type === 'text' && content) {
+    const moderation = await moderationService.checkContent(content, 'message', {
+      userId,
+      metadata: { conversationId }
+    });
+
+    // If blocked, prevent message from being sent
+    if (moderation.action === 'block') {
+      return next(new AppError(moderation.message || 'Votre message contient du contenu inapproprié et ne peut être envoyé', 400));
+    }
+
+    // If flagged, mark message for review
+    if (moderation.action === 'flag') {
+      moderationData = {
+        flagged: true,
+        moderationFlags: moderation.flags,
+        moderationScore: moderation.totalScore,
+        flagReason: 'Auto-flagged by moderation system'
+      };
+    }
+  }
+
   // Create message
   const message = await Message.create({
     conversation: conversationId,
     sender: userId,
     content,
     type,
-    attachments: attachments || []
+    attachments: attachments || [],
+    ...moderationData
   });
 
   await message.populate('sender', 'firstName lastName avatar role');
@@ -336,11 +362,36 @@ const updateMessage = catchAsync(async (req, res, next) => {
     return next(new AppError('Cannot edit messages older than 15 minutes', 400));
   }
 
+  // Check content moderation for edited message
+  const moderation = await moderationService.checkContent(content, 'message', {
+    userId,
+    metadata: { conversationId: message.conversation, messageId }
+  });
+
+  // If blocked, prevent update
+  if (moderation.action === 'block') {
+    return next(new AppError(moderation.message || 'Votre message contient du contenu inapproprié et ne peut être envoyé', 400));
+  }
+
   // Update message
   message.originalContent = message.content;
   message.content = content;
   message.edited = true;
   message.editedAt = new Date();
+
+  // Update moderation flags if content is flagged
+  if (moderation.action === 'flag') {
+    message.flagged = true;
+    message.moderationFlags = moderation.flags;
+    message.moderationScore = moderation.totalScore;
+    message.flagReason = 'Auto-flagged by moderation system after edit';
+  } else {
+    // Clear flags if content is now clean
+    message.flagged = false;
+    message.moderationFlags = [];
+    message.moderationScore = 0;
+    message.flagReason = undefined;
+  }
 
   await message.save();
   await message.populate('sender', 'firstName lastName avatar role');

@@ -10,6 +10,8 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useApp } from '@/contexts/AppContext';
 import { formatDateWithWeekday } from '@/utils/dateFormatter';
+import EvidenceGallery from '@/components/dispute/EvidenceGallery';
+import AddEvidenceModal from '@/components/dispute/AddEvidenceModal';
 
 interface Dispute {
   _id: string;
@@ -72,6 +74,7 @@ export default function GuestDisputesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedDispute, setSelectedDispute] = useState<Dispute | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEvidenceModal, setShowEvidenceModal] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [addingNote, setAddingNote] = useState(false);
 
@@ -461,6 +464,32 @@ export default function GuestDisputesPage() {
                 <p className="text-gray-900 whitespace-pre-wrap">{selectedDispute.description}</p>
               </div>
 
+              {/* Evidence/Preuves */}
+              {selectedDispute.evidence && selectedDispute.evidence.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Preuves fournies</h3>
+                  <EvidenceGallery
+                    evidence={selectedDispute.evidence}
+                    currentUserId={user?._id}
+                  />
+                </div>
+              )}
+
+              {/* Add Evidence Button */}
+              {selectedDispute.status !== 'closed' && selectedDispute.status !== 'resolved' && (
+                <div>
+                  <button
+                    onClick={() => setShowEvidenceModal(true)}
+                    className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Ajouter des preuves supplémentaires
+                  </button>
+                </div>
+              )}
+
               {/* Resolution */}
               {selectedDispute.resolution && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -548,6 +577,26 @@ export default function GuestDisputesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Evidence Modal */}
+      {showEvidenceModal && selectedDispute && (
+        <AddEvidenceModal
+          disputeId={selectedDispute._id}
+          onClose={() => setShowEvidenceModal(false)}
+          onSuccess={() => {
+            setShowEvidenceModal(false);
+            fetchDisputes();
+            // Refresh selected dispute
+            const token = localStorage.getItem('token');
+            axios.get(
+              `${process.env.NEXT_PUBLIC_API_URL}/disputes/${selectedDispute._id}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            ).then(response => {
+              setSelectedDispute(response.data.data.dispute);
+            });
+          }}
+        />
       )}
     </div>
   );

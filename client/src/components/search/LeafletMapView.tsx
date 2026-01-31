@@ -34,6 +34,14 @@ interface LeafletMapViewProps {
   fitBounds?: boolean;
   onFitBoundsComplete?: () => void; // ✅ NEW: Callback when fitBounds is done
   selectedCategory?: 'stay' | 'vehicle' | 'all';
+  // ✅ NEW: Search params to pass to listing detail page
+  searchParams?: {
+    checkIn?: string;
+    checkOut?: string;
+    guests?: number;
+    adults?: number;
+    children?: number;
+  };
 }
 
 // Styles de carte disponibles
@@ -234,7 +242,8 @@ export default function LeafletMapView({
   interactive = true,
   fitBounds = true,
   onFitBoundsComplete,
-  selectedCategory = 'all'
+  selectedCategory = 'all',
+  searchParams
 }: LeafletMapViewProps) {
   const t = useTranslation('search');
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
@@ -356,6 +365,19 @@ export default function LeafletMapView({
     onListingSelect?.(listingId);
   }, [selectedMarkerId, onListingSelect]);
 
+  // ✅ NEW: Build listing URL with search params for booking pre-fill
+  const getListingUrl = useCallback((listingId: string) => {
+    const params = new URLSearchParams();
+    if (searchParams?.checkIn) params.set('checkIn', searchParams.checkIn);
+    if (searchParams?.checkOut) params.set('checkOut', searchParams.checkOut);
+    if (searchParams?.guests) params.set('guests', searchParams.guests.toString());
+    if (searchParams?.adults) params.set('adults', searchParams.adults.toString());
+    if (searchParams?.children) params.set('children', searchParams.children.toString());
+
+    const queryString = params.toString();
+    return `/listing/${listingId}${queryString ? `?${queryString}` : ''}`;
+  }, [searchParams]);
+
   // Fit map to show all listings
   const fitMapToListings = useCallback(() => {
     if (!mapRef.current || processedListings.length === 0) return;
@@ -433,7 +455,7 @@ export default function LeafletMapView({
               <Popup maxWidth={280} minWidth={240} className="leaflet-popup-mobile-friendly">
                 <div className="w-full bg-white rounded-lg overflow-hidden">
                   <Link
-                    href={`/listing/${listing._id}`}
+                    href={getListingUrl(listing._id)}
                     className="block hover:bg-gray-50/30 transition-all duration-300"
                   >
                     {/* Image Section - Compact */}

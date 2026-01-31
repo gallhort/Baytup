@@ -67,7 +67,15 @@ const disputeSchema = new mongoose.Schema({
       enum: ['photo', 'document', 'message']
     },
     url: String,
-    description: String
+    description: String,
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    }
   }],
   
   resolution: {

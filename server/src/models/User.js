@@ -115,6 +115,29 @@ const UserSchema = new mongoose.Schema({
   passwordResetToken: String,
   passwordResetExpires: Date,
 
+  // Two-Factor Authentication (2FA)
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorSecret: {
+    type: String,
+    select: false // Ne pas inclure dans les queries par défaut
+  },
+  twoFactorEnabledAt: Date,
+  backupCodes: [{
+    code: {
+      type: String,
+      select: false
+    },
+    used: {
+      type: Boolean,
+      default: false
+    },
+    usedAt: Date
+  }],
+  lastBackupCodeGeneration: Date,
+
   // Host-specific fields
   hostInfo: {
     isHost: {
@@ -157,6 +180,59 @@ const UserSchema = new mongoose.Schema({
       default: false
     },
     verifiedAt: Date
+  },
+
+  // Stripe Connect (for EUR payouts to hosts)
+  stripeConnect: {
+    // Connected account ID (acct_xxx)
+    accountId: {
+      type: String,
+      index: true
+    },
+    // Onboarding status
+    onboardingStatus: {
+      type: String,
+      enum: ['not_started', 'pending', 'completed', 'restricted'],
+      default: 'not_started'
+    },
+    // Can receive payouts?
+    payoutsEnabled: {
+      type: Boolean,
+      default: false
+    },
+    // Can accept charges?
+    chargesEnabled: {
+      type: Boolean,
+      default: false
+    },
+    // Details submitted to Stripe
+    detailsSubmitted: {
+      type: Boolean,
+      default: false
+    },
+    // Account type
+    accountType: {
+      type: String,
+      enum: ['express', 'standard', 'custom'],
+      default: 'express'
+    },
+    // Default currency for payouts
+    defaultCurrency: {
+      type: String,
+      default: 'eur'
+    },
+    // Onboarding completed at
+    onboardingCompletedAt: Date,
+    // Last webhook update
+    lastWebhookUpdate: Date,
+    // Any requirements pending
+    requirementsPending: [String],
+    // Errors from Stripe
+    errors: [{
+      code: String,
+      message: String,
+      occurredAt: Date
+    }]
   },
 
   // Statistics

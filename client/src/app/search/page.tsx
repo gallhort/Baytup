@@ -769,6 +769,13 @@ function SearchPageContent() {
               interactive={true}
               fitBounds={shouldFitBounds}
               onFitBoundsComplete={() => setShouldFitBounds(false)}
+              searchParams={{
+                checkIn: filters.checkIn,
+                checkOut: filters.checkOut,
+                guests: filters.guests,
+                adults: filters.adults,
+                children: filters.children
+              }}
             />
           </div>
         </div>
@@ -804,6 +811,13 @@ function SearchPageContent() {
         filters={filters}
         onFilterChange={handleFilterChange}
         title={t.map?.title?.replace('Properties', filters.category === 'stays' ? (t.categories?.stays || 'Stays') : (t.categories?.vehicles || 'Vehicles')) || 'Explore on Map'}
+        searchParams={{
+          checkIn: filters.checkIn,
+          checkOut: filters.checkOut,
+          guests: filters.guests,
+          adults: filters.adults,
+          children: filters.children
+        }}
       />
 
       {/* ✅ Airbnb-style Filters Modal */}

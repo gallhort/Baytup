@@ -163,6 +163,19 @@ const ListingSchema = new mongoose.Schema({
     securityDeposit: {
       type: Number,
       default: 0
+    },
+    // Alternative currency pricing (optional - for dual currency listings)
+    altBasePrice: {
+      type: Number,
+      min: [0, 'Alternative price cannot be negative']
+    },
+    altCurrency: {
+      type: String,
+      enum: ['DZD', 'EUR']
+    },
+    altCleaningFee: {
+      type: Number,
+      default: 0
     }
   },
 

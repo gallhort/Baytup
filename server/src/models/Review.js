@@ -101,8 +101,25 @@ const ReviewSchema = new mongoose.Schema({
   // Review Status
   status: {
     type: String,
-    enum: ['pending', 'published', 'hidden', 'flagged'],
+    enum: ['pending', 'published', 'hidden', 'flagged', 'waiting_pair'],
     default: 'pending'
+  },
+
+  // ✅ NEW: Double-blind review system
+  // Links to the paired review (guest's review <-> host's review for same booking)
+  pairedReview: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Review'
+  },
+  // Blind status for double-blind system
+  blindStatus: {
+    type: String,
+    enum: ['waiting', 'paired', 'auto_published'],
+    default: 'waiting'
+  },
+  // Deadline for automatic publication (14 days after creation)
+  autoPublishAt: {
+    type: Date
   },
 
   // Moderation
@@ -113,6 +130,14 @@ const ReviewSchema = new mongoose.Schema({
   flagReason: {
     type: String,
     enum: ['inappropriate', 'spam', 'fake', 'offensive', 'irrelevant', 'other']
+  },
+  moderationFlags: [{
+    type: String,
+    enum: ['insult', 'spam', 'external_contact', 'inappropriate', 'other']
+  }],
+  moderationScore: {
+    type: Number,
+    default: 0
   },
   moderatedBy: {
     type: mongoose.Schema.ObjectId,
@@ -198,11 +223,14 @@ ReviewSchema.virtual('age').get(function() {
   return `${Math.floor(diffDays / 365)} years ago`;
 });
 
-// Auto-publish review after 48 hours
+// ✅ UPDATED: Double-blind system - set auto-publish deadline to 14 days
 ReviewSchema.pre('save', function(next) {
-  if (this.isNew && this.status === 'pending') {
-    // Auto-publish after 48 hours if no moderation needed
-    this.publishedAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+  if (this.isNew) {
+    // Set status to waiting_pair for double-blind system
+    this.status = 'waiting_pair';
+    this.blindStatus = 'waiting';
+    // Auto-publish after 14 days if the other party hasn't reviewed
+    this.autoPublishAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
   }
   next();
 });
@@ -354,6 +382,106 @@ ReviewSchema.methods.markHelpful = function(userId) {
   }
 
   return this.save({ validateBeforeSave: false });
+};
+
+// ✅ NEW: Static method to find the paired review for a booking
+ReviewSchema.statics.findPairedReview = async function(bookingId, currentReviewType) {
+  const oppositeType = currentReviewType === 'guest_to_host' ? 'host_to_guest' : 'guest_to_host';
+  return this.findOne({
+    booking: bookingId,
+    type: oppositeType
+  });
+};
+
+// ✅ NEW: Static method to publish both reviews simultaneously (double-blind reveal)
+ReviewSchema.statics.publishPair = async function(review1Id, review2Id) {
+  const now = new Date();
+
+  await this.updateMany(
+    { _id: { $in: [review1Id, review2Id] } },
+    {
+      $set: {
+        status: 'published',
+        blindStatus: 'paired',
+        publishedAt: now
+      }
+    }
+  );
+
+  // Get both reviews to update stats
+  const reviews = await this.find({ _id: { $in: [review1Id, review2Id] } })
+    .populate('listing reviewee');
+
+  // Trigger stats update for each review
+  for (const review of reviews) {
+    if (review.type === 'guest_to_host') {
+      // Update listing stats
+      const Listing = mongoose.model('Listing');
+      const listing = await Listing.findById(review.listing);
+      if (listing) {
+        const allReviews = await this.find({
+          listing: review.listing,
+          status: 'published',
+          type: 'guest_to_host'
+        });
+        if (allReviews.length > 0) {
+          const totalRating = allReviews.reduce((sum, r) => sum + (r.rating.overall || 0), 0);
+          if (!listing.stats) listing.stats = {};
+          listing.stats.averageRating = Math.round((totalRating / allReviews.length) * 10) / 10;
+          listing.stats.reviewCount = allReviews.length;
+          await listing.save({ validateBeforeSave: false });
+        }
+      }
+    }
+
+    // Update user stats
+    const User = mongoose.model('User');
+    const user = await User.findById(review.reviewee);
+    if (user) {
+      const userReviews = await this.find({
+        reviewee: review.reviewee,
+        status: 'published',
+        type: review.type
+      });
+      if (userReviews.length > 0) {
+        const totalRating = userReviews.reduce((sum, r) => sum + (r.rating.overall || 0), 0);
+        if (!user.stats) user.stats = {};
+        user.stats.averageRating = Math.round((totalRating / userReviews.length) * 10) / 10;
+        user.stats.totalReviews = userReviews.length;
+        await user.save({ validateBeforeSave: false });
+      }
+    }
+  }
+
+  return reviews;
+};
+
+// ✅ NEW: Static method to auto-publish reviews past their deadline (called by cron)
+ReviewSchema.statics.autoPublishExpiredReviews = async function() {
+  const now = new Date();
+
+  // Find all waiting reviews past their auto-publish deadline
+  const expiredReviews = await this.find({
+    status: 'waiting_pair',
+    blindStatus: 'waiting',
+    autoPublishAt: { $lte: now }
+  });
+
+  console.log(`📊 Found ${expiredReviews.length} reviews to auto-publish (14 days passed)`);
+
+  for (const review of expiredReviews) {
+    try {
+      review.status = 'published';
+      review.blindStatus = 'auto_published';
+      review.publishedAt = now;
+      await review.save({ validateBeforeSave: false });
+      console.log(`✅ Auto-published review ${review._id} (no paired review after 14 days)`);
+    } catch (error) {
+      console.error(`❌ Error auto-publishing review ${review._id}:`, error.message);
+    }
+  }
+
+  return expiredReviews.length;
 };
 
 module.exports = mongoose.model('Review', ReviewSchema);

@@ -963,14 +963,18 @@ export default function BookingDetailsPage() {
                   <span>{formatPrice(booking.pricing.cleaningFee, booking.pricing.currency)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-gray-700">
-                <span>{(t as any).details.serviceFee || 'Service fee (10%)'}</span>
-                <span>{formatPrice(booking.pricing.serviceFee, booking.pricing.currency)}</span>
-              </div>
-              <div className="flex justify-between text-gray-700">
-                <span>{(t as any).details.taxes || 'Taxes (5%)'}</span>
-                <span>{formatPrice(booking.pricing.taxes, booking.pricing.currency)}</span>
-              </div>
+              {booking.pricing.serviceFee > 0 && (
+                <div className="flex justify-between text-gray-700">
+                  <span>{(t as any).details.serviceFee || 'Frais de service (8%)'}</span>
+                  <span>{formatPrice(booking.pricing.serviceFee, booking.pricing.currency)}</span>
+                </div>
+              )}
+              {booking.pricing.taxes > 0 && (
+                <div className="flex justify-between text-gray-700">
+                  <span>{(t as any).details.taxes || 'Taxes'}</span>
+                  <span>{formatPrice(booking.pricing.taxes, booking.pricing.currency)}</span>
+                </div>
+              )}
               <div className="border-t-2 border-gray-300 pt-3">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-gray-900">{(t as any).details.total || 'Total'} ({booking.pricing.currency})</span>

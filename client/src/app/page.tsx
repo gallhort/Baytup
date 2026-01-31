@@ -155,7 +155,7 @@ export default function HomePage() {
   // Fetch listings from API
   useEffect(() => {
     fetchListings();
-  }, [selectedCategory]);
+  }, [selectedCategory, currency]); // ✅ Re-fetch when currency changes
 
   const fetchListings = async () => {
     try {
@@ -166,9 +166,10 @@ export default function HomePage() {
         await socketService.waitForConnection();
       }
 
-      const filters: SearchFilters & { limit: number; sort: string } = {
+      const filters: SearchFilters & { limit: number; sort: string; currency?: string } = {
         limit: 20,
-        sort: '-featured,-createdAt'
+        sort: '-featured,-createdAt',
+        currency: currency // ✅ Pass currency to filter by EUR/DZD
       };
 
       // Handle category filtering

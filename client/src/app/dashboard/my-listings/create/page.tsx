@@ -74,6 +74,10 @@ interface ListingForm {
     cleaningFee: number;
     serviceFee: number;
     securityDeposit: number;
+    // Alternative currency (optional)
+    altBasePrice?: number;
+    altCurrency?: string;
+    altCleaningFee?: number;
   };
 
   // Availability
@@ -155,7 +159,10 @@ export default function CreateListingPage() {
       pricingType: 'per_night',
       cleaningFee: 0,
       serviceFee: 0,
-      securityDeposit: 0
+      securityDeposit: 0,
+      altBasePrice: undefined,
+      altCurrency: undefined,
+      altCleaningFee: undefined
     },
     availability: {
       instantBook: false,
@@ -179,6 +186,7 @@ export default function CreateListingPage() {
   });
 
   const [newRule, setNewRule] = useState('');
+  const [enableAltCurrency, setEnableAltCurrency] = useState(false);
 
   const stayTypes = ['apartment', 'house', 'villa', 'studio', 'room', 'riad', 'guesthouse', 'hotel_room'];
   const vehicleTypes = ['car', 'motorcycle', 'truck', 'van', 'suv', 'bus', 'bicycle', 'scooter', 'boat'];
@@ -304,6 +312,12 @@ export default function CreateListingPage() {
 
     if (formData.pricing.basePrice <= 0) {
       toast.error((t as any).validation.validBasePrice);
+      return;
+    }
+
+    // Validate alternative currency if enabled
+    if (enableAltCurrency && (!formData.pricing.altBasePrice || formData.pricing.altBasePrice <= 0)) {
+      toast.error('Veuillez saisir un prix de base valide pour la devise alternative');
       return;
     }
 
@@ -963,15 +977,105 @@ export default function CreateListingPage() {
           <div>
             <PriceInput
               value={formData.pricing.securityDeposit}
-              onChange={(value) => setFormData(prev => ({ 
-                ...prev, 
-                pricing: { ...prev.pricing, securityDeposit: value } 
+              onChange={(value) => setFormData(prev => ({
+                ...prev,
+                pricing: { ...prev.pricing, securityDeposit: value }
               }))}
               currency={formData.pricing.currency}
               label={(t as any).pricing.securityDeposit}
               min={0}
             />
           </div>
+        </div>
+
+        {/* ✅ ALTERNATIVE CURRENCY SECTION */}
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <label className="flex items-center space-x-3 mb-4">
+            <input
+              type="checkbox"
+              checked={enableAltCurrency}
+              onChange={(e) => {
+                setEnableAltCurrency(e.target.checked);
+                if (!e.target.checked) {
+                  // Clear alternative currency data if unchecked
+                  setFormData(prev => ({
+                    ...prev,
+                    pricing: {
+                      ...prev.pricing,
+                      altBasePrice: undefined,
+                      altCurrency: undefined,
+                      altCleaningFee: undefined
+                    }
+                  }));
+                } else {
+                  // Set alternative currency to the opposite of current currency
+                  const altCurr = formData.pricing.currency === 'DZD' ? 'EUR' : 'DZD';
+                  setFormData(prev => ({
+                    ...prev,
+                    pricing: {
+                      ...prev.pricing,
+                      altCurrency: altCurr,
+                      altBasePrice: 0,
+                      altCleaningFee: 0
+                    }
+                  }));
+                }
+              }}
+              className="w-5 h-5 text-[#FF6B35] border-gray-300 rounded focus:ring-[#FF6B35]"
+            />
+            <div>
+              <span className="text-sm font-medium text-gray-900">
+                Ajouter une deuxième devise
+              </span>
+              <p className="text-xs text-gray-500 mt-1">
+                Permettre aux guests de réserver dans les deux devises (DZD et EUR)
+              </p>
+            </div>
+          </label>
+
+          {enableAltCurrency && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
+              <div className="md:col-span-2">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-sm font-medium text-gray-700">
+                    Prix en {formData.pricing.altCurrency}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    (Saisissez vos propres prix, pas de conversion automatique)
+                  </span>
+                </div>
+              </div>
+
+              {/* Alternative Base Price */}
+              <div className="md:col-span-2">
+                <PriceInput
+                  value={formData.pricing.altBasePrice || 0}
+                  onChange={(value) => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, altBasePrice: value }
+                  }))}
+                  currency={formData.pricing.altCurrency || 'EUR'}
+                  label={`Prix de base (${formData.pricing.altCurrency})`}
+                  required={enableAltCurrency}
+                  min={0}
+                />
+              </div>
+
+              {/* Alternative Cleaning Fee */}
+              <div>
+                <PriceInput
+                  value={formData.pricing.altCleaningFee || 0}
+                  onChange={(value) => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, altCleaningFee: value }
+                  }))}
+                  currency={formData.pricing.altCurrency || 'EUR'}
+                  label={`Frais de ménage (${formData.pricing.altCurrency})`}
+                  min={0}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

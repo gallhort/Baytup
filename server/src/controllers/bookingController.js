@@ -306,9 +306,14 @@ const updateBooking = catchAsync(async (req, res, next) => {
   });
 });
 
-// Cancel booking
+// Cancel booking - Uses refundCalculator for proper policy-based refunds
 const cancelBooking = catchAsync(async (req, res, next) => {
-  const booking = await Booking.findById(req.params.id);
+  const refundCalculator = require('../services/refundCalculator');
+  const Escrow = require('../models/Escrow');
+  const escrowService = require('../services/escrowService');
+
+  // Populate listing for cancellation policy
+  const booking = await Booking.findById(req.params.id).populate('listing', 'title category images address pricing cancellationPolicy');
 
   if (!booking) {
     return next(new AppError('Booking not found', 404));
@@ -330,12 +335,6 @@ const cancelBooking = catchAsync(async (req, res, next) => {
 
   const { reason } = req.body;
 
-  // Calculate refund based on cancellation policy
-  let refundAmount = 0;
-  let cancellationFee = 0;
-
-  const daysUntilCheckIn = moment(booking.startDate).diff(moment(), 'days');
-
   // Determine who is cancelling
   let cancelledByRole = 'guest';
   if (isHost) {
@@ -344,27 +343,15 @@ const cancelBooking = catchAsync(async (req, res, next) => {
     cancelledByRole = 'admin';
   }
 
-  // Cancellation policy - more generous for host cancellations
-  if (cancelledByRole === 'host') {
-    // If host cancels, always full refund to guest
-    refundAmount = booking.pricing.totalAmount;
-    cancellationFee = 0;
-  } else {
-    // Guest cancellation policy
-    if (daysUntilCheckIn >= 7) {
-      // Full refund if cancelled 7+ days before check-in
-      refundAmount = booking.pricing.totalAmount;
-      cancellationFee = 0;
-    } else if (daysUntilCheckIn >= 3) {
-      // 50% refund if cancelled 3-6 days before check-in
-      refundAmount = booking.pricing.totalAmount * 0.5;
-      cancellationFee = booking.pricing.totalAmount * 0.5;
-    } else {
-      // No refund if cancelled less than 3 days before check-in
-      refundAmount = 0;
-      cancellationFee = booking.pricing.totalAmount;
-    }
-  }
+  // Use refundCalculator for proper policy-based refund calculation
+  const refundResult = refundCalculator.calculateRefund(booking, {
+    reason: cancelledByRole === 'host' ? 'host_cancellation' : 'guest_cancellation',
+    cancellationDate: new Date()
+  });
+
+  const refundAmount = refundResult.refund.total;
+  const cancellationFee = refundResult.original.totalAmount - refundAmount;
+  const daysUntilCheckIn = Math.ceil((new Date(booking.startDate) - new Date()) / (1000 * 60 * 60 * 24));
 
   // Set booking status based on who cancelled
   booking.status = `cancelled_by_${cancelledByRole}`;
@@ -378,32 +365,54 @@ const cancelBooking = catchAsync(async (req, res, next) => {
 
   // Update payment if payment was made
   if (booking.payment.status === 'paid') {
-    booking.payment.status = refundAmount > 0 ? 'refunded' : 'paid';
+    const isFullRefund = refundAmount >= refundResult.original.totalAmount * 0.99; // Allow 1% margin for rounding
+    booking.payment.status = refundAmount > 0 ? (isFullRefund ? 'refunded' : 'partially_refunded') : 'paid';
     booking.payment.refundAmount = refundAmount;
-    booking.payment.refundReason = `Cancelled by ${cancelledByRole}: ${reason || `${cancelledByRole}_request`}`;
+    booking.payment.refundReason = refundResult.summary;
     booking.payment.refundedAt = new Date();
+    booking.payment.refundBreakdown = refundResult.refund;
+
+    // Process actual refund via escrow service if escrow exists
+    const escrow = await Escrow.findOne({ booking: booking._id });
+    if (escrow && refundAmount > 0) {
+      try {
+        await escrowService.processCancellationRefund(escrow, {
+          reason: cancelledByRole === 'host' ? 'host_cancellation' : 'guest_cancellation',
+          cancellationDate: new Date()
+        });
+        console.log(`[CancelBooking] Processed escrow refund for booking ${booking._id}`);
+      } catch (escrowError) {
+        console.error('[CancelBooking] Escrow refund failed:', escrowError.message);
+        // Continue - admin will need to process manually
+      }
+    }
   }
 
   await booking.save({ validateBeforeSave: false });
 
-  await booking.populate('listing', 'title category images address pricing');
   await booking.populate('host', 'firstName lastName avatar');
   await booking.populate('guest', 'firstName lastName avatar phone email');
+
+  // Format currency for notifications
+  const currency = booking.pricing.currency || 'DZD';
+  const formatAmount = (amount) => `${amount} ${currency}`;
 
   // Create notifications for cancellation
   try {
     if (cancelledByRole === 'guest') {
-      // Notify guest about cancellation
+      // Notify guest about cancellation with detailed breakdown
       await Notification.createNotification({
         recipient: booking.guest._id,
         type: 'booking_cancelled_by_guest',
-        title: 'Booking Cancelled ❌',
-        message: `Your booking for "${booking.listing.title}" has been cancelled. ${refundAmount > 0 ? `You will receive a refund of ${refundAmount} DZD.` : 'No refund is applicable based on the cancellation policy.'}`,
+        title: 'Réservation annulée ❌',
+        message: refundResult.summary,
         data: {
           bookingId: booking._id,
           listingTitle: booking.listing.title,
           refundAmount,
+          refundBreakdown: refundResult.refund,
           cancellationFee,
+          isGracePeriod: refundResult.cancellation.isInGracePeriod,
           reason: reason || 'guest_request'
         },
         link: `/dashboard/bookings/${booking._id}`,
@@ -414,24 +423,25 @@ const cancelBooking = catchAsync(async (req, res, next) => {
       await Notification.createNotification({
         recipient: booking.host._id,
         type: 'booking_cancelled_by_guest',
-        title: 'Booking Cancelled by Guest ❌',
-        message: `${booking.guest.firstName} ${booking.guest.lastName} has cancelled their booking for "${booking.listing.title}". ${reason ? `Reason: ${reason}` : ''}`,
+        title: 'Réservation annulée par le voyageur ❌',
+        message: `${booking.guest.firstName} ${booking.guest.lastName} a annulé sa réservation pour "${booking.listing.title}". ${refundResult.distribution.hostReceives > 0 ? `Vous recevrez ${formatAmount(refundResult.distribution.hostReceives)}.` : ''}`,
         data: {
           bookingId: booking._id,
           listingTitle: booking.listing.title,
           guestName: `${booking.guest.firstName} ${booking.guest.lastName}`,
+          hostReceives: refundResult.distribution.hostReceives,
           reason: reason || 'guest_request'
         },
         link: `/dashboard/host/bookings/${booking._id}`,
         priority: 'high'
       });
     } else if (cancelledByRole === 'host') {
-      // Notify guest about host cancellation
+      // Notify guest about host cancellation (always full refund)
       await Notification.createNotification({
         recipient: booking.guest._id,
         type: 'booking_cancelled_by_host',
-        title: 'Booking Cancelled by Host ❌',
-        message: `Your booking for "${booking.listing.title}" has been cancelled by the host. You will receive a full refund of ${refundAmount} DZD.`,
+        title: 'Réservation annulée par l\'hôte ❌',
+        message: `Votre réservation pour "${booking.listing.title}" a été annulée par l'hôte. Vous recevrez un remboursement complet de ${formatAmount(refundAmount)}.`,
         data: {
           bookingId: booking._id,
           listingTitle: booking.listing.title,
@@ -446,8 +456,8 @@ const cancelBooking = catchAsync(async (req, res, next) => {
       await Notification.createNotification({
         recipient: booking.host._id,
         type: 'booking_cancelled_by_host',
-        title: 'Booking Cancelled ❌',
-        message: `You have cancelled the booking for "${booking.listing.title}" by ${booking.guest.firstName} ${booking.guest.lastName}. The guest will receive a full refund.`,
+        title: 'Réservation annulée ❌',
+        message: `Vous avez annulé la réservation de ${booking.guest.firstName} ${booking.guest.lastName} pour "${booking.listing.title}". Le voyageur recevra un remboursement complet.`,
         data: {
           bookingId: booking._id,
           listingTitle: booking.listing.title,
@@ -484,9 +494,14 @@ const cancelBooking = catchAsync(async (req, res, next) => {
       booking,
       refundInfo: {
         refundAmount,
+        refundBreakdown: refundResult.refund,
         cancellationFee,
         daysUntilCheckIn,
         cancelledBy: cancelledByRole,
+        cancellationPolicy: refundResult.booking.cancellationPolicy,
+        isGracePeriod: refundResult.cancellation.isInGracePeriod,
+        distribution: refundResult.distribution,
+        summary: refundResult.summary,
         refundStatus: refundAmount > 0 ? 'Processing refund' : 'No refund applicable'
       }
     }
@@ -1158,7 +1173,8 @@ const updateBookingStatus = catchAsync(async (req, res, next) => {
   });
 });
 
-// Create booking with Slick Pay payment integration
+// Create booking with payment integration
+// ✅ MULTI-PROVIDER: Automatically selects Stripe (EUR) or SlickPay (DZD) based on listing currency
 const createBookingWithPayment = catchAsync(async (req, res, next) => {
   const {
     listing: listingId,
@@ -1202,13 +1218,29 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
     return next(new AppError(`Maximum stay is ${listingDoc.availability.maxStay} nights`, 400));
   }
 
-  // Calculate pricing
+  // Calculate pricing - Baytup Fee Structure: 8% guest + 3% host (11% total)
   const basePrice = listingDoc.pricing.basePrice;
   const subtotal = basePrice * nights;
   const cleaningFee = listingDoc.pricing.cleaningFee || 0;
-  const serviceFee = Math.round(subtotal * 0.10); // 10% service fee
-  const taxes = Math.round((subtotal + cleaningFee + serviceFee) * 0.05); // 5% taxes
-  const totalAmount = subtotal + cleaningFee + serviceFee + taxes;
+  const baseAmount = subtotal + cleaningFee;
+
+  // Guest Service Fee: 8% of (subtotal + cleaningFee) - charged to guest
+  const guestServiceFee = Math.round(baseAmount * 0.08);
+  // Host Commission: 3% of (subtotal + cleaningFee) - deducted from host payout (internal)
+  const hostCommission = Math.round(baseAmount * 0.03);
+  // Legacy field for backward compatibility
+  const serviceFee = guestServiceFee;
+  // No taxes - hosts are responsible for their own tax declarations
+  const taxes = 0;
+  // Total paid by guest = subtotal + cleaningFee + guestServiceFee
+  const totalAmount = subtotal + cleaningFee + guestServiceFee;
+
+  // ✅ Determine payment provider based on currency
+  const currency = listingDoc.pricing.currency || 'DZD';
+  const paymentProvider = currency === 'EUR' ? 'stripe' : 'slickpay';
+
+  // Get guest details
+  const guest = await User.findById(req.user.id);
 
   // Create booking with pending_payment status
   const booking = await Booking.create({
@@ -1229,78 +1261,114 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
       nights,
       subtotal,
       cleaningFee,
-      serviceFee,
+      guestServiceFee,
+      hostCommission,
+      serviceFee, // Legacy field = guestServiceFee
       taxes,
       totalAmount,
-      currency: listingDoc.pricing.currency,
+      hostPayout: baseAmount - hostCommission,
+      platformRevenue: guestServiceFee + hostCommission,
+      currency,
       securityDeposit: listingDoc.pricing.securityDeposit || 0
     },
     payment: {
-      method: 'slickpay',
+      method: paymentProvider,
       status: 'pending'
     },
     status: 'pending_payment',
     specialRequests: specialRequests || ''
   });
 
-  // Get guest details
-  const guest = await User.findById(req.user.id);
-
-  // Create Slick Pay invoice
-  const slickPayService = require('../services/slickPayService');
-
-  // Prepare invoice items with prices in DZD (Slick Pay expects DZD, not centimes)
-  // Use the amounts directly without converting to centimes
-  const invoiceItems = [
-    {
-      name: `${listingDoc.title} - ${nights} night${nights > 1 ? 's' : ''}`,
-      price: Math.round(subtotal),
-      quantity: 1
-    }
-  ];
-
-  if (cleaningFee > 0) {
-    invoiceItems.push({
-      name: 'Cleaning Fee',
-      price: Math.round(cleaningFee),
-      quantity: 1
-    });
-  }
-
-  invoiceItems.push({
-    name: 'Service Fee (10%)',
-    price: Math.round(serviceFee),
-    quantity: 1
-  });
-
-  invoiceItems.push({
-    name: 'Taxes (5%)',
-    price: Math.round(taxes),
-    quantity: 1
-  });
-
-  // Calculate total as sum of all rounded item prices (this ensures exact match)
-  const totalAmountForSlickPay = invoiceItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
   try {
-    const invoice = await slickPayService.createInvoice({
-      amount: totalAmountForSlickPay,
-      returnUrl: `${process.env.CLIENT_URL || 'http://localhost:3000'}/booking/${booking._id}/confirmation`,
-      guest: {
-        firstName: guest.firstName,
-        lastName: guest.lastName,
-        email: guest.email,
-        phone: guest.phone || '',
-        address: guest.address || 'Algiers, Algeria'
-      },
-      items: invoiceItems,
-      bookingId: booking._id.toString(),
-      note: `Booking for ${listingDoc.title} - ${start.format('MMM DD')} to ${end.format('MMM DD, YYYY')}`
-    });
+    let paymentResponse;
 
-    // Update booking with Slick Pay invoice ID
-    booking.payment.transactionId = invoice.invoiceId.toString();
-    await booking.save({ validateBeforeSave: false });
+    // ✅ STRIPE for EUR payments
+    if (paymentProvider === 'stripe') {
+      const stripeService = require('../services/stripeService');
+
+      const paymentIntent = await stripeService.createPaymentIntent({
+        amount: totalAmount,
+        currency: 'eur',
+        bookingId: booking._id.toString(),
+        guestEmail: guest.email,
+        guestName: `${guest.firstName} ${guest.lastName}`,
+        listingTitle: listingDoc.title,
+        metadata: {
+          nights: nights.toString(),
+          startDate: start.format('YYYY-MM-DD'),
+          endDate: end.format('YYYY-MM-DD')
+        }
+      });
+
+      // Update booking with Stripe Payment Intent ID
+      booking.payment.stripePaymentIntentId = paymentIntent.paymentIntentId;
+      booking.payment.transactionId = paymentIntent.paymentIntentId;
+      await booking.save({ validateBeforeSave: false });
+
+      paymentResponse = {
+        provider: 'stripe',
+        clientSecret: paymentIntent.clientSecret,
+        publishableKey: stripeService.getPublishableKey(),
+        paymentIntentId: paymentIntent.paymentIntentId
+      };
+    }
+    // ✅ SLICKPAY for DZD payments
+    else {
+      const slickPayService = require('../services/slickPayService');
+
+      // Prepare invoice items with prices in DZD
+      const invoiceItems = [
+        {
+          name: `${listingDoc.title} - ${nights} night${nights > 1 ? 's' : ''}`,
+          price: Math.round(subtotal),
+          quantity: 1
+        }
+      ];
+
+      if (cleaningFee > 0) {
+        invoiceItems.push({
+          name: 'Cleaning Fee',
+          price: Math.round(cleaningFee),
+          quantity: 1
+        });
+      }
+
+      invoiceItems.push({
+        name: 'Frais de service (8%)',
+        price: Math.round(guestServiceFee),
+        quantity: 1
+      });
+
+      // No taxes - hosts are responsible for their own tax declarations
+
+      const totalAmountForSlickPay = invoiceItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+      const invoice = await slickPayService.createInvoice({
+        amount: totalAmountForSlickPay,
+        returnUrl: `${process.env.CLIENT_URL || 'http://localhost:3000'}/booking/${booking._id}/confirmation`,
+        guest: {
+          firstName: guest.firstName,
+          lastName: guest.lastName,
+          email: guest.email,
+          phone: guest.phone || '',
+          address: guest.address || 'Algiers, Algeria'
+        },
+        items: invoiceItems,
+        bookingId: booking._id.toString(),
+        note: `Booking for ${listingDoc.title} - ${start.format('MMM DD')} to ${end.format('MMM DD, YYYY')}`
+      });
+
+      // Update booking with Slick Pay invoice ID
+      booking.payment.transactionId = invoice.invoiceId.toString();
+      await booking.save({ validateBeforeSave: false });
+
+      paymentResponse = {
+        provider: 'slickpay',
+        invoiceId: invoice.invoiceId,
+        paymentUrl: invoice.paymentUrl,
+        message: invoice.message
+      };
+    }
 
     // Populate booking details
     await booking.populate('listing', 'title category images address pricing');
@@ -1312,14 +1380,15 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
       await Notification.createNotification({
         recipient: req.user.id,
         type: 'booking_created',
-        title: 'Booking Created Successfully! 🎉',
+        title: 'Booking Created Successfully!',
         message: `Your booking for "${booking.listing.title}" has been created. Complete the payment to confirm your reservation.`,
         data: {
           bookingId: booking._id,
           listingTitle: booking.listing.title,
           startDate: booking.startDate,
           endDate: booking.endDate,
-          totalAmount: booking.pricing.totalAmount
+          totalAmount: booking.pricing.totalAmount,
+          currency: booking.pricing.currency
         },
         link: `/dashboard/bookings/${booking._id}`,
         priority: 'high'
@@ -1329,7 +1398,7 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
       await Notification.createNotification({
         recipient: booking.host._id,
         type: 'booking_created',
-        title: 'New Booking Request! 📅',
+        title: 'New Booking Request!',
         message: `${guest.firstName} ${guest.lastName} has created a booking for "${booking.listing.title}" from ${moment(booking.startDate).format('MMM DD')} to ${moment(booking.endDate).format('MMM DD, YYYY')}. Waiting for payment confirmation.`,
         data: {
           bookingId: booking._id,
@@ -1337,7 +1406,8 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
           guestName: `${guest.firstName} ${guest.lastName}`,
           startDate: booking.startDate,
           endDate: booking.endDate,
-          totalAmount: booking.pricing.totalAmount
+          totalAmount: booking.pricing.totalAmount,
+          currency: booking.pricing.currency
         },
         link: `/dashboard/host/bookings/${booking._id}`,
         priority: 'high'
@@ -1350,11 +1420,7 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
       status: 'success',
       data: {
         booking,
-        payment: {
-          invoiceId: invoice.invoiceId,
-          paymentUrl: invoice.paymentUrl,
-          message: invoice.message
-        }
+        payment: paymentResponse
       }
     });
   } catch (error) {
@@ -1391,29 +1457,64 @@ const verifyPaymentAndConfirmBooking = catchAsync(async (req, res, next) => {
     });
   }
 
-  // Verify payment with Slick Pay
-  if (booking.payment.transactionId) {
-    const slickPayService = require('../services/slickPayService');
-
+  // ✅ MULTI-PROVIDER: Verify payment based on payment method
+  if (booking.payment.transactionId || booking.payment.stripePaymentIntentId) {
     console.log('🔍 Verifying payment for booking:', {
       bookingId: booking._id,
+      paymentMethod: booking.payment.method,
       transactionId: booking.payment.transactionId,
+      stripePaymentIntentId: booking.payment.stripePaymentIntentId,
       currentStatus: booking.payment.status,
       currentBookingStatus: booking.status
     });
 
     try {
-      console.log('📡 Calling Slick Pay API to check invoice status...');
-      const invoiceStatus = await slickPayService.getInvoiceStatus(booking.payment.transactionId);
+      let isPaid = false;
+      let paymentStatus = 'pending';
 
-      console.log('✅ Slick Pay API Response:', {
-        success: invoiceStatus.success,
-        completed: invoiceStatus.completed,
-        paymentStatus: invoiceStatus.paymentStatus,
-        data: invoiceStatus.data
-      });
+      // ✅ STRIPE verification
+      if (booking.payment.method === 'stripe' && booking.payment.stripePaymentIntentId) {
+        const stripeService = require('../services/stripeService');
+        console.log('📡 Calling Stripe API to check payment status...');
 
-      if (invoiceStatus.completed && invoiceStatus.paymentStatus === 'paid') {
+        const paymentIntent = await stripeService.getPaymentIntent(booking.payment.stripePaymentIntentId);
+        console.log('✅ Stripe API Response:', paymentIntent);
+
+        if (paymentIntent.status === 'succeeded') {
+          isPaid = true;
+          paymentStatus = 'paid';
+          // Update Stripe charge ID if not already set
+          if (paymentIntent.chargeId && !booking.payment.stripeChargeId) {
+            booking.payment.stripeChargeId = paymentIntent.chargeId;
+          }
+        } else {
+          paymentStatus = paymentIntent.status;
+        }
+      }
+      // ✅ SLICKPAY verification
+      else {
+        const slickPayService = require('../services/slickPayService');
+        console.log('📡 Calling Slick Pay API to check invoice status...');
+
+        const invoiceStatus = await slickPayService.getInvoiceStatus(booking.payment.transactionId);
+
+        console.log('✅ Slick Pay API Response:', {
+          success: invoiceStatus.success,
+          completed: invoiceStatus.completed,
+          paymentStatus: invoiceStatus.paymentStatus,
+          data: invoiceStatus.data
+        });
+
+        if (invoiceStatus.completed && invoiceStatus.paymentStatus === 'paid') {
+          isPaid = true;
+          paymentStatus = 'paid';
+        } else {
+          paymentStatus = invoiceStatus.paymentStatus || 'pending';
+        }
+      }
+
+      // ✅ Common handling for paid bookings
+      if (isPaid) {
         // Update booking status
         booking.status = 'confirmed';
         booking.payment.status = 'paid';
@@ -1422,18 +1523,33 @@ const verifyPaymentAndConfirmBooking = catchAsync(async (req, res, next) => {
 
         await booking.save({ validateBeforeSave: false });
 
+        // Create escrow for fund holding (if not already created by webhook)
+        if (!booking.escrow) {
+          try {
+            const escrowService = require('../services/escrowService');
+            const escrow = await escrowService.createEscrow(booking, {
+              provider: booking.payment.method,
+              transactionId: booking.payment.transactionId || booking.payment.stripePaymentIntentId
+            });
+            console.log(`[VerifyPayment] Created escrow ${escrow._id} for booking ${booking._id}`);
+          } catch (escrowError) {
+            console.error('[VerifyPayment] Failed to create escrow:', escrowError);
+          }
+        }
+
         // Create notifications for successful payment
         try {
           // Notify guest
           await Notification.createNotification({
             recipient: booking.guest._id,
             type: 'booking_payment_successful',
-            title: 'Payment Confirmed! ✅',
+            title: 'Payment Confirmed!',
             message: `Your payment for "${booking.listing.title}" has been confirmed. Your booking is now confirmed!`,
             data: {
               bookingId: booking._id,
               listingTitle: booking.listing.title,
               amount: booking.pricing.totalAmount,
+              currency: booking.pricing.currency,
               startDate: booking.startDate,
               endDate: booking.endDate
             },
@@ -1445,13 +1561,14 @@ const verifyPaymentAndConfirmBooking = catchAsync(async (req, res, next) => {
           await Notification.createNotification({
             recipient: booking.host._id,
             type: 'booking_confirmed',
-            title: 'Booking Confirmed! 🎉',
+            title: 'Booking Confirmed!',
             message: `${booking.guest.firstName} ${booking.guest.lastName}'s payment has been confirmed for "${booking.listing.title}". The booking is now confirmed.`,
             data: {
               bookingId: booking._id,
               listingTitle: booking.listing.title,
               guestName: `${booking.guest.firstName} ${booking.guest.lastName}`,
               amount: booking.pricing.totalAmount,
+              currency: booking.pricing.currency,
               startDate: booking.startDate,
               endDate: booking.endDate
             },
@@ -1473,7 +1590,7 @@ const verifyPaymentAndConfirmBooking = catchAsync(async (req, res, next) => {
           message: 'Payment is still pending',
           data: {
             booking,
-            paymentStatus: invoiceStatus.paymentStatus
+            paymentStatus: paymentStatus
           }
         });
       }
@@ -1483,7 +1600,8 @@ const verifyPaymentAndConfirmBooking = catchAsync(async (req, res, next) => {
         response: error.response?.data,
         status: error.response?.status,
         bookingId: booking._id,
-        transactionId: booking.payment.transactionId
+        transactionId: booking.payment.transactionId,
+        stripePaymentIntentId: booking.payment.stripePaymentIntentId
       });
 
       return next(new AppError(`Error verifying payment: ${error.message}`, 500));
@@ -1824,17 +1942,17 @@ const retryBookingPayment = catchAsync(async (req, res, next) => {
     });
   }
 
-  invoiceItems.push({
-    name: 'Service Fee (10%)',
-    price: Math.round(booking.pricing.serviceFee),
-    quantity: 1
-  });
+  // Use guestServiceFee if available, fallback to serviceFee for legacy bookings
+  const serviceFeeAmount = booking.pricing.guestServiceFee || booking.pricing.serviceFee || 0;
+  if (serviceFeeAmount > 0) {
+    invoiceItems.push({
+      name: 'Frais de service (8%)',
+      price: Math.round(serviceFeeAmount),
+      quantity: 1
+    });
+  }
 
-  invoiceItems.push({
-    name: 'Taxes (5%)',
-    price: Math.round(booking.pricing.taxes),
-    quantity: 1
-  });
+  // No taxes - hosts are responsible for their own tax declarations
 
   // Calculate total as sum of all rounded item prices
   const totalAmountForSlickPay = invoiceItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -2269,6 +2387,258 @@ const getAllBookingsAdmin = catchAsync(async (req, res, next) => {
   });
 });
 
+// ============ CASH PAYMENT (NORD EXPRESS) METHODS ============
+
+/**
+ * Create booking with cash payment (Nord Express voucher)
+ * @route POST /api/bookings/create-with-cash
+ * @access Private
+ */
+const createBookingWithCashPayment = catchAsync(async (req, res, next) => {
+  const {
+    listing: listingId,
+    startDate,
+    endDate,
+    guestCount,
+    specialRequests
+  } = req.body;
+
+  // Get listing details
+  const listingDoc = await Listing.findById(listingId);
+  if (!listingDoc) {
+    return next(new AppError('Listing not found', 404));
+  }
+
+  // Only DZD listings can use cash payment
+  if (listingDoc.pricing.currency !== 'DZD') {
+    return next(new AppError('Cash payment is only available for DZD listings', 400));
+  }
+
+  if (listingDoc.status !== 'active') {
+    return next(new AppError('This listing is not available for booking', 400));
+  }
+
+  if (listingDoc.host.toString() === req.user.id) {
+    return next(new AppError('You cannot book your own listing', 400));
+  }
+
+  // Check availability
+  const isAvailable = await Booking.checkAvailability(listingId, new Date(startDate), new Date(endDate));
+  if (!isAvailable) {
+    return next(new AppError('This listing is not available for the selected dates', 400));
+  }
+
+  // Calculate duration
+  const start = moment(startDate);
+  const end = moment(endDate);
+  const nights = end.diff(start, 'days');
+
+  if (nights < listingDoc.availability.minStay) {
+    return next(new AppError(`Minimum stay is ${listingDoc.availability.minStay} nights`, 400));
+  }
+
+  if (nights > listingDoc.availability.maxStay) {
+    return next(new AppError(`Maximum stay is ${listingDoc.availability.maxStay} nights`, 400));
+  }
+
+  // Calculate pricing - Baytup Fee Structure: 8% guest + 3% host (11% total)
+  const basePrice = listingDoc.pricing.basePrice;
+  const subtotal = basePrice * nights;
+  const cleaningFee = listingDoc.pricing.cleaningFee || 0;
+  const baseAmount = subtotal + cleaningFee;
+
+  // Guest Service Fee: 8% of (subtotal + cleaningFee) - charged to guest
+  const guestServiceFee = Math.round(baseAmount * 0.08);
+  // Host Commission: 3% of (subtotal + cleaningFee) - deducted from host payout (internal)
+  const hostCommission = Math.round(baseAmount * 0.03);
+  // Legacy field for backward compatibility
+  const serviceFee = guestServiceFee;
+  // No taxes - hosts are responsible for their own tax declarations
+  const taxes = 0;
+  // Total paid by guest = subtotal + cleaningFee + guestServiceFee
+  const totalAmount = subtotal + cleaningFee + guestServiceFee;
+
+  // Get guest details
+  const guest = await User.findById(req.user.id);
+
+  // Create booking with pending_payment status
+  const booking = await Booking.create({
+    listing: listingId,
+    guest: req.user.id,
+    host: listingDoc.host,
+    startDate: new Date(startDate),
+    endDate: new Date(endDate),
+    checkInTime: listingDoc.availability.checkInFrom,
+    checkOutTime: listingDoc.availability.checkOutBefore,
+    guestCount: {
+      adults: guestCount?.adults || 1,
+      children: guestCount?.children || 0,
+      infants: guestCount?.infants || 0
+    },
+    pricing: {
+      basePrice,
+      nights,
+      subtotal,
+      cleaningFee,
+      guestServiceFee,
+      hostCommission,
+      serviceFee, // Legacy field = guestServiceFee
+      taxes,
+      totalAmount,
+      hostPayout: baseAmount - hostCommission,
+      platformRevenue: guestServiceFee + hostCommission,
+      currency: 'DZD',
+      securityDeposit: listingDoc.pricing.securityDeposit || 0
+    },
+    payment: {
+      method: 'nord_express',
+      status: 'pending'
+    },
+    status: 'pending_payment',
+    specialRequests: specialRequests || ''
+  });
+
+  try {
+    // Create cash voucher
+    const nordExpressService = require('../services/nordExpressService');
+    const voucher = await nordExpressService.createVoucher({
+      booking,
+      amount: totalAmount,
+      guestInfo: {
+        fullName: `${guest.firstName} ${guest.lastName}`,
+        phone: guest.phone || '',
+        email: guest.email,
+        nationalId: ''
+      }
+    });
+
+    // Populate booking details
+    await booking.populate('listing', 'title category images address pricing');
+    await booking.populate('host', 'firstName lastName avatar email');
+
+    // Create notifications
+    try {
+      await Notification.createNotification({
+        recipient: req.user.id,
+        type: 'booking_created',
+        title: 'Bon de paiement créé!',
+        message: `Votre bon de paiement pour "${booking.listing.title}" a été créé. Rendez-vous dans une agence Nord Express pour payer.`,
+        data: {
+          bookingId: booking._id,
+          voucherNumber: voucher.voucherNumber,
+          amount: totalAmount,
+          expiresAt: voucher.expiresAt
+        },
+        link: `/dashboard/bookings/${booking._id}`,
+        priority: 'high'
+      });
+    } catch (notificationError) {
+      console.error('Error creating booking notification:', notificationError);
+    }
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        booking,
+        payment: {
+          provider: 'nord_express',
+          voucherNumber: voucher.voucherNumber,
+          amount: voucher.amount,
+          currency: voucher.currency,
+          expiresAt: voucher.expiresAt,
+          qrCode: voucher.qrCode,
+          instructions: voucher.instructions
+        }
+      }
+    });
+  } catch (error) {
+    await booking.deleteOne();
+    return next(new AppError(`Cash payment error: ${error.message}`, 500));
+  }
+});
+
+/**
+ * Get voucher details
+ * @route GET /api/bookings/voucher/:voucherNumber
+ * @access Private
+ */
+const getVoucherDetails = catchAsync(async (req, res, next) => {
+  const { voucherNumber } = req.params;
+
+  const nordExpressService = require('../services/nordExpressService');
+  const details = await nordExpressService.getVoucherDetails(voucherNumber);
+
+  if (!details) {
+    return next(new AppError('Voucher not found', 404));
+  }
+
+  // Check if user has access
+  const CashVoucher = require('../models/CashVoucher');
+  const voucher = await CashVoucher.findOne({ voucherNumber }).populate('booking');
+
+  if (!voucher) {
+    return next(new AppError('Voucher not found', 404));
+  }
+
+  const isGuest = voucher.booking.guest.toString() === req.user.id;
+  const isHost = voucher.booking.host.toString() === req.user.id;
+  const isAdmin = req.user.role === 'admin';
+
+  if (!isGuest && !isHost && !isAdmin) {
+    return next(new AppError('You do not have permission to view this voucher', 403));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: details
+  });
+});
+
+/**
+ * Admin: Get all pending cash vouchers
+ * @route GET /api/admin/cash-vouchers
+ * @access Admin
+ */
+const getPendingCashVouchers = catchAsync(async (req, res, next) => {
+  const nordExpressService = require('../services/nordExpressService');
+  const vouchers = await nordExpressService.getPendingVouchers();
+
+  res.status(200).json({
+    status: 'success',
+    results: vouchers.length,
+    data: { vouchers }
+  });
+});
+
+/**
+ * Admin: Manually validate cash payment
+ * @route PUT /api/admin/cash-vouchers/:id/validate
+ * @access Admin
+ */
+const validateCashPayment = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const { agencyCode, transactionId, notes } = req.body;
+
+  const nordExpressService = require('../services/nordExpressService');
+
+  try {
+    const voucher = await nordExpressService.validatePaymentManually(id, {
+      adminId: req.user._id,
+      agencyCode,
+      transactionId,
+      notes
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Cash payment validated successfully',
+      data: { voucher }
+    });
+  } catch (error) {
+    return next(new AppError(error.message, 400));
+  }
+});
+
 module.exports = {
   getGuestBookings,
   getBooking,
@@ -2293,5 +2663,10 @@ module.exports = {
   checkInGuest,
   getAllBookingsAdmin,
   checkOutGuest,
-  confirmBookingCompletion
+  confirmBookingCompletion,
+  // Cash payment (Nord Express)
+  createBookingWithCashPayment,
+  getVoucherDetails,
+  getPendingCashVouchers,
+  validateCashPayment
 };

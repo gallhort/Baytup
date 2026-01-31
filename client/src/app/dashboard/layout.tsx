@@ -13,7 +13,7 @@ import {
   FaBed, FaUsers, FaClipboardList,
   FaEnvelope, FaHistory, FaMapMarkerAlt, FaStar,
   FaShoppingCart, FaFileInvoiceDollar, FaMoneyBillWave, FaBell,
-  FaExclamationTriangle
+  FaExclamationTriangle, FaCreditCard
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { IconType } from 'react-icons';
@@ -52,6 +52,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [hasEurListings, setHasEurListings] = useState(false);
   const headerHeight = useHeaderHeight();
   const t = useTranslation('sidebar');
 
@@ -250,6 +251,16 @@ export default function DashboardLayout({
           color: 'text-green-600'
         }
       );
+
+      // Only show Stripe Connect menu if host has EUR listings
+      if (hasEurListings) {
+        sections.push({
+          icon: FaCreditCard,
+          label: (t as any)?.menuItems?.host?.stripePayments || 'Paiements EUR (Stripe)',
+          href: '/dashboard/host-payments',
+          color: 'text-purple-600'
+        });
+      }
     }
 
     // Common items at the end
@@ -269,6 +280,43 @@ export default function DashboardLayout({
       router.push('/login');
     }
   }, [user, router]);
+
+  // Check if user has EUR listings (for Stripe Connect menu visibility)
+  useEffect(() => {
+    if (!user || user.role !== 'host') return;
+
+    const checkEurListings = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/listings/my/listings?limit=100`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const listings = data.data?.listings || [];
+
+          // Check if at least one listing has EUR currency
+          const hasEur = listings.some((listing: any) =>
+            listing.pricing?.currency?.toUpperCase() === 'EUR'
+          );
+
+          setHasEurListings(hasEur);
+        }
+      } catch (error) {
+        console.error('[DashboardLayout] Error checking EUR listings:', error);
+      }
+    };
+
+    checkEurListings();
+  }, [user]);
 
   // ✅ FIX BQ-31: Fetch unread messages count
   useEffect(() => {

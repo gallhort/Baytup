@@ -23,7 +23,10 @@ const {
   checkInGuest,
   checkOutGuest,
   confirmBookingCompletion,
-  getAllBookingsAdmin
+  getAllBookingsAdmin,
+  // Cash payment (Nord Express)
+  createBookingWithCashPayment,
+  getVoucherDetails
 } = require('../controllers/bookingController');
 const { protect } = require('../middleware/auth');
 
@@ -58,6 +61,12 @@ router.get('/calendar', getBookingCalendar);
 
 // Create a new booking with payment
 router.post('/create-with-payment', createBookingWithPayment);
+
+// ✅ NEW: Create a new booking with cash payment (Nord Express)
+router.post('/create-with-cash', createBookingWithCashPayment);
+
+// ✅ NEW: Get voucher details
+router.get('/voucher/:voucherNumber', getVoucherDetails);
 
 // Verify payment for a booking
 router.get('/:id/verify-payment', verifyPaymentAndConfirmBooking);
