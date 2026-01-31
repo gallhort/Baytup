@@ -136,7 +136,7 @@ const CalendarPicker = ({
         </div>
 
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {daysOfWeek.map(day => (
+          {daysOfWeek.map((day: string) => (
             <div key={day} className="p-2 text-center text-xs font-medium text-gray-500">
               {day}
             </div>
