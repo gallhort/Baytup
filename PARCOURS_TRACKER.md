@@ -342,6 +342,17 @@
 | 31/01/2026 | Admin | Graphiques Recharts: Line (évolution), Pie (par devise) |
 | 31/01/2026 | Admin | Tables: Top 10 hosts, 20 dernières réservations avec breakdown |
 | 31/01/2026 | Admin | Export CSV avec toutes les données de commissions |
+| 31/01/2026 | **Déploiement Prod** | **Corrections TypeScript + Configuration Stripe** - Build réussi |
+| 31/01/2026 | Build | Fix 10+ erreurs TypeScript: AuthContext→AppContext, types Evidence, translations cast |
+| 31/01/2026 | Build | CommissionSettings.tsx: Remplacé AuthContext par AppContext + localStorage token |
+| 31/01/2026 | Build | StripeConnectAdmin.tsx: Même fix AuthContext + token localStorage |
+| 31/01/2026 | Build | BookingDetailsModal.tsx: Ajout checks undefined pour serviceFee et taxes |
+| 31/01/2026 | Build | EvidenceGallery.tsx: Gestion uploadedBy string OU object (typeof check) |
+| 31/01/2026 | Build | AbritelSearchBar.tsx: Cast (t as any) pour calendar/searchBar/guests |
+| 31/01/2026 | Build | SearchResults.tsx: Cast (t as any) pour ratings/listingCard/listing |
+| 31/01/2026 | Config | Ajout NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY dans .env production |
+| 31/01/2026 | Config | Rebuild frontend + restart PM2 avec nouvelle config Stripe |
+| 31/01/2026 | Résultat | ✅ Build frontend réussi, tous services online, Stripe Connect embedded OK |
 
 ---
 
