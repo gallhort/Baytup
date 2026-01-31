@@ -17,7 +17,7 @@ import {
   Car,
   Sparkles
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useApp } from '@/contexts/AppContext';
 import toast from 'react-hot-toast';
 
 interface CommissionRate {
@@ -75,7 +75,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function CommissionSettings() {
-  const { token } = useAuth();
+  const { state } = useApp();
   const [rates, setRates] = useState<CommissionRates>({
     default: 20,
     stay: 20,
@@ -96,6 +96,7 @@ export default function CommissionSettings() {
       setLoading(true);
       setError(null);
 
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/admin/settings/commissions', {
         headers: {
           Authorization: `Bearer ${token}`
@@ -123,7 +124,7 @@ export default function CommissionSettings() {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   // Fetch history for a specific rate
   const fetchHistory = async (category: string) => {
@@ -133,6 +134,7 @@ export default function CommissionSettings() {
     }
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/admin/settings/commission_${category}/history`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -168,6 +170,7 @@ export default function CommissionSettings() {
         luxury: rates.luxury / 100
       };
 
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/admin/settings/commissions', {
         method: 'PUT',
         headers: {
