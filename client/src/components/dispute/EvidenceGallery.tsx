@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { FileText, Image as ImageIcon, Download, X, ZoomIn, ExternalLink } from 'lucide-react';
 
 interface Evidence {
-  type: 'photo' | 'document' | 'message';
+  type: 'image' | 'document' | 'video';
   url: string;
   description?: string;
   uploadedBy?: {
     _id: string;
     firstName: string;
     lastName: string;
-  };
+  } | string;
   uploadedAt?: string;
 }
 
@@ -32,7 +32,7 @@ export default function EvidenceGallery({ evidence, currentUserId }: EvidenceGal
     );
   }
 
-  const photos = evidence.filter(e => e.type === 'photo');
+  const photos = evidence.filter(e => e.type === 'image');
   const documents = evidence.filter(e => e.type === 'document');
 
   const handleDownload = async (url: string, filename: string) => {
