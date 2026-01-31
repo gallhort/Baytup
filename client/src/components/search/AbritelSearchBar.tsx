@@ -48,25 +48,25 @@ const CalendarPicker = ({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const months = t.calendar?.months ? [
-    t.calendar.months.january,
-    t.calendar.months.february,
-    t.calendar.months.march,
-    t.calendar.months.april,
-    t.calendar.months.may,
-    t.calendar.months.june,
-    t.calendar.months.july,
-    t.calendar.months.august,
-    t.calendar.months.september,
-    t.calendar.months.october,
-    t.calendar.months.november,
-    t.calendar.months.december
+  const months = (t as any).calendar?.months ? [
+    (t as any).calendar.months.january,
+    (t as any).calendar.months.february,
+    (t as any).calendar.months.march,
+    (t as any).calendar.months.april,
+    (t as any).calendar.months.may,
+    (t as any).calendar.months.june,
+    (t as any).calendar.months.july,
+    (t as any).calendar.months.august,
+    (t as any).calendar.months.september,
+    (t as any).calendar.months.october,
+    (t as any).calendar.months.november,
+    (t as any).calendar.months.december
   ] : [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
 
-  const daysOfWeek = t.calendar?.daysOfWeek || ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+  const daysOfWeek = (t as any).calendar?.daysOfWeek || ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -194,14 +194,14 @@ const CalendarPicker = ({
           }}
           className="text-sm font-medium text-gray-600 hover:text-gray-900 underline"
         >
-          {t.calendar?.clearDates || 'Effacer les dates'}
+          {(t as any).calendar?.clearDates || 'Effacer les dates'}
         </button>
 
         <button
           onClick={onClose}
           className="px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
         >
-          {t.calendar?.close || 'Fermer'}
+          {(t as any).calendar?.close || 'Fermer'}
         </button>
       </div>
     </div>
@@ -335,7 +335,7 @@ export default function AbritelSearchBar({
   }, [activeField]);
 
   const formatDateRange = () => {
-    if (!localCheckIn || !localCheckOut) return t.calendar?.selectDates || 'Sélectionner des dates';
+    if (!localCheckIn || !localCheckOut) return (t as any).calendar?.selectDates || 'Sélectionner des dates';
 
     const checkInDate = new Date(localCheckIn);
     const checkOutDate = new Date(localCheckOut);
