@@ -91,7 +91,7 @@ export default function EvidenceGallery({ evidence, currentUserId }: EvidenceGal
 
                 {photo.uploadedBy && (
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Par {photo.uploadedBy.firstName}
+                    Par {typeof photo.uploadedBy === 'object' ? photo.uploadedBy.firstName : photo.uploadedBy}
                     {photo.uploadedAt && (
                       <> • {new Date(photo.uploadedAt).toLocaleDateString('fr-FR')}</>
                     )}
