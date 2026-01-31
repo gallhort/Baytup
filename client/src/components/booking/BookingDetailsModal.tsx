@@ -329,13 +329,13 @@ export default function BookingDetailsModal({
                         <span className="font-semibold">{formatPrice(booking.pricing.cleaningFee, booking.pricing.currency)}</span>
                       </div>
                     )}
-                    {booking.pricing.serviceFee > 0 && (
+                    {booking.pricing.serviceFee && booking.pricing.serviceFee > 0 && (
                       <div className="flex justify-between text-gray-700">
                         <span>{(t as any)?.modal?.serviceFee || 'Frais de service (8%)'}</span>
                         <span className="font-semibold">{formatPrice(booking.pricing.serviceFee, booking.pricing.currency)}</span>
                       </div>
                     )}
-                    {booking.pricing.taxes > 0 && (
+                    {booking.pricing.taxes && booking.pricing.taxes > 0 && (
                       <div className="flex justify-between text-gray-700">
                         <span>{(t as any)?.modal?.taxes || 'Taxes'}</span>
                         <span className="font-semibold">{formatPrice(booking.pricing.taxes, booking.pricing.currency)}</span>
