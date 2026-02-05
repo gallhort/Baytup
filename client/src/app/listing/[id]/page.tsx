@@ -457,7 +457,7 @@ export default function ListingDetailPage() {
   // ✅ FIX: Check if listing accepts the user's selected currency
   const listingAcceptsCurrency = (targetCurrency: string): boolean => {
     const primaryCurrency = listing?.pricing?.currency || 'DZD';
-    const altCurrency = listing?.pricing?.altCurrency;
+    const altCurrency = (listing?.pricing as any)?.altCurrency;
 
     return primaryCurrency === targetCurrency || altCurrency === targetCurrency;
   };
@@ -465,7 +465,7 @@ export default function ListingDetailPage() {
   // ✅ FIX: Get the appropriate price for the user's currency
   const getDisplayPrice = (amount: number, isAltAmount?: number): { price: string; isConverted: boolean } => {
     const primaryCurrency = listing?.pricing?.currency || 'DZD';
-    const altCurrency = listing?.pricing?.altCurrency;
+    const altCurrency = (listing?.pricing as any)?.altCurrency;
     const userCurrency = currency as 'DZD' | 'EUR';
 
     // If user's currency matches primary, use primary price
