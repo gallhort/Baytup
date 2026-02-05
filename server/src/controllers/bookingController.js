@@ -2560,6 +2560,11 @@ const createBookingWithCashPayment = catchAsync(async (req, res, next) => {
   // Get guest details
   const guest = await User.findById(req.user.id);
 
+  // ✅ FIX: Validate guest has phone number for cash payment (required by Nord Express)
+  if (!guest.phone || guest.phone.trim() === '') {
+    return next(new AppError('Un numéro de téléphone est requis pour le paiement en espèces. Veuillez mettre à jour votre profil.', 400));
+  }
+
   // Create booking with pending_payment status
   const booking = await Booking.create({
     listing: listingId,
