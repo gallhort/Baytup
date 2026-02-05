@@ -1194,7 +1194,8 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
     startDate,
     endDate,
     guestCount,
-    specialRequests
+    specialRequests,
+    paymentCurrency // ✅ FIX: User's selected currency for dual-currency listings
   } = req.body;
 
   // Get listing details
@@ -1231,10 +1232,37 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
     return next(new AppError(`Maximum stay is ${listingDoc.availability.maxStay} nights`, 400));
   }
 
-  // Calculate pricing - Baytup Fee Structure: 8% guest + 3% host (11% total)
-  const basePrice = listingDoc.pricing.basePrice;
+  // ✅ FIX: First, determine payment currency - use user's selection for dual-currency listings
+  const primaryCurrency = listingDoc.pricing.currency || 'DZD';
+  const altCurrency = listingDoc.pricing.altCurrency;
+
+  // Use paymentCurrency if provided AND listing accepts it, otherwise use primary
+  let currency = primaryCurrency;
+  let useAltPricing = false;
+  if (paymentCurrency && paymentCurrency === altCurrency) {
+    currency = paymentCurrency;
+    useAltPricing = true;
+    console.log(`💰 Using user's selected ALT currency: ${currency} (listing accepts: ${primaryCurrency}, ${altCurrency})`);
+  } else if (paymentCurrency && paymentCurrency === primaryCurrency) {
+    currency = primaryCurrency;
+    console.log(`💰 Using primary currency: ${currency}`);
+  }
+
+  const paymentProvider = currency === 'EUR' ? 'stripe' : 'slickpay';
+  console.log(`💳 Payment provider: ${paymentProvider} for currency: ${currency}`);
+
+  // ✅ FIX: Calculate pricing using the correct price based on selected currency
+  // For dual-currency listings, use altBasePrice/altCleaningFee when paying in altCurrency
+  const basePrice = useAltPricing && listingDoc.pricing.altBasePrice
+    ? listingDoc.pricing.altBasePrice
+    : listingDoc.pricing.basePrice;
+  const cleaningFee = useAltPricing && listingDoc.pricing.altCleaningFee !== undefined
+    ? listingDoc.pricing.altCleaningFee
+    : (listingDoc.pricing.cleaningFee || 0);
+
+  console.log(`💵 Pricing: basePrice=${basePrice} ${currency}, cleaningFee=${cleaningFee} ${currency}, useAltPricing=${useAltPricing}`);
+
   const subtotal = basePrice * nights;
-  const cleaningFee = listingDoc.pricing.cleaningFee || 0;
   const baseAmount = subtotal + cleaningFee;
 
   // Guest Service Fee: 8% of (subtotal + cleaningFee) - charged to guest
@@ -1247,10 +1275,6 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
   const taxes = 0;
   // Total paid by guest = subtotal + cleaningFee + guestServiceFee
   const totalAmount = subtotal + cleaningFee + guestServiceFee;
-
-  // ✅ Determine payment provider based on currency
-  const currency = listingDoc.pricing.currency || 'DZD';
-  const paymentProvider = currency === 'EUR' ? 'stripe' : 'slickpay';
 
   // Get guest details
   const guest = await User.findById(req.user.id);

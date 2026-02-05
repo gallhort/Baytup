@@ -228,7 +228,9 @@ export default function BookingModal({
           startDate: checkIn,
           endDate: checkOut,
           guestCount: guests,
-          specialRequests
+          specialRequests,
+          // ✅ FIX: Pass user's selected currency for dual-currency listings
+          paymentCurrency: listingAcceptsCurrency ? userCurrency : listingCurrency
         })
       });
 
