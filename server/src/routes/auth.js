@@ -19,16 +19,17 @@ const {
   updatePasswordValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
+  validate
 } = require('../utils/validation');
 
 const router = express.Router();
 
 // Public routes
-router.post('/register', registerValidation, register);
-router.post('/login', loginValidation, login);
+router.post('/register', registerValidation, validate, register);
+router.post('/login', loginValidation, validate, login);
 router.post('/google', googleAuth);
-router.post('/forgotpassword', forgotPasswordValidation, forgotPassword);
-router.put('/resetpassword/:resettoken', resetPasswordValidation, resetPassword);
+router.post('/forgotpassword', forgotPasswordValidation, validate, forgotPassword);
+router.put('/resetpassword/:resettoken', resetPasswordValidation, validate, resetPassword);
 router.get('/verify-email/:token', verifyEmail);
 router.post('/resend-verification', resendVerification);
 
@@ -36,7 +37,7 @@ router.post('/resend-verification', resendVerification);
 router.get('/me', protect, getMe);
 router.get('/logout', protect, logout);
 router.put('/updatedetails', protect, updateDetails);
-router.put('/updatepassword', protect, updatePasswordValidation, updatePassword);
+router.put('/updatepassword', protect, updatePasswordValidation, validate, updatePassword);
 
 // Test route
 router.get('/test', (req, res) => {

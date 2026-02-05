@@ -6,13 +6,20 @@ const axios = require('axios');
  */
 class SlickPayService {
   constructor() {
-    // Use test API for development, production API for production
-    this.baseURL = process.env.NODE_ENV === 'production'
+    // Use prod API if SLICK_PAY_USE_PROD=true, otherwise use dev API
+    // Note: devapi has intermittent bugs, set SLICK_PAY_USE_PROD=true with prod API key to use prodapi
+    const useProd = process.env.SLICK_PAY_USE_PROD === 'true';
+    this.baseURL = useProd
       ? 'https://prodapi.slick-pay.com/api/v2'
       : 'https://devapi.slick-pay.com/api/v2';
 
-    // Use test key for development, production key for production
-    this.apiKey = process.env.SLICK_PAY_API_KEY || '54|BZ7F6N4KwSD46GEXToOv3ZBpJpf7WVxnBzK5cOE6';
+    // API key must be set in environment variables
+    this.apiKey = process.env.SLICK_PAY_API_KEY;
+    if (!this.apiKey) {
+      console.warn('[SlickPay] WARNING: SLICK_PAY_API_KEY not set in environment variables');
+    }
+
+    console.log(`[SlickPay] Initialized with ${useProd ? 'PROD' : 'DEV'} API: ${this.baseURL}`);
 
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
@@ -105,6 +112,8 @@ class SlickPayService {
         payload.note = note;
       }
 
+      console.log('[SlickPay] Creating invoice with payload:', JSON.stringify(payload, null, 2));
+
       const response = await this.axiosInstance.post('/users/invoices', payload);
 
       return {
@@ -113,7 +122,13 @@ class SlickPayService {
         message: response.data.message
       };
     } catch (error) {
-      console.error('Error creating invoice:', error.response?.data || error.message);
+      console.error('Error creating invoice:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+        url: error.config?.url,
+        baseURL: this.baseURL
+      });
       throw new Error(error.response?.data?.message || 'Failed to create payment invoice');
     }
   }

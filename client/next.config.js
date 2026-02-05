@@ -1,4 +1,10 @@
 /** @type {import('next').NextConfig} */
+
+// Bundle analyzer - run: ANALYZE=true npm run build
+const withBundleAnalyzer = process.env.ANALYZE === 'true'
+  ? require('@next/bundle-analyzer')({ enabled: true })
+  : (config) => config;
+
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
@@ -21,9 +27,11 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    unoptimized: true,
-    minimumCacheTTL: 60,
-    formats: ['image/webp'],
+    // Image optimization enabled for production (removed unoptimized: true)
+    minimumCacheTTL: 86400, // 24 hours cache
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
   },
   i18n: {
     locales: ['en', 'fr', 'ar'],
@@ -96,4 +104,4 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
 }
 
-module.exports = nextConfig
+module.exports = withBundleAnalyzer(nextConfig)

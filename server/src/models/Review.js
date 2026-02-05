@@ -185,11 +185,11 @@ ReviewSchema.plugin(mongoosePaginate);
 ReviewSchema.index({ listing: 1, publishedAt: -1 });
 ReviewSchema.index({ reviewer: 1, createdAt: -1 });
 ReviewSchema.index({ reviewee: 1, type: 1 });
-ReviewSchema.index({ booking: 1 });
+// Note: booking: 1 index removed - compound index below covers booking queries
 ReviewSchema.index({ status: 1 });
 ReviewSchema.index({ 'rating.overall': -1 });
 
-// Compound index for preventing duplicate reviews
+// Compound index for preventing duplicate reviews (also serves as booking index)
 ReviewSchema.index({ booking: 1, reviewer: 1, type: 1 }, { unique: true });
 
 // Virtual for average rating

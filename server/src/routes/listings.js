@@ -19,22 +19,23 @@ const {
   createListingValidation,
   updateListingValidation,
   searchValidation,
-  mongoIdValidation
+  mongoIdValidation,
+  validate
 } = require('../utils/validation');
 const { uploadListingImage, handleUploadError } = require('../middleware/upload');
 
 const router = express.Router();
 
 // Public routes (no authentication required)
-router.get('/', searchValidation, optionalAuth, getListings);
+router.get('/', searchValidation, validate, optionalAuth, getListings);
 router.get('/filters', getFilters);
 router.get('/featured', getFeaturedListings);
 router.get('/suggestions', getSearchSuggestions);
 router.post('/search', advancedSearch);
-router.get('/host/:hostId', mongoIdValidation, getListingsByHost);
+router.get('/host/:hostId', mongoIdValidation, validate, getListingsByHost);
 
-// ✅ MODIFIED: Get single listing - handle deleted for admin
-router.get('/:id', mongoIdValidation, optionalAuth, async (req, res, next) => {
+// Get single listing - handle deleted for admin
+router.get('/:id', mongoIdValidation, validate, optionalAuth, async (req, res, next) => {
   try {
     const options = {};
     if (req.user && req.user.role === 'admin') {
@@ -115,13 +116,13 @@ router.post('/upload-images', uploadListingImage.array('images', 10), handleUplo
 router.get('/my/listings', getMyListings);
 
 // Create listing
-router.post('/', createListingValidation, hostOrAdmin, createListing);
+router.post('/', createListingValidation, validate, hostOrAdmin, createListing);
 
 // Specific listing operations by ID - these are protected routes
-router.put('/:id', mongoIdValidation, updateListingValidation, updateListing);
+router.put('/:id', mongoIdValidation, updateListingValidation, validate, updateListing);
 
-// ✅ MODIFIED: Soft delete instead of hard delete
-router.delete('/:id', mongoIdValidation, async (req, res) => {
+// Soft delete instead of hard delete
+router.delete('/:id', mongoIdValidation, validate, async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id).setOptions({ includeDeleted: true });
     
@@ -176,8 +177,8 @@ router.delete('/:id', mongoIdValidation, async (req, res) => {
   }
 });
 
-// ✅ NEW: Restore deleted listing
-router.post('/:id/restore', mongoIdValidation, async (req, res) => {
+// Restore deleted listing
+router.post('/:id/restore', mongoIdValidation, validate, async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id).setOptions({ includeDeleted: true });
     
@@ -218,7 +219,7 @@ router.post('/:id/restore', mongoIdValidation, async (req, res) => {
   }
 });
 
-router.post('/:id/favorite', mongoIdValidation, toggleFavorite);
+router.post('/:id/favorite', mongoIdValidation, validate, toggleFavorite);
 
 // Test route
 router.get('/test/status', (req, res) => {
@@ -230,7 +231,7 @@ router.get('/test/status', (req, res) => {
 });
 
 // Pause/Activate listing
-router.patch('/:id/status', mongoIdValidation, async (req, res) => {
+router.patch('/:id/status', mongoIdValidation, validate, async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
     
@@ -268,7 +269,7 @@ router.patch('/:id/status', mongoIdValidation, async (req, res) => {
 });
 
 // Duplicate listing
-router.post('/:id/duplicate', mongoIdValidation, async (req, res) => {
+router.post('/:id/duplicate', mongoIdValidation, validate, async (req, res) => {
   try {
     const originalListing = await Listing.findById(req.params.id);
     

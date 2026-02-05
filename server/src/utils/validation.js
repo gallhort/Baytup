@@ -1,4 +1,24 @@
-const { body, query, param } = require('express-validator');
+const { body, query, param, validationResult } = require('express-validator');
+
+/**
+ * Middleware to handle validation errors from express-validator
+ * Returns standardized error response
+ */
+const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      status: 'error',
+      message: 'Validation failed',
+      errors: errors.array().map(err => ({
+        field: err.path,
+        message: err.msg
+      }))
+    });
+  }
+  next();
+};
 
 // Auth validation rules
 const registerValidation = [
@@ -261,7 +281,71 @@ const mongoIdValidation = [
     .withMessage('Invalid ID format')
 ];
 
+// Update booking status validation
+const updateBookingStatusValidation = [
+  body('status')
+    .isIn(['confirmed', 'cancelled', 'rejected'])
+    .withMessage('Status must be confirmed, cancelled, or rejected'),
+  body('reason')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Reason cannot exceed 500 characters')
+];
+
+// Update review validation
+const updateReviewValidation = [
+  body('rating.overall')
+    .optional()
+    .isInt({ min: 1, max: 5 })
+    .withMessage('Overall rating must be between 1 and 5'),
+  body('comment')
+    .optional()
+    .trim()
+    .isLength({ min: 10, max: 1000 })
+    .withMessage('Comment must be between 10 and 1000 characters')
+];
+
+// Review response validation
+const reviewResponseValidation = [
+  body('response')
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Response must be between 10 and 500 characters')
+];
+
+// Flag review validation
+const flagReviewValidation = [
+  body('reason')
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Reason must be between 10 and 500 characters')
+];
+
+// Create conversation validation
+const createConversationValidation = [
+  body('recipientId')
+    .isMongoId()
+    .withMessage('Valid recipient ID is required'),
+  body('listingId')
+    .optional()
+    .isMongoId()
+    .withMessage('Valid listing ID required'),
+  body('bookingId')
+    .optional()
+    .isMongoId()
+    .withMessage('Valid booking ID required'),
+  body('initialMessage')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 2000 })
+    .withMessage('Message must be between 1 and 2000 characters')
+];
+
 module.exports = {
+  // Validation middleware
+  validate,
+
   // Auth
   registerValidation,
   loginValidation,
@@ -275,12 +359,17 @@ module.exports = {
 
   // Booking
   createBookingValidation,
+  updateBookingStatusValidation,
 
   // Review
   createReviewValidation,
+  updateReviewValidation,
+  reviewResponseValidation,
+  flagReviewValidation,
 
   // Message
   sendMessageValidation,
+  createConversationValidation,
 
   // Search
   searchValidation,

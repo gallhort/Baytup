@@ -10,6 +10,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 const connectDB = require('./src/config/database');
 const { initBookingAutomation } = require('./src/services/bookingAutomation');
+const { sanitizeInput } = require('./src/middleware/sanitize');
 
 // Load environment variables
 dotenv.config();
@@ -19,14 +20,14 @@ const app = express();
 const server = http.createServer(app);
 
 // Create Socket.IO instance with CORS configuration
+// Restrict localhost to development only
+const socketAllowedOrigins = process.env.NODE_ENV === 'production'
+  ? ['https://baytup.fr', 'https://www.baytup.fr']
+  : ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://baytup.fr', 'https://www.baytup.fr'];
+
 const io = socketIo(server, {
   cors: {
-    origin: [
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'https://baytup.fr',
-      'https://www.baytup.fr'
-    ],
+    origin: socketAllowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true
   },
@@ -431,25 +432,46 @@ const wishlistLimiter = rateLimit({
 });
 
 // Middleware
+// Enhanced Helmet security configuration
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://js.stripe.com", "https://accounts.google.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "http://localhost:5000"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "https://api.stripe.com", "https://accounts.google.com", "wss:", "ws:"],
+      frameSrc: ["'self'", "https://js.stripe.com", "https://accounts.google.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+    },
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  },
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  noSniff: true,
+  xssFilter: true,
+  hidePoweredBy: true
 }));
-// Enhanced CORS configuration
+// Enhanced CORS configuration - restrict localhost to development only
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? ['https://baytup.fr', 'https://www.baytup.fr']
+  : ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://baytup.fr', 'https://www.baytup.fr'];
+
 app.use(cors({
   origin: function(origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'https://baytup.fr',
-      'https://www.baytup.fr'
-    ];
-
-    // Allow requests with no origin (Postman, mobile apps, etc.)
+    // Allow requests with no origin (Postman, mobile apps, server-to-server)
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.warn(`CORS blocked request from origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -471,6 +493,9 @@ app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// XSS Sanitization middleware - sanitize all user input
+app.use(sanitizeInput);
 
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

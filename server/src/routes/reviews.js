@@ -17,12 +17,28 @@ const {
   getHostPendingReviews
 } = require('../controllers/reviewController');
 const { protect } = require('../middleware/auth');
+const {
+  createReviewValidation,
+  updateReviewValidation,
+  reviewResponseValidation,
+  flagReviewValidation,
+  mongoIdValidation,
+  validate
+} = require('../utils/validation');
+const { param } = require('express-validator');
 
 const router = express.Router();
 
+// Listing ID validation
+const listingIdValidation = [
+  param('listingId')
+    .isMongoId()
+    .withMessage('Invalid listing ID format')
+];
+
 // Public routes
 router.get('/', getReviews);
-router.get('/listing/:listingId/stats', getListingStats);
+router.get('/listing/:listingId/stats', listingIdValidation, validate, getListingStats);
 
 // Protected routes
 router.use(protect); // All routes below this require authentication
@@ -38,12 +54,12 @@ router.get('/my-reviews', getMyReviews);
 router.get('/pending-to-write', getPendingReviews);
 
 // Single review routes
-router.get('/:id', getReview);
-router.post('/', createReview);
-router.put('/:id', updateReview);
-router.delete('/:id', deleteReview);
-router.post('/:id/response', addResponse);
-router.post('/:id/helpful', markHelpful);
-router.post('/:id/flag', flagReview);
+router.get('/:id', mongoIdValidation, validate, getReview);
+router.post('/', createReviewValidation, validate, createReview);
+router.put('/:id', mongoIdValidation, updateReviewValidation, validate, updateReview);
+router.delete('/:id', mongoIdValidation, validate, deleteReview);
+router.post('/:id/response', mongoIdValidation, reviewResponseValidation, validate, addResponse);
+router.post('/:id/helpful', mongoIdValidation, validate, markHelpful);
+router.post('/:id/flag', mongoIdValidation, flagReviewValidation, validate, flagReview);
 
 module.exports = router;
