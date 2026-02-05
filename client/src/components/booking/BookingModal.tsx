@@ -254,16 +254,17 @@ export default function BookingModal({
       }
 
       // Handle CASH payment (Nord Express)
-      if (isCashPayment && data.status === 'success' && data.data?.voucher) {
-        const voucher = data.data.voucher;
+      // ✅ FIX: Backend returns voucher data inside data.payment for cash payments
+      if (isCashPayment && data.status === 'success' && data.data?.payment?.provider === 'nord_express') {
+        const payment = data.data.payment;
         setCashVoucher({
-          voucherNumber: voucher.voucherNumber,
-          amount: voucher.amount,
-          currency: voucher.currency,
-          expiresAt: voucher.expiresAt,
-          status: voucher.status,
-          qrCode: voucher.qrCode,
-          guestInfo: voucher.guestInfo
+          voucherNumber: payment.voucherNumber,
+          amount: payment.amount,
+          currency: payment.currency,
+          expiresAt: payment.expiresAt,
+          status: 'pending',
+          qrCode: payment.qrCode,
+          guestInfo: { fullName: '', phone: '' } // Guest info not returned, not needed for display
         });
         setCashBookingId(data.data.booking._id);
         setShowCashVoucher(true);
