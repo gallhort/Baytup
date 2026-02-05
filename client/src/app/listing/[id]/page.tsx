@@ -117,6 +117,7 @@ export default function ListingDetailPage() {
     children: 0,
     infants: 0
   });
+  const [dateError, setDateError] = useState(false);
 
   // ✅ NEW: Initialize booking state from URL params (from search page)
   useEffect(() => {
@@ -1320,6 +1321,16 @@ export default function ListingDetailPage() {
                 </div>
 
                 {/* Reserve Button - ✅ FIX: Hide when currency mismatch */}
+                {/* Date Error Message */}
+                {dateError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 animate-in slide-in-from-top-2 duration-200">
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                    <span className="text-sm text-red-700 font-medium">
+                      {(t as any)?.errors?.selectDates || 'Veuillez sélectionner les dates d\'arrivée et de départ'}
+                    </span>
+                  </div>
+                )}
+
                 {showCurrencyWarning ? (
                   <div className="w-full py-4 bg-gray-100 text-gray-500 font-medium text-center rounded-xl flex items-center justify-center gap-2">
                     <AlertCircle className="w-5 h-5" />
@@ -1337,7 +1348,8 @@ export default function ListingDetailPage() {
                     className="w-full py-4 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] text-white font-bold text-lg rounded-xl hover:shadow-xl transition-all transform hover:scale-105"
                     onClick={() => {
                       if (!checkIn || !checkOut) {
-                        alert((t as any)?.errors?.selectDates || 'Please select check-in and check-out dates');
+                        setDateError(true);
+                        setTimeout(() => setDateError(false), 4000);
                         return;
                       }
                       setShowBookingModal(true);
