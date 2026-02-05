@@ -32,6 +32,7 @@ import enBooking from './en/booking.json';
 import enNotifications from './en/notifications.json';
 import enPayouts from './en/payouts.json';
 import enBookingConfirmation from './en/booking-confirmation.json';
+import enPaymentMethod from './en/paymentMethod.json';
 
 // French translations
 import frHeader from './fr/header.json';
@@ -67,6 +68,7 @@ import frBooking from './fr/booking.json';
 import frNotifications from './fr/notifications.json';
 import frPayouts from './fr/payouts.json';
 import frBookingConfirmation from './fr/booking-confirmation.json';
+import frPaymentMethod from './fr/paymentMethod.json';
 
 // Arabic translations
 import arHeader from './ar/header.json';
@@ -102,6 +104,7 @@ import arBooking from './ar/booking.json';
 import arNotifications from './ar/notifications.json';
 import arPayouts from './ar/payouts.json';
 import arBookingConfirmation from './ar/booking-confirmation.json';
+import arPaymentMethod from './ar/paymentMethod.json';
 
 export const translations = {
   en: {
@@ -138,6 +141,7 @@ export const translations = {
     notifications: enNotifications,
     payouts: enPayouts,
     'booking-confirmation': enBookingConfirmation,
+    'paymentMethod': enPaymentMethod,
   },
   fr: {
     header: frHeader,
@@ -173,6 +177,7 @@ export const translations = {
     notifications: frNotifications,
     payouts: frPayouts,
     'booking-confirmation': frBookingConfirmation,
+    'paymentMethod': frPaymentMethod,
   },
   ar: {
     header: arHeader,
@@ -208,6 +213,7 @@ export const translations = {
     notifications: arNotifications,
     payouts: arPayouts,
     'booking-confirmation': arBookingConfirmation,
+    'paymentMethod': arPaymentMethod,
   },
 };
 
@@ -245,4 +251,5 @@ export type TranslationSection =
   | 'booking'
   | 'notifications'
   | 'payouts'
-  | 'booking-confirmation';
+  | 'booking-confirmation'
+  | 'paymentMethod';
