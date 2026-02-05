@@ -892,9 +892,9 @@ export default function ListingDetailPage() {
               )}
 
               {/* Contact Host Button - ✅ NEW: Allow messaging before booking */}
-              {currentUser && host && currentUser._id !== host._id && (
+              {currentUser && host && (currentUser as any)._id !== host._id && (
                 <button
-                  onClick={() => router.push(`/dashboard/messages?user=${host._id}&listing=${listing.id || listing._id}`)}
+                  onClick={() => router.push(`/dashboard/messages?user=${host._id}&listing=${listing.id || (listing as any)._id}`)}
                   className="mt-6 flex items-center justify-center gap-2 w-full py-3 px-4 border-2 border-gray-900 text-gray-900 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
                 >
                   <MessageCircle className="w-5 h-5" />
