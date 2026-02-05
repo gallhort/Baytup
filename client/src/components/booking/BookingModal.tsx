@@ -145,7 +145,7 @@ export default function BookingModal({
 
   // ✅ FIX: Get actual payment currency (always the listing's currency)
   const listingCurrency = listing.pricing?.currency || 'DZD';
-  const listingAltCurrency = listing.pricing?.altCurrency;
+  const listingAltCurrency = (listing.pricing as any)?.altCurrency;
 
   // Check if listing accepts user's selected currency
   const listingAcceptsCurrency = listingCurrency === userCurrency || listingAltCurrency === userCurrency;
