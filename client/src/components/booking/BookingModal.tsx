@@ -113,7 +113,21 @@ export default function BookingModal({
     }
   }, [error]);
 
-  // Calculate pricing breakdown
+  // ✅ FIX: Get actual payment currency FIRST (before pricing calculation)
+  const listingCurrency = listing.pricing?.currency || 'DZD';
+  const listingAltCurrency = (listing.pricing as any)?.altCurrency;
+
+  // Check if listing accepts user's selected currency
+  const listingAcceptsCurrency = listingCurrency === userCurrency || listingAltCurrency === userCurrency;
+
+  // ✅ FIX: Determine the ACTUAL payment currency based on user's selection
+  // If listing accepts user's currency, use it; otherwise use listing's primary currency
+  const actualPaymentCurrency = listingAcceptsCurrency ? userCurrency : listingCurrency;
+
+  // ✅ FIX: Determine if we should use alternative pricing
+  const useAltPricing = actualPaymentCurrency === listingAltCurrency;
+
+  // Calculate pricing breakdown using correct prices for selected currency
   useEffect(() => {
     if (checkIn && checkOut && listing) {
       const start = new Date(checkIn);
@@ -121,9 +135,16 @@ export default function BookingModal({
       const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 
       if (nights > 0) {
-        const basePrice = listing.pricing?.basePrice || 0;
+        // ✅ FIX: Use altBasePrice/altCleaningFee when paying in alternative currency
+        const pricingData = listing.pricing as any;
+        const basePrice = useAltPricing && pricingData?.altBasePrice
+          ? pricingData.altBasePrice
+          : listing.pricing?.basePrice || 0;
+        const cleaningFee = useAltPricing && pricingData?.altCleaningFee !== undefined
+          ? pricingData.altCleaningFee
+          : listing.pricing?.cleaningFee || 0;
+
         const subtotal = basePrice * nights;
-        const cleaningFee = listing.pricing?.cleaningFee || 0;
         // Baytup fee structure: 8% guest service fee (no taxes - hosts handle their own)
         const baseAmount = subtotal + cleaningFee;
         const serviceFee = Math.round(baseAmount * 0.08); // 8% service fee on (subtotal + cleaning)
@@ -141,19 +162,11 @@ export default function BookingModal({
         });
       }
     }
-  }, [checkIn, checkOut, listing]);
+  }, [checkIn, checkOut, listing, useAltPricing]);
 
-  // ✅ FIX: Get actual payment currency (always the listing's currency)
-  const listingCurrency = listing.pricing?.currency || 'DZD';
-  const listingAltCurrency = (listing.pricing as any)?.altCurrency;
-
-  // Check if listing accepts user's selected currency
-  const listingAcceptsCurrency = listingCurrency === userCurrency || listingAltCurrency === userCurrency;
-
-  // ✅ FIX: Always display prices in LISTING currency (actual payment amount)
-  // This prevents confusion - user knows exactly what they'll pay
+  // ✅ FIX: Display prices in the ACTUAL payment currency
   const formatPrice = (price: number) => {
-    if (listingCurrency === 'EUR') {
+    if (actualPaymentCurrency === 'EUR') {
       return `€${price.toLocaleString('fr-FR')}`;
     }
     return `${price.toLocaleString('fr-FR')} DZD`;
@@ -520,7 +533,7 @@ export default function BookingModal({
                     <span>{formatPrice(pricing.serviceFee)}</span>
                   </div>
                   <div className="pt-3 border-t border-gray-300 flex justify-between font-bold text-lg">
-                    <span>{(t as any)?.labels?.total || 'Total'} ({listingCurrency})</span>
+                    <span>{(t as any)?.labels?.total || 'Total'} ({actualPaymentCurrency})</span>
                     <span>{formatPrice(pricing.total)}</span>
                   </div>
                   {/* Show converted amount for reference when currencies differ */}
@@ -535,13 +548,14 @@ export default function BookingModal({
             )}
 
             {/* Payment Method Selection (only for DZD - cash option available) */}
-            {listing.pricing?.currency === 'DZD' && (
+            {/* ✅ FIX: Use actualPaymentCurrency to determine if cash option is available */}
+            {actualPaymentCurrency === 'DZD' && (
               <div className="mb-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">{(t as any)?.payment?.method || 'Payment Method'}</h3>
                 <PaymentMethodSelector
                   selectedMethod={paymentMethod}
                   onSelect={setPaymentMethod}
-                  currency={listing.pricing?.currency || 'DZD'}
+                  currency={actualPaymentCurrency}
                   disabled={loading}
                 />
               </div>
@@ -577,7 +591,8 @@ export default function BookingModal({
                 <div className="text-sm text-blue-900">
                   <p className="font-semibold mb-1">{(t as any)?.payment?.securePaymentTitle || 'Paiement sécurisé'}</p>
                   <p className="text-blue-700">
-                    {listingCurrency === 'EUR'
+                    {/* ✅ FIX: Use actualPaymentCurrency to show correct payment provider */}
+                    {actualPaymentCurrency === 'EUR'
                       ? (t as any)?.payment?.stripeDescription || 'Votre paiement sera traité de manière sécurisée via Stripe.'
                       : paymentMethod === 'cash'
                         ? (t as any)?.payment?.cashDescription || 'Vous recevrez un bon de paiement à présenter dans une agence Nord Express.'
