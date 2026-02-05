@@ -14,8 +14,9 @@ import {
 import { Listing, Review as ReviewType } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApp } from '@/contexts/AppContext';
 import { getImageUrl } from '@/utils/imageUtils';
-import { formatPrice } from '@/utils/priceUtils';
+import { formatPrice, convertCurrency } from '@/utils/priceUtils';
 import WishlistButton from '@/components/WishlistButton';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import BookingModal from '@/components/booking/BookingModal';
@@ -93,6 +94,8 @@ export default function ListingDetailPage() {
   const searchParams = useSearchParams();
   const { language, currency } = useLanguage();
   const t = useTranslation('listing');
+  const { state } = useApp();
+  const currentUser = state.user;
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [reviews, setReviews] = useState<ReviewType[]>([]);
@@ -450,6 +453,44 @@ export default function ListingDetailPage() {
 
   const maxCapacity = getMaxCapacity();
   const totalGuests = guestDetails.adults + guestDetails.children + guestDetails.infants;
+
+  // ✅ FIX: Check if listing accepts the user's selected currency
+  const listingAcceptsCurrency = (targetCurrency: string): boolean => {
+    const primaryCurrency = listing?.pricing?.currency || 'DZD';
+    const altCurrency = listing?.pricing?.altCurrency;
+
+    return primaryCurrency === targetCurrency || altCurrency === targetCurrency;
+  };
+
+  // ✅ FIX: Get the appropriate price for the user's currency
+  const getDisplayPrice = (amount: number, isAltAmount?: number): { price: string; isConverted: boolean } => {
+    const primaryCurrency = listing?.pricing?.currency || 'DZD';
+    const altCurrency = listing?.pricing?.altCurrency;
+    const userCurrency = currency as 'DZD' | 'EUR';
+
+    // If user's currency matches primary, use primary price
+    if (primaryCurrency === userCurrency) {
+      return { price: formatPrice(amount, primaryCurrency), isConverted: false };
+    }
+
+    // If user's currency matches alt and alt price exists, use alt price
+    if (altCurrency === userCurrency && isAltAmount !== undefined) {
+      return { price: formatPrice(isAltAmount, altCurrency), isConverted: false };
+    }
+
+    // Otherwise, convert from primary (indicative price)
+    const convertedAmount = convertCurrency(amount, primaryCurrency as 'DZD' | 'EUR', userCurrency);
+    return { price: formatPrice(convertedAmount, userCurrency), isConverted: true };
+  };
+
+  // Helper to display price (simplified for template)
+  const displayPrice = (amount: number): string => {
+    const result = getDisplayPrice(amount);
+    return result.price;
+  };
+
+  // Check if we need to show currency warning
+  const showCurrencyWarning = !listingAcceptsCurrency(currency);
 
   return (
     <div className="min-h-screen bg-white">
@@ -849,6 +890,26 @@ export default function ListingDetailPage() {
                   )}
                 </div>
               )}
+
+              {/* Contact Host Button - ✅ NEW: Allow messaging before booking */}
+              {currentUser && host && currentUser._id !== host._id && (
+                <button
+                  onClick={() => router.push(`/dashboard/messages?user=${host._id}&listing=${listing.id || listing._id}`)}
+                  className="mt-6 flex items-center justify-center gap-2 w-full py-3 px-4 border-2 border-gray-900 text-gray-900 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  {(t as any)?.host?.contactHost || 'Contacter l\'hôte'}
+                </button>
+              )}
+              {!currentUser && (
+                <button
+                  onClick={() => router.push(`/login?redirect=/listing/${params.id}`)}
+                  className="mt-6 flex items-center justify-center gap-2 w-full py-3 px-4 border-2 border-gray-300 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  {(t as any)?.host?.loginToContact || 'Connectez-vous pour contacter l\'hôte'}
+                </button>
+              )}
             </div>
 
             {/* Description */}
@@ -1091,11 +1152,11 @@ export default function ListingDetailPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <div className="border-2 border-gray-200 rounded-2xl p-6 shadow-xl">
-                {/* Price */}
+                {/* Price - ✅ FIX: Use user's selected currency */}
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-3xl font-bold text-gray-900">
-                      {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')}
+                      {displayPrice(listing.pricing?.basePrice || 0)}
                     </span>
                     <span className="text-gray-600">
                       / {
@@ -1115,6 +1176,32 @@ export default function ListingDetailPage() {
                       {listing.stats?.reviewCount && listing.stats.reviewCount > 0 && (
                         <span className="text-gray-600">({listing.stats.reviewCount} {(t as any)?.booking?.reviews || 'reviews'})</span>
                       )}
+                    </div>
+                  )}
+                  {/* ✅ Currency warning if listing doesn't accept user's currency */}
+                  {showCurrencyWarning && (
+                    <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
+                        <div className="text-sm text-orange-800">
+                          <p className="font-medium">
+                            {language === 'fr'
+                              ? `Cette annonce n'accepte que les paiements en ${listing.pricing?.currency}`
+                              : language === 'ar'
+                              ? `هذا الإعلان يقبل الدفع بـ ${listing.pricing?.currency} فقط`
+                              : `This listing only accepts payments in ${listing.pricing?.currency}`
+                            }
+                          </p>
+                          <p className="text-xs mt-1 text-orange-600">
+                            {language === 'fr'
+                              ? '(Prix indicatif converti)'
+                              : language === 'ar'
+                              ? '(سعر تقريبي محوّل)'
+                              : '(Converted indicative price)'
+                            }
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1232,23 +1319,39 @@ export default function ListingDetailPage() {
                   </div>
                 </div>
 
-                {/* Reserve Button */}
-                <button
-                  className="w-full py-4 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] text-white font-bold text-lg rounded-xl hover:shadow-xl transition-all transform hover:scale-105"
-                  onClick={() => {
-                    if (!checkIn || !checkOut) {
-                      alert((t as any)?.errors?.selectDates || 'Please select check-in and check-out dates');
-                      return;
-                    }
-                    setShowBookingModal(true);
-                  }}
-                >
-                  {listing.availability?.instantBook ? (t as any)?.booking?.reserve || 'Reserve' : (t as any)?.booking?.requestToBook || 'Request to Book'}
-                </button>
+                {/* Reserve Button - ✅ FIX: Hide when currency mismatch */}
+                {showCurrencyWarning ? (
+                  <div className="w-full py-4 bg-gray-100 text-gray-500 font-medium text-center rounded-xl flex items-center justify-center gap-2">
+                    <AlertCircle className="w-5 h-5" />
+                    <span>
+                      {language === 'fr'
+                        ? `Passez en ${listing.pricing?.currency} pour réserver`
+                        : language === 'ar'
+                        ? `غيّر عملتك إلى ${listing.pricing?.currency} للحجز`
+                        : `Switch to ${listing.pricing?.currency} to book`
+                      }
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    className="w-full py-4 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] text-white font-bold text-lg rounded-xl hover:shadow-xl transition-all transform hover:scale-105"
+                    onClick={() => {
+                      if (!checkIn || !checkOut) {
+                        alert((t as any)?.errors?.selectDates || 'Please select check-in and check-out dates');
+                        return;
+                      }
+                      setShowBookingModal(true);
+                    }}
+                  >
+                    {listing.availability?.instantBook ? (t as any)?.booking?.reserve || 'Reserve' : (t as any)?.booking?.requestToBook || 'Request to Book'}
+                  </button>
+                )}
 
-                <p className="text-center text-sm text-gray-600 mt-4">
-                  {(t as any)?.booking?.notChargedYet || "You won't be charged yet"}
-                </p>
+                {!showCurrencyWarning && (
+                  <p className="text-center text-sm text-gray-600 mt-4">
+                    {(t as any)?.booking?.notChargedYet || "You won't be charged yet"}
+                  </p>
+                )}
 
                 {/* Price Breakdown */}
                 {checkIn && checkOut && (
@@ -1265,25 +1368,25 @@ export default function ListingDetailPage() {
                       return (
                         <>
                           <div className="flex justify-between text-gray-700">
-                            <span>{formatPrice(basePrice, listing.pricing?.currency || 'DZD')} x {nights} {nights > 1 ? (t as any)?.booking?.nights || 'nights' : (t as any)?.booking?.night || 'night'}</span>
-<span>{formatPrice(subtotal, listing.pricing?.currency || 'DZD')}</span>
-</div>
-{cleaningFee > 0 && (
-<div className="flex justify-between text-gray-700">
-<span>{(t as any)?.booking?.cleaningFee || 'Cleaning fee'}</span>
-<span>{formatPrice(cleaningFee, listing.pricing?.currency || 'DZD')}</span>
-</div>
-)}
-<div className="flex justify-between text-gray-700">
-<span>{(t as any)?.booking?.serviceFee || 'Frais de service (8%)'}</span>
-<span>{formatPrice(serviceFee, listing.pricing?.currency || 'DZD')}</span>
-</div>
-<div className="pt-3 border-t border-gray-200 flex justify-between font-bold text-lg">
-<span>{(t as any)?.booking?.total || 'Total'}</span>
-<span>{formatPrice(calculateTotalPrice(), listing.pricing?.currency || 'DZD')}</span>
-</div>
-</>
-);
+                            <span>{displayPrice(basePrice)} x {nights} {nights > 1 ? (t as any)?.booking?.nights || 'nights' : (t as any)?.booking?.night || 'night'}</span>
+                            <span>{displayPrice(subtotal)}</span>
+                          </div>
+                          {cleaningFee > 0 && (
+                            <div className="flex justify-between text-gray-700">
+                              <span>{(t as any)?.booking?.cleaningFee || 'Cleaning fee'}</span>
+                              <span>{displayPrice(cleaningFee)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between text-gray-700">
+                            <span>{(t as any)?.booking?.serviceFee || 'Frais de service (8%)'}</span>
+                            <span>{displayPrice(serviceFee)}</span>
+                          </div>
+                          <div className="pt-3 border-t border-gray-200 flex justify-between font-bold text-lg">
+                            <span>{(t as any)?.booking?.total || 'Total'}</span>
+                            <span>{displayPrice(calculateTotalPrice())}</span>
+                          </div>
+                        </>
+                      );
 })()}
 </div>
 )}

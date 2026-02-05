@@ -2064,6 +2064,52 @@ select:focus-visible {
 }
 
 /* ===================================
+   Leaflet z-index Fix - Prevent map overlapping navbar
+   =================================== */
+
+/* Contain Leaflet's high z-indexes within the map container */
+.leaflet-container {
+  z-index: 0 !important;
+}
+
+.leaflet-pane {
+  z-index: 0 !important;
+}
+
+.leaflet-tile-pane {
+  z-index: 0 !important;
+}
+
+.leaflet-overlay-pane {
+  z-index: 1 !important;
+}
+
+.leaflet-shadow-pane {
+  z-index: 2 !important;
+}
+
+.leaflet-marker-pane {
+  z-index: 3 !important;
+}
+
+.leaflet-tooltip-pane {
+  z-index: 4 !important;
+}
+
+.leaflet-popup-pane {
+  z-index: 5 !important;
+}
+
+.leaflet-control {
+  z-index: 10 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 10 !important;
+}
+
+/* ===================================
    Leaflet Popup Mobile Optimizations
    =================================== */
 

@@ -7,6 +7,7 @@ import { Listing } from '@/types';
 import { getListingImageUrl } from '@/utils/imageUtils';
 import WishlistButton from '@/components/WishlistButton';
 import { useTranslation } from '@/hooks/useTranslation';
+import { convertCurrency } from '@/utils/priceUtils';
 
 interface SearchResultsProps {
   listings: Listing[];
@@ -40,11 +41,20 @@ export default function SearchResults({
 }: SearchResultsProps) {
   const t = useTranslation('search');
 
+  // ✅ FIX: Display price in user's selected currency with conversion
   const formatPrice = (price: number, listingCurrency: string) => {
-    if (listingCurrency === 'DZD') {
-      return `${price.toLocaleString('fr-FR')} دج`;
+    // Convert price if listing currency differs from user's selected currency
+    let displayAmount = price;
+    let displayCurrency = currency;
+
+    if (listingCurrency && listingCurrency !== currency) {
+      displayAmount = convertCurrency(price, listingCurrency as 'DZD' | 'EUR', currency);
     }
-    return `€${price.toLocaleString('fr-FR')}`;
+
+    if (displayCurrency === 'EUR') {
+      return `€${displayAmount.toLocaleString('fr-FR')}`;
+    }
+    return `${displayAmount.toLocaleString('fr-FR')} DZD`;
   };
 
   // ✅ NEW: Build listing URL with search params for booking pre-fill

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CreditCard, Banknote, Shield, Clock, CheckCircle } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type PaymentMethod = 'card' | 'cash';
 
@@ -18,6 +19,7 @@ export default function PaymentMethodSelector({
   currency,
   disabled = false
 }: PaymentMethodSelectorProps) {
+  const t = useTranslation('paymentMethod');
   const isEUR = currency === 'EUR' || currency === 'eur';
   const isDZD = currency === 'DZD' || currency === 'dzd';
 
@@ -27,27 +29,29 @@ export default function PaymentMethodSelector({
   const paymentOptions = [
     {
       id: 'card' as PaymentMethod,
-      name: isEUR ? 'Carte bancaire (Stripe)' : 'Carte bancaire (SlickPay)',
+      name: isEUR
+        ? ((t as any)?.card?.nameStripe || 'Bank card (Stripe)')
+        : ((t as any)?.card?.nameSlickpay || 'Bank card (SlickPay)'),
       description: isEUR
-        ? 'Paiement sécurisé par Visa, Mastercard'
-        : 'Paiement sécurisé par carte CIB/Edahabia',
+        ? ((t as any)?.card?.descriptionStripe || 'Secure payment by Visa, Mastercard')
+        : ((t as any)?.card?.descriptionSlickpay || 'Secure payment by CIB/Edahabia card'),
       icon: CreditCard,
       benefits: [
-        'Paiement instantané',
-        'Confirmation immédiate',
-        'Sécurisé par cryptage SSL'
+        (t as any)?.card?.benefit1 || 'Instant payment',
+        (t as any)?.card?.benefit2 || 'Immediate confirmation',
+        (t as any)?.card?.benefit3 || 'Secured by SSL encryption'
       ],
       available: true
     },
     {
       id: 'cash' as PaymentMethod,
-      name: 'Espèces (Nord Express)',
-      description: 'Payez en espèces dans une agence Nord Express',
+      name: (t as any)?.cash?.name || 'Cash (Nord Express)',
+      description: (t as any)?.cash?.description || 'Pay cash at a Nord Express agency',
       icon: Banknote,
       benefits: [
-        'Pas besoin de carte bancaire',
-        'Plus de 200 agences en Algérie',
-        '48h pour effectuer le paiement'
+        (t as any)?.cash?.benefit1 || 'No bank card needed',
+        (t as any)?.cash?.benefit2 || 'Over 200 agencies in Algeria',
+        (t as any)?.cash?.benefit3 || '48h to complete payment'
       ],
       available: cashAvailable
     }
@@ -57,7 +61,7 @@ export default function PaymentMethodSelector({
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <Shield className="w-5 h-5 text-green-600" />
-        <span className="text-sm text-gray-600">Choisissez votre mode de paiement sécurisé</span>
+        <span className="text-sm text-gray-600">{(t as any)?.chooseMethod || 'Choose your secure payment method'}</span>
       </div>
 
       <div className="space-y-3">
@@ -108,7 +112,7 @@ export default function PaymentMethodSelector({
                       </h3>
                       {!option.available && (
                         <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                          Non disponible
+                          {(t as any)?.notAvailable || 'Not available'}
                         </span>
                       )}
                     </div>
@@ -135,10 +139,9 @@ export default function PaymentMethodSelector({
                   <div className="flex items-start gap-2">
                     <Clock className="w-4 h-4 text-yellow-600 mt-0.5" />
                     <div className="text-sm">
-                      <p className="text-yellow-800 font-medium">Important</p>
+                      <p className="text-yellow-800 font-medium">{(t as any)?.important || 'Important'}</p>
                       <p className="text-yellow-700 mt-1">
-                        Vous aurez 48 heures pour effectuer le paiement dans une agence Nord Express.
-                        Passé ce délai, votre réservation sera automatiquement annulée.
+                        {(t as any)?.cashNotice || 'You will have 48 hours to complete the payment at a Nord Express agency. After this deadline, your booking will be automatically cancelled.'}
                       </p>
                     </div>
                   </div>
@@ -152,7 +155,7 @@ export default function PaymentMethodSelector({
       {/* EUR notice */}
       {isEUR && (
         <p className="text-xs text-gray-500 text-center mt-4">
-          Les paiements en EUR sont traités par Stripe, leader mondial du paiement en ligne.
+          {(t as any)?.eurNotice || 'EUR payments are processed by Stripe, the global leader in online payments.'}
         </p>
       )}
     </div>

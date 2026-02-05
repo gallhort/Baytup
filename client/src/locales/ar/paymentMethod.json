@@ -1,0 +1,23 @@
+{
+  "chooseMethod": "اختر طريقة الدفع الآمنة",
+  "notAvailable": "غير متاح",
+  "important": "مهم",
+  "cashNotice": "سيكون لديك 48 ساعة لإتمام الدفع في وكالة نورد إكسبريس. بعد هذه المهلة، سيتم إلغاء حجزك تلقائياً.",
+  "eurNotice": "يتم معالجة مدفوعات اليورو عبر Stripe، الرائد العالمي في الدفع عبر الإنترنت.",
+  "card": {
+    "nameStripe": "بطاقة بنكية (Stripe)",
+    "nameSlickpay": "بطاقة بنكية (SlickPay)",
+    "descriptionStripe": "دفع آمن بـ Visa، Mastercard",
+    "descriptionSlickpay": "دفع آمن ببطاقة CIB/Edahabia",
+    "benefit1": "دفع فوري",
+    "benefit2": "تأكيد فوري",
+    "benefit3": "مؤمن بتشفير SSL"
+  },
+  "cash": {
+    "name": "نقداً (نورد إكسبريس)",
+    "description": "ادفع نقداً في وكالة نورد إكسبريس",
+    "benefit1": "لا حاجة لبطاقة بنكية",
+    "benefit2": "أكثر من 200 وكالة في الجزائر",
+    "benefit3": "48 ساعة لإتمام الدفع"
+  }
+}

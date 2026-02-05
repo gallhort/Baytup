@@ -18,10 +18,11 @@
     "checkOut": "Départ",
     "before": "Avant",
     "cleaningFee": "Frais de ménage",
-    "serviceFee": "Frais de service (10%)",
+    "serviceFee": "Frais de service",
     "taxes": "Taxes (5%)",
-    "total": "Total (DZD)",
-    "totalAmount": "Total"
+    "total": "Total",
+    "totalAmount": "Total",
+    "approximateValue": "Valeur indicative"
   },
   "guests": {
     "adult": "adulte",
@@ -45,15 +46,25 @@
     "cancellationPolicy": "Politique d'annulation"
   },
   "payment": {
-    "securePaymentTitle": "Paiement sécurisé avec Slick Pay",
+    "method": "Mode de paiement",
+    "securePaymentTitle": "Paiement sécurisé",
     "securePaymentDescription": "Vous serez redirigé vers Slick Pay pour effectuer votre paiement en toute sécurité. Votre réservation sera confirmée une fois le paiement traité.",
-    "paymentUrlError": "URL de paiement non reçue"
+    "stripeDescription": "Votre paiement sera traité de manière sécurisée via Stripe.",
+    "slickpayDescription": "Votre paiement sera traité de manière sécurisée via SlickPay (carte CIB/Edahabia).",
+    "cashDescription": "Vous recevrez un bon de paiement à présenter dans une agence Nord Express.",
+    "paymentUrlError": "URL de paiement non reçue",
+    "currencyNotice": "Cette annonce accepte uniquement les paiements en {{currency}}",
+    "currencyNoticeDesc": "Le montant affiché est en {{currency}}. Tous les prix et le paiement seront effectués dans cette devise."
   },
   "buttons": {
     "cancel": "Annuler",
+    "close": "Fermer",
     "confirmAndPay": "Confirmer et payer",
     "requestAndPay": "Demander et payer",
-    "processing": "Traitement en cours..."
+    "submitRequest": "Soumettre la demande",
+    "generateVoucher": "Générer le bon de paiement",
+    "processing": "Traitement en cours...",
+    "changeCurrency": "Changez votre devise en {{currency}} pour réserver"
   },
   "errors": {
     "title": "Erreur de réservation",

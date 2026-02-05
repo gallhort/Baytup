@@ -450,5 +450,15 @@
     },
     "duration": "المدة",
     "capitalize": "{{value}}"
+  },
+  "paymentStatus": {
+    "pending": "قيد الانتظار",
+    "paid": "مدفوع",
+    "completed": "مكتمل",
+    "failed": "فشل",
+    "refunded": "تم الاسترداد",
+    "partially_refunded": "استرداد جزئي",
+    "cancelled": "ملغى",
+    "processing": "قيد المعالجة"
   }
 }

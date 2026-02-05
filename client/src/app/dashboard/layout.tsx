@@ -423,7 +423,7 @@ export default function DashboardLayout({
                       isRTL ? 'flex-row-reverse' : 'flex-row'
                     }`}
                   >
-                    <span className="text-2xl mr-2">{section.icon}</span>
+                    <span className={`text-2xl ${isRTL ? 'ml-2' : 'mr-2'}`}>{section.icon}</span>
                     <span className={`text-xs font-bold tracking-wider uppercase ${section.color}`}>
                       {section.title}
                     </span>
@@ -451,7 +451,7 @@ export default function DashboardLayout({
                     isRTL ? 'flex-row-reverse' : 'flex-row'
                   } ${
                     isActive
-                      ? 'bg-gradient-to-r from-primary-50 to-primary-100 text-primary-600 shadow-sm'
+                      ? `${isRTL ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-primary-50 to-primary-100 text-primary-600 shadow-sm`
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                   onClick={() => setSidebarOpen(false)}
@@ -464,7 +464,7 @@ export default function DashboardLayout({
                   />
                   <span className="font-medium flex-1">{menuItem.label}</span>
                   {menuItem.badge !== undefined && menuItem.badge > 0 && (
-                    <span className="ml-auto bg-primary-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    <span className={`${isRTL ? 'mr-auto' : 'ml-auto'} bg-primary-500 text-white text-xs font-bold px-2 py-1 rounded-full`}>
                       {menuItem.badge}
                     </span>
                   )}

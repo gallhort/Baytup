@@ -18,10 +18,11 @@
     "checkOut": "المغادرة",
     "before": "قبل",
     "cleaningFee": "رسوم التنظيف",
-    "serviceFee": "رسوم الخدمة (10%)",
+    "serviceFee": "رسوم الخدمة",
     "taxes": "الضرائب (5%)",
-    "total": "المجموع (دج)",
-    "totalAmount": "المجموع"
+    "total": "المجموع",
+    "totalAmount": "المجموع",
+    "approximateValue": "القيمة التقريبية"
   },
   "guests": {
     "adult": "بالغ",
@@ -45,15 +46,25 @@
     "cancellationPolicy": "سياسة الإلغاء"
   },
   "payment": {
-    "securePaymentTitle": "الدفع الآمن مع Slick Pay",
+    "method": "طريقة الدفع",
+    "securePaymentTitle": "الدفع الآمن",
     "securePaymentDescription": "سيتم توجيهك إلى Slick Pay لإكمال الدفع بشكل آمن. سيتم تأكيد حجزك بمجرد معالجة الدفع.",
-    "paymentUrlError": "لم يتم استلام رابط الدفع"
+    "stripeDescription": "سيتم معالجة دفعتك بشكل آمن عبر Stripe.",
+    "slickpayDescription": "سيتم معالجة دفعتك بشكل آمن عبر SlickPay (بطاقة CIB/Edahabia).",
+    "cashDescription": "ستحصل على قسيمة دفع لتقديمها في وكالة نورد إكسبريس.",
+    "paymentUrlError": "لم يتم استلام رابط الدفع",
+    "currencyNotice": "هذا الإعلان يقبل الدفع بـ {{currency}} فقط",
+    "currencyNoticeDesc": "المبلغ المعروض بـ {{currency}}. جميع الأسعار والدفع سيكون بهذه العملة."
   },
   "buttons": {
     "cancel": "إلغاء",
+    "close": "إغلاق",
     "confirmAndPay": "تأكيد والدفع",
     "requestAndPay": "طلب والدفع",
-    "processing": "جارٍ المعالجة..."
+    "submitRequest": "تقديم الطلب",
+    "generateVoucher": "إنشاء قسيمة الدفع",
+    "processing": "جارٍ المعالجة...",
+    "changeCurrency": "غيّر عملتك إلى {{currency}} للحجز"
   },
   "errors": {
     "title": "خطأ في الحجز",

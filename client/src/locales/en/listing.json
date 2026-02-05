@@ -46,7 +46,9 @@
     "responseRate": "Response rate",
     "responseTime": "Response time",
     "hostSince": "Host since",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "contactHost": "Contact host",
+    "loginToContact": "Log in to contact host"
   },
   "description": {
     "aboutPlace": "About this place",

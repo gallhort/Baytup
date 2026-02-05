@@ -57,6 +57,18 @@ const getGuestBookings = catchAsync(async (req, res, next) => {
   const total = await Booking.countDocuments(query);
   console.log(`[getGuestBookings] Total matching bookings: ${total}`);
 
+  // ✅ FIX: Calculate stats for this guest's bookings
+  const stats = {
+    total: await Booking.countDocuments({ guest: guestId }),
+    pending: await Booking.countDocuments({ guest: guestId, status: 'pending' }),
+    confirmed: await Booking.countDocuments({ guest: guestId, status: 'confirmed' }),
+    active: await Booking.countDocuments({ guest: guestId, status: 'active' }),
+    completed: await Booking.countDocuments({ guest: guestId, status: 'completed' }),
+    cancelled: await Booking.countDocuments({ guest: guestId, status: { $regex: 'cancelled' } }),
+    payment_pending: await Booking.countDocuments({ guest: guestId, 'payment.status': 'pending' }),
+    payment_completed: await Booking.countDocuments({ guest: guestId, 'payment.status': { $in: ['completed', 'paid'] } })
+  };
+
   const sanitizedBookings = sanitizeBookingsArray(bookings, req.user.id, req.user.role);
 
   res.status(200).json({
@@ -68,6 +80,7 @@ const getGuestBookings = catchAsync(async (req, res, next) => {
       total,
       pages: Math.ceil(total / limit)
     },
+    stats,
     data: {
       bookings: sanitizedBookings
     }
@@ -1275,10 +1288,72 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
       method: paymentProvider,
       status: 'pending'
     },
-    status: 'pending_payment',
-    specialRequests: specialRequests || ''
+    // ✅ FIX: Status depends on instant booking setting
+    // - instantBook=true → pending_payment (proceed to payment)
+    // - instantBook=false → pending (await host approval first)
+    status: listingDoc.availability.instantBook ? 'pending_payment' : 'pending',
+    specialRequests: specialRequests || '',
+    // ✅ FIX: Set 24h deadline for host response if not instant book
+    hostResponse: listingDoc.availability.instantBook ? {} : {
+      deadline: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+      reminder12hSent: false,
+      reminder22hSent: false,
+      autoExpired: false
+    }
   });
 
+  // ✅ FIX: If NOT instant booking, don't initiate payment - just return booking info
+  if (!listingDoc.availability.instantBook) {
+    // Populate booking details
+    await booking.populate('listing', 'title category images address pricing');
+    await booking.populate('host', 'firstName lastName avatar email');
+
+    // Notify host about new booking request
+    try {
+      await Notification.createNotification({
+        recipient: listingDoc.host,
+        type: 'booking_request',
+        title: 'New Booking Request!',
+        message: `${guest.firstName} ${guest.lastName} wants to book "${listingDoc.title}" for ${nights} night${nights > 1 ? 's' : ''}.`,
+        data: {
+          bookingId: booking._id,
+          listingTitle: listingDoc.title,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+          totalAmount: booking.pricing.totalAmount,
+          currency: booking.pricing.currency,
+          guestName: `${guest.firstName} ${guest.lastName}`
+        }
+      });
+
+      // Notify guest that request was submitted
+      await Notification.createNotification({
+        recipient: req.user.id,
+        type: 'booking_request_sent',
+        title: 'Booking Request Sent!',
+        message: `Your booking request for "${listingDoc.title}" has been sent to the host. You will receive a response within 24 hours.`,
+        data: {
+          bookingId: booking._id,
+          listingTitle: listingDoc.title,
+          hostDeadline: booking.hostResponse.deadline
+        }
+      });
+    } catch (notifError) {
+      console.error('Notification error (non-blocking):', notifError);
+    }
+
+    return res.status(201).json({
+      status: 'success',
+      message: 'Booking request sent! The host will respond within 24 hours.',
+      data: {
+        booking,
+        requiresHostApproval: true,
+        hostDeadline: booking.hostResponse.deadline
+      }
+    });
+  }
+
+  // ✅ For instant booking, proceed with payment
   try {
     let paymentResponse;
 

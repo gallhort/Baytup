@@ -189,17 +189,22 @@ export default function MessagesPage() {
     fetchData();
   }, [filterStatus]);
 
-  // Handle ?user= query parameter for creating/opening conversation
+  // Handle ?user= and ?listing= query parameters for creating/opening conversation
   useEffect(() => {
     const recipientId = searchParams?.get('user');
+    const listingId = searchParams?.get('listing');
 
     if (recipientId && !conversationInitialized && currentUserId && conversations.length >= 0) {
 
-      // Check if conversation already exists with this user
+      // Check if conversation already exists with this user (and optionally this listing)
       const existingConversation = conversations.find(conv => {
         const otherUser = conv.participants.find(
           p => p.user._id !== currentUserId
         );
+        // If listingId provided, match both user and listing
+        if (listingId) {
+          return otherUser?.user._id === recipientId && conv.listing?._id === listingId;
+        }
         return otherUser?.user._id === recipientId;
       });
 
@@ -207,7 +212,7 @@ export default function MessagesPage() {
         fetchMessages(existingConversation._id);
         setConversationInitialized(true);
       } else {
-        createOrGetConversationWithUser(recipientId)
+        createOrGetConversationWithUser(recipientId, listingId || undefined)
           .then(() => {
             setConversationInitialized(true);
           })
@@ -384,13 +389,21 @@ export default function MessagesPage() {
     }
   };
 
-  // Create or get conversation with a specific user
-  const createOrGetConversationWithUser = async (recipientId: string) => {
+  // Create or get conversation with a specific user (optionally about a listing)
+  const createOrGetConversationWithUser = async (recipientId: string, listingId?: string) => {
     try {
       const token = localStorage.getItem('token');
+      const payload: { recipientId: string; listingId?: string; type?: string } = { recipientId };
+
+      // If listingId provided, include it and set type to 'inquiry'
+      if (listingId) {
+        payload.listingId = listingId;
+        payload.type = 'inquiry';
+      }
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/messages/conversations`,
-        { recipientId },
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` }
         }

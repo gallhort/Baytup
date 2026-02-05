@@ -22,6 +22,20 @@ interface SearchData {
   guests: number;
 }
 
+// ✅ FIX: Helper functions to handle dates in LOCAL timezone (avoid -1 day bug)
+const formatDateLocal = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseLocalDate = (dateStr: string): Date | null => {
+  if (!dateStr) return null;
+  const [year, month, day] = dateStr.split('T')[0].split('-').map(Number);
+  return new Date(year, month - 1, day); // Constructeur local (pas UTC)
+};
+
 // Simple calendar component
 const CalendarPicker = ({
   checkIn,
@@ -36,11 +50,12 @@ const CalendarPicker = ({
   onClose: () => void;
   t: any;
 }) => {
+  // ✅ FIX: Use parseLocalDate instead of new Date() to avoid timezone issues
   const [selectedCheckIn, setSelectedCheckIn] = useState<Date | null>(
-    checkIn ? new Date(checkIn) : null
+    checkIn ? parseLocalDate(checkIn) : null
   );
   const [selectedCheckOut, setSelectedCheckOut] = useState<Date | null>(
-    checkOut ? new Date(checkOut) : null
+    checkOut ? parseLocalDate(checkOut) : null
   );
   const [isSelectingCheckOut, setIsSelectingCheckOut] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -113,9 +128,10 @@ const CalendarPicker = ({
       if (date >= selectedCheckIn) {
         setSelectedCheckOut(date);
         setIsSelectingCheckOut(false);
+        // ✅ FIX: Use formatDateLocal instead of toISOString to avoid timezone -1 day bug
         onSelect({
-          checkIn: selectedCheckIn.toISOString().split('T')[0],
-          checkOut: date.toISOString().split('T')[0]
+          checkIn: formatDateLocal(selectedCheckIn),
+          checkOut: formatDateLocal(date)
         });
       } else {
         setSelectedCheckIn(date);
@@ -307,6 +323,14 @@ export default function AbritelSearchBar({
   const [localCheckOut, setLocalCheckOut] = useState(checkOut);
   const [localGuests, setLocalGuests] = useState(guests);
 
+  // ✅ FIX: Sync local state with props when they change (e.g., when returning to homepage)
+  useEffect(() => {
+    setLocalLocation(location);
+    setLocalCheckIn(checkIn);
+    setLocalCheckOut(checkOut);
+    setLocalGuests(guests);
+  }, [location, checkIn, checkOut, guests]);
+
   const searchBarRef = useRef<HTMLDivElement>(null);
   const locationDropdownRef = useRef<HTMLDivElement>(null);
   const datesDropdownRef = useRef<HTMLDivElement>(null);
@@ -337,8 +361,11 @@ export default function AbritelSearchBar({
   const formatDateRange = () => {
     if (!localCheckIn || !localCheckOut) return (t as any).calendar?.selectDates || 'Sélectionner des dates';
 
-    const checkInDate = new Date(localCheckIn);
-    const checkOutDate = new Date(localCheckOut);
+    // ✅ FIX: Use parseLocalDate to avoid timezone -1 day bug when displaying dates
+    const checkInDate = parseLocalDate(localCheckIn);
+    const checkOutDate = parseLocalDate(localCheckOut);
+
+    if (!checkInDate || !checkOutDate) return (t as any).calendar?.selectDates || 'Sélectionner des dates';
 
     const options: Intl.DateTimeFormatOptions = {
       weekday: 'short',

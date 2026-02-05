@@ -1,0 +1,23 @@
+{
+  "chooseMethod": "Choisissez votre mode de paiement sécurisé",
+  "notAvailable": "Non disponible",
+  "important": "Important",
+  "cashNotice": "Vous aurez 48 heures pour effectuer le paiement dans une agence Nord Express. Passé ce délai, votre réservation sera automatiquement annulée.",
+  "eurNotice": "Les paiements en EUR sont traités par Stripe, leader mondial du paiement en ligne.",
+  "card": {
+    "nameStripe": "Carte bancaire (Stripe)",
+    "nameSlickpay": "Carte bancaire (SlickPay)",
+    "descriptionStripe": "Paiement sécurisé par Visa, Mastercard",
+    "descriptionSlickpay": "Paiement sécurisé par carte CIB/Edahabia",
+    "benefit1": "Paiement instantané",
+    "benefit2": "Confirmation immédiate",
+    "benefit3": "Sécurisé par cryptage SSL"
+  },
+  "cash": {
+    "name": "Espèces (Nord Express)",
+    "description": "Payez en espèces dans une agence Nord Express",
+    "benefit1": "Pas besoin de carte bancaire",
+    "benefit2": "Plus de 200 agences en Algérie",
+    "benefit3": "48h pour effectuer le paiement"
+  }
+}

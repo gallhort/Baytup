@@ -210,18 +210,16 @@ export default function BookingsPage() {
       params.append('limit', '20');
       params.append('sort', '-createdAt');
 
-      // ✅ Determine endpoint based on user role avec gestion d'erreur
+      // ✅ FIX: Cette page "Mes Réservations" affiche les réservations effectuées PAR l'utilisateur (en tant que guest)
+      // Les réservations REÇUES (en tant que host) sont affichées dans /dashboard/host-bookings
+      // Un utilisateur avec le rôle "host" peut aussi être guest chez d'autres
       let endpoint = '';
       if (user.role === 'admin') {
+        // Admin voit toutes les réservations
         endpoint = `${process.env.NEXT_PUBLIC_API_URL}/bookings/admin/all`;
-      } else if (user.role === 'host') {
-        endpoint = `${process.env.NEXT_PUBLIC_API_URL}/bookings/host`;
-      } else if (user.role === 'guest') {
-        endpoint = `${process.env.NEXT_PUBLIC_API_URL}/bookings/guest`;
       } else {
-        console.error('[Bookings] Invalid role:', user.role);
-        toast.error((t as any)?.toast?.invalidRole || 'Invalid user role');
-        return;
+        // Guest ET Host voient leurs propres réservations (celles qu'ils ont effectuées)
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL}/bookings/guest`;
       }
 
       console.log('[Bookings] Fetching from:', endpoint, 'with params:', params.toString());
@@ -467,18 +465,16 @@ export default function BookingsPage() {
   }
 
   // Get role-specific title and subtitle
+  // ✅ FIX: Cette page affiche les "trips" (voyages effectués) pour tous les utilisateurs
+  // Les hosts ont une page séparée (/dashboard/host-bookings) pour leurs réservations reçues
   const getHeaderContent = () => {
     if (user?.role === 'admin') {
       return {
         title: (t as any)?.header?.title || 'All Bookings Management',
         subtitle: (t as any)?.header?.subtitle || 'Manage all bookings across the platform'
       };
-    } else if (user?.role === 'host') {
-      return {
-        title: (t as any)?.header?.hostTitle || 'My Bookings',
-        subtitle: (t as any)?.header?.hostSubtitle || 'Manage your property bookings and reservations'
-      };
     } else {
+      // Guest ET Host voient "My Trips" - leurs propres réservations effectuées
       return {
         title: (t as any)?.header?.guestTitle || 'My Trips',
         subtitle: (t as any)?.header?.guestSubtitle || 'View and manage your upcoming and past trips'
@@ -796,9 +792,11 @@ export default function BookingsPage() {
                       {getStatusBadge(displayStatus)}
                     </div>
 
-                    {/* Guest and Host Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      {booking.guest && (
+                    {/* Host Info (pour "Mes Voyages", on affiche seulement l'hôte, pas le guest car c'est l'utilisateur lui-même) */}
+                    {/* Pour Admin, on affiche les deux */}
+                    <div className={`grid grid-cols-1 ${user?.role === 'admin' ? 'md:grid-cols-2' : ''} gap-4 mb-4`}>
+                      {/* Guest info - seulement pour Admin (qui supervise toutes les réservations) */}
+                      {user?.role === 'admin' && booking.guest && (
                         <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
                           <img
                             src={getAvatarUrl(booking.guest?.avatar)}
@@ -817,7 +815,7 @@ export default function BookingsPage() {
                           </div>
                         </div>
                       )}
-                      {!booking.guest && (
+                      {user?.role === 'admin' && !booking.guest && (
                         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                           <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
                             <Users className="w-5 h-5 text-gray-500" />
@@ -828,7 +826,8 @@ export default function BookingsPage() {
                           </div>
                         </div>
                       )}
-                      
+
+                      {/* Host info - toujours affiché (c'est l'hôte chez qui on réserve) */}
                       {booking.host && (
                         <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                           <img
@@ -905,8 +904,8 @@ export default function BookingsPage() {
                         <div className="flex items-center gap-2">
                           <CreditCard className="w-4 h-4 text-gray-500" />
                           <span className="text-sm text-gray-700">
-                            {(t as any)?.card?.payment || 'Payment:'} <span className={`font-medium ${booking.payment.status === 'completed' ? 'text-green-600' : 'text-orange-600'}`}>
-                              {booking.payment.status}
+                            {(t as any)?.card?.payment || 'Payment:'} <span className={`font-medium ${booking.payment.status === 'completed' || booking.payment.status === 'paid' ? 'text-green-600' : 'text-orange-600'}`}>
+                              {(t as any)?.paymentStatus?.[booking.payment.status] || booking.payment.status}
                             </span>
                           </span>
                         </div>
@@ -959,7 +958,7 @@ export default function BookingsPage() {
                           className="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm"
                         >
                           <FaExclamationTriangle className="w-4 h-4 mr-2" />
-                          Signaler un problème
+                          {(t as any)?.actions?.reportProblem || 'Report a Problem'}
                         </button>
                       )}
                     </div>

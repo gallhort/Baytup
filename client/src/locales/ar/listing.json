@@ -46,7 +46,9 @@
     "responseRate": "معدل الاستجابة",
     "responseTime": "وقت الاستجابة",
     "hostSince": "مضيف منذ",
-    "reviews": "التقييمات"
+    "reviews": "التقييمات",
+    "contactHost": "تواصل مع المضيف",
+    "loginToContact": "سجل الدخول للتواصل مع المضيف"
   },
   "description": {
     "aboutPlace": "حول هذا المكان",

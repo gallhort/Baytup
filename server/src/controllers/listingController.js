@@ -178,13 +178,17 @@ const getListings = async (req, res, next) => {
       query['stats.averageRating'] = { $gte: parseFloat(rating) };
     }
 
-    // ✅ NEW: Currency filter - Show listings in selected currency
-    // Show listings where currency matches either primary or alternative currency
+    // ✅ FIX: Currency filter - Show listings in selected currency
+    // Use $and to avoid overwriting other $or clauses (location, search, etc.)
     if (currency && currency !== 'all') {
-      query.$or = [
-        { 'pricing.currency': currency },
-        { 'pricing.altCurrency': currency }
-      ];
+      if (!query.$and) query.$and = [];
+      query.$and.push({
+        $or: [
+          { 'pricing.currency': currency },
+          { 'pricing.altCurrency': currency }
+        ]
+      });
+      console.log('💰 Currency filter applied:', currency);
     }
 
     // Instant book filter

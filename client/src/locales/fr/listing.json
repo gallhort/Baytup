@@ -46,7 +46,9 @@
     "responseRate": "Taux de réponse",
     "responseTime": "Temps de réponse",
     "hostSince": "Hôte depuis",
-    "reviews": "Avis"
+    "reviews": "Avis",
+    "contactHost": "Contacter l'hôte",
+    "loginToContact": "Connectez-vous pour contacter l'hôte"
   },
   "description": {
     "aboutPlace": "À propos de ce logement",

@@ -450,5 +450,15 @@
     },
     "duration": "Durée",
     "capitalize": "{{value}}"
+  },
+  "paymentStatus": {
+    "pending": "En attente",
+    "paid": "Payé",
+    "completed": "Terminé",
+    "failed": "Échoué",
+    "refunded": "Remboursé",
+    "partially_refunded": "Partiellement remboursé",
+    "cancelled": "Annulé",
+    "processing": "En cours"
   }
 }

@@ -1,0 +1,23 @@
+{
+  "chooseMethod": "Choose your secure payment method",
+  "notAvailable": "Not available",
+  "important": "Important",
+  "cashNotice": "You will have 48 hours to complete the payment at a Nord Express agency. After this deadline, your booking will be automatically cancelled.",
+  "eurNotice": "EUR payments are processed by Stripe, the global leader in online payments.",
+  "card": {
+    "nameStripe": "Bank card (Stripe)",
+    "nameSlickpay": "Bank card (SlickPay)",
+    "descriptionStripe": "Secure payment by Visa, Mastercard",
+    "descriptionSlickpay": "Secure payment by CIB/Edahabia card",
+    "benefit1": "Instant payment",
+    "benefit2": "Immediate confirmation",
+    "benefit3": "Secured by SSL encryption"
+  },
+  "cash": {
+    "name": "Cash (Nord Express)",
+    "description": "Pay cash at a Nord Express agency",
+    "benefit1": "No bank card needed",
+    "benefit2": "Over 200 agencies in Algeria",
+    "benefit3": "48h to complete payment"
+  }
+}

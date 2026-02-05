@@ -18,10 +18,11 @@
     "checkOut": "Check-out",
     "before": "Before",
     "cleaningFee": "Cleaning fee",
-    "serviceFee": "Service fee (10%)",
+    "serviceFee": "Service fee",
     "taxes": "Taxes (5%)",
-    "total": "Total (DZD)",
-    "totalAmount": "Total"
+    "total": "Total",
+    "totalAmount": "Total",
+    "approximateValue": "Approximate value"
   },
   "guests": {
     "adult": "adult",
@@ -45,15 +46,25 @@
     "cancellationPolicy": "Cancellation Policy"
   },
   "payment": {
-    "securePaymentTitle": "Secure payment with Slick Pay",
+    "method": "Payment method",
+    "securePaymentTitle": "Secure payment",
     "securePaymentDescription": "You'll be redirected to Slick Pay to complete your payment securely. Your booking will be confirmed once payment is processed.",
-    "paymentUrlError": "Payment URL not received"
+    "stripeDescription": "Your payment will be processed securely via Stripe.",
+    "slickpayDescription": "Your payment will be processed securely via SlickPay (CIB/Edahabia card).",
+    "cashDescription": "You will receive a payment voucher to present at a Nord Express agency.",
+    "paymentUrlError": "Payment URL not received",
+    "currencyNotice": "This listing only accepts payments in {{currency}}",
+    "currencyNoticeDesc": "The amount shown is in {{currency}}. All prices and payment will be in this currency."
   },
   "buttons": {
     "cancel": "Cancel",
+    "close": "Close",
     "confirmAndPay": "Confirm & Pay",
     "requestAndPay": "Request & Pay",
-    "processing": "Processing..."
+    "submitRequest": "Submit Request",
+    "generateVoucher": "Generate payment voucher",
+    "processing": "Processing...",
+    "changeCurrency": "Change your currency to {{currency}} to book"
   },
   "errors": {
     "title": "Booking Error",

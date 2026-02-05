@@ -75,6 +75,14 @@ const CalendarComponent: React.FC<CalendarProps> = ({ checkIn, checkOut, onDateS
 
   const daysOfWeek = [t.sunday, t.monday, t.tuesday, t.wednesday, t.thursday, t.friday, t.saturday];
 
+  // ✅ FIX: Format date locally without UTC conversion to avoid -1 day bug
+  const formatDateLocal = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -122,10 +130,10 @@ const CalendarComponent: React.FC<CalendarProps> = ({ checkIn, checkOut, onDateS
         setSelectedCheckOut(date);
         setIsSelectingCheckOut(false);
 
-        // Update parent component
+        // ✅ FIX: Use local date format to avoid UTC conversion bug
         onDateSelect({
-          checkIn: selectedCheckIn.toISOString().split('T')[0],
-          checkOut: date.toISOString().split('T')[0]
+          checkIn: formatDateLocal(selectedCheckIn),
+          checkOut: formatDateLocal(date)
         });
       } else {
         // If selected date is before check-in, make it the new check-in
@@ -373,6 +381,10 @@ const Header = React.memo(function Header({
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
+
+  // ✅ FIX: State for dropdown positions (calculated from button positions)
+  const [languageMenuPosition, setLanguageMenuPosition] = useState({ top: 0, right: 0 });
+  const [userMenuPosition, setUserMenuPosition] = useState({ top: 0, right: 0 });
   const [googleSuggestions, setGoogleSuggestions] = useState<any[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
@@ -404,6 +416,7 @@ const Header = React.memo(function Header({
   const searchRef = useRef<HTMLDivElement>(null);
   const languageButtonRef = useRef<HTMLButtonElement>(null);
   const languageMenuRef = useRef<HTMLDivElement>(null);
+  const userButtonRef = useRef<HTMLButtonElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
 
@@ -1681,6 +1694,14 @@ const Header = React.memo(function Header({
                     ref={languageButtonRef}
                     onClick={() => {
                       console.log('🌍 Header: Globe button clicked, current state:', isLanguageMenuOpen);
+                      // ✅ FIX: Calculate dropdown position from button
+                      if (languageButtonRef.current) {
+                        const rect = languageButtonRef.current.getBoundingClientRect();
+                        setLanguageMenuPosition({
+                          top: rect.bottom + 8,
+                          right: window.innerWidth - rect.right
+                        });
+                      }
                       setIsLanguageMenuOpen(!isLanguageMenuOpen);
                     }}
                     className="p-2 sm:p-2.5 lg:p-3 rounded-full hover:bg-gray-50 transition-all duration-200 hover:scale-110"
@@ -1690,11 +1711,15 @@ const Header = React.memo(function Header({
                   </button>
                 </div>
 
-                {/* Language Menu Portal - Rendered at body level */}
+                {/* Language Menu Portal - Rendered at body level - ✅ FIX Dynamic positioning */}
                 {isLanguageMenuOpen && typeof document !== 'undefined' && createPortal(
                   <div
                     ref={languageMenuRef}
-                    className="fixed right-4 top-16 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 z-[99999]"
+                    className="fixed w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 z-[99999]"
+                    style={{
+                      top: `${languageMenuPosition.top}px`,
+                      right: `${languageMenuPosition.right}px`
+                    }}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="px-4 py-3 border-b border-gray-100">
@@ -1757,9 +1782,20 @@ const Header = React.memo(function Header({
                 )}
 
                 {/* Enhanced User Menu - Optimized for all screens */}
-                <div className="relative" ref={userMenuRef}>
+                <div className="relative">
                   <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    ref={userButtonRef}
+                    onClick={() => {
+                      // ✅ FIX: Calculate dropdown position from button
+                      if (userButtonRef.current) {
+                        const rect = userButtonRef.current.getBoundingClientRect();
+                        setUserMenuPosition({
+                          top: rect.bottom + 8,
+                          right: window.innerWidth - rect.right
+                        });
+                      }
+                      setIsUserMenuOpen(!isUserMenuOpen);
+                    }}
                     className="flex items-center space-x-2 sm:space-x-3 p-0.5 sm:p-1 pl-2 sm:pl-3 pr-0.5 sm:pr-1 rounded-full border border-gray-300 hover:shadow-md transition-all duration-200 hover:scale-105"
                     aria-label={t.userMenu}
                   >
@@ -1776,9 +1812,19 @@ const Header = React.memo(function Header({
                       )}
                     </div>
                   </button>
+                </div>
 
-                  {isUserMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 z-50 animate-in slide-in-from-top-2 duration-200">
+                {/* User Menu Portal - Rendered at body level to avoid z-index issues with map */}
+                {isUserMenuOpen && typeof document !== 'undefined' && createPortal(
+                  <div
+                    ref={userMenuRef}
+                    className="fixed w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 z-[99999] animate-in slide-in-from-top-2 duration-200"
+                    style={{
+                      top: `${userMenuPosition.top}px`,
+                      right: `${userMenuPosition.right}px`
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                       {!user ? (
                         <>
                           <Link
@@ -1919,9 +1965,9 @@ const Header = React.memo(function Header({
                           ))}
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    </div>,
+                  document.body
+                )}
               </div>
             </div>
           </div>

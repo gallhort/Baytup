@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import {
   X, Calendar, Users, DollarSign, Shield, AlertCircle,
@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { Listing } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { convertCurrency } from '@/utils/priceUtils';
 import PaymentMethodSelector from '@/components/payment/PaymentMethodSelector';
 
 // Dynamic import for Stripe to avoid SSR issues
@@ -82,6 +84,7 @@ export default function BookingModal({
   onGuestsChange
 }: BookingModalProps) {
   const t = useTranslation('booking');
+  const { currency: userCurrency } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [specialRequests, setSpecialRequests] = useState('');
@@ -99,6 +102,16 @@ export default function BookingModal({
   const [cashVoucher, setCashVoucher] = useState<CashVoucherData | null>(null);
   const [showCashVoucher, setShowCashVoucher] = useState(false);
   const [cashBookingId, setCashBookingId] = useState<string | null>(null);
+
+  // ✅ FIX UX: Ref for scrollable content to auto-scroll on error
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // ✅ FIX UX: Auto-scroll to top when error occurs
+  useEffect(() => {
+    if (error && contentRef.current) {
+      contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [error]);
 
   // Calculate pricing breakdown
   useEffect(() => {
@@ -130,12 +143,30 @@ export default function BookingModal({
     }
   }, [checkIn, checkOut, listing]);
 
+  // ✅ FIX: Get actual payment currency (always the listing's currency)
+  const listingCurrency = listing.pricing?.currency || 'DZD';
+  const listingAltCurrency = listing.pricing?.altCurrency;
+
+  // Check if listing accepts user's selected currency
+  const listingAcceptsCurrency = listingCurrency === userCurrency || listingAltCurrency === userCurrency;
+
+  // ✅ FIX: Always display prices in LISTING currency (actual payment amount)
+  // This prevents confusion - user knows exactly what they'll pay
   const formatPrice = (price: number) => {
-    const currency = listing.pricing?.currency || 'DZD';
-    if (currency === 'DZD') {
-      return `${price.toLocaleString('fr-FR')} دج`;
+    if (listingCurrency === 'EUR') {
+      return `€${price.toLocaleString('fr-FR')}`;
     }
-    return `€${price.toLocaleString('fr-FR')}`;
+    return `${price.toLocaleString('fr-FR')} DZD`;
+  };
+
+  // Format converted price for reference (when user currency differs)
+  const formatConvertedPrice = (price: number) => {
+    if (listingCurrency === userCurrency) return null;
+    const converted = convertCurrency(price, listingCurrency as 'DZD' | 'EUR', userCurrency as 'DZD' | 'EUR');
+    if (userCurrency === 'EUR') {
+      return `≈ €${converted.toLocaleString('fr-FR')}`;
+    }
+    return `≈ ${converted.toLocaleString('fr-FR')} DZD`;
   };
 
   const formatDate = (dateString: string) => {
@@ -225,7 +256,15 @@ export default function BookingModal({
         return;
       }
 
-      // Handle CARD payment (Stripe/SlickPay)
+      // ✅ Handle NON-INSTANT BOOKING (request only, no payment yet)
+      if (data.status === 'success' && data.data?.requiresHostApproval) {
+        setLoading(false);
+        // Close modal and redirect to bookings page with success message
+        window.location.href = `/dashboard/bookings?requestSent=true&bookingId=${data.data.booking._id}`;
+        return;
+      }
+
+      // Handle CARD payment (Stripe/SlickPay) - for instant bookings
       if (data.status === 'success' && data.data?.payment) {
         const payment = data.data.payment;
 
@@ -249,7 +288,7 @@ export default function BookingModal({
         else {
           throw new Error((t as any)?.payment?.paymentUrlError || 'Payment method not available');
         }
-      } else {
+      } else if (!data.data?.requiresHostApproval) {
         throw new Error((t as any)?.payment?.paymentUrlError || 'Payment initialization failed');
       }
     } catch (err: any) {
@@ -281,7 +320,8 @@ export default function BookingModal({
   const totalGuests = guests.adults + guests.children + guests.infants;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    // ✅ FIX: Increased z-index to z-[10000] to ensure modal is above Leaflet maps (which use high z-index)
+    <div className="fixed inset-0 z-[10000] overflow-y-auto">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
@@ -309,8 +349,8 @@ export default function BookingModal({
             </button>
           </div>
 
-          {/* Content */}
-          <div className="p-6 max-h-[70vh] overflow-y-auto">
+          {/* Content - ✅ FIX UX: Added ref for auto-scroll on error */}
+          <div ref={contentRef} className="p-6 max-h-[70vh] overflow-y-auto">
             {/* Error Message */}
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
@@ -347,7 +387,7 @@ export default function BookingModal({
             {/* STRIPE PAYMENT FORM (for EUR listings) */}
             {showStripeForm && stripePayment && !showCashVoucher && (
               <div className="space-y-4">
-                <h3 className="text-lg font-bold text-gray-900">Paiement sécurisé</h3>
+                <h3 className="text-lg font-bold text-gray-900">{(t as any)?.payment?.securePayment || 'Secure Payment'}</h3>
                 <StripePaymentForm
                   clientSecret={stripePayment.clientSecret}
                   publishableKey={stripePayment.publishableKey}
@@ -439,6 +479,23 @@ export default function BookingModal({
               </p>
             </div>
 
+            {/* Currency Warning - when listing doesn't accept user's currency */}
+            {!listingAcceptsCurrency && (
+              <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="text-orange-800 font-semibold">
+                      {(t as any)?.payment?.currencyNotice || `Cette annonce accepte uniquement les paiements en ${listingCurrency}`}
+                    </p>
+                    <p className="text-orange-700 mt-1">
+                      {(t as any)?.payment?.currencyNoticeDesc || `Le montant affiché est en ${listingCurrency}. Tous les prix et le paiement seront effectués dans cette devise.`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Price Breakdown */}
             {pricing && (
               <div className="mb-6">
@@ -461,9 +518,16 @@ export default function BookingModal({
                     <span>{formatPrice(pricing.serviceFee)}</span>
                   </div>
                   <div className="pt-3 border-t border-gray-300 flex justify-between font-bold text-lg">
-                    <span>{(t as any)?.labels?.total || 'Total'}</span>
+                    <span>{(t as any)?.labels?.total || 'Total'} ({listingCurrency})</span>
                     <span>{formatPrice(pricing.total)}</span>
                   </div>
+                  {/* Show converted amount for reference when currencies differ */}
+                  {!listingAcceptsCurrency && formatConvertedPrice(pricing.total) && (
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>{(t as any)?.labels?.approximateValue || 'Valeur indicative'}</span>
+                      <span>{formatConvertedPrice(pricing.total)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -471,7 +535,7 @@ export default function BookingModal({
             {/* Payment Method Selection (only for DZD - cash option available) */}
             {listing.pricing?.currency === 'DZD' && (
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Mode de paiement</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{(t as any)?.payment?.method || 'Payment Method'}</h3>
                 <PaymentMethodSelector
                   selectedMethod={paymentMethod}
                   onSelect={setPaymentMethod}
@@ -509,11 +573,13 @@ export default function BookingModal({
               <div className="flex items-start gap-3">
                 <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-blue-900">
-                  <p className="font-semibold mb-1">{(t as any)?.payment?.securePaymentTitle || 'Secure Payment'}</p>
+                  <p className="font-semibold mb-1">{(t as any)?.payment?.securePaymentTitle || 'Paiement sécurisé'}</p>
                   <p className="text-blue-700">
-                    {listing.pricing?.currency === 'EUR'
-                      ? 'Votre paiement sera traité de manière sécurisée via Stripe.'
-                      : ((t as any)?.payment?.securePaymentDescription || 'Your payment will be processed securely through Slick Pay.')
+                    {listingCurrency === 'EUR'
+                      ? (t as any)?.payment?.stripeDescription || 'Votre paiement sera traité de manière sécurisée via Stripe.'
+                      : paymentMethod === 'cash'
+                        ? (t as any)?.payment?.cashDescription || 'Vous recevrez un bon de paiement à présenter dans une agence Nord Express.'
+                        : (t as any)?.payment?.slickpayDescription || 'Votre paiement sera traité de manière sécurisée via SlickPay (carte CIB/Edahabia).'
                     }
                   </p>
                 </div>
@@ -533,6 +599,16 @@ export default function BookingModal({
             >
               {(t as any)?.buttons?.cancel || 'Cancel'}
             </button>
+
+            {/* ✅ FIX: Hide pay button if listing doesn't accept user's currency */}
+            {!listingAcceptsCurrency ? (
+              <div className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-500 rounded-xl">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium">
+                  {(t as any)?.buttons?.changeCurrency || `Changez votre devise en ${listingCurrency} pour réserver`}
+                </span>
+              </div>
+            ) : (
             <button
               onClick={handleBooking}
               disabled={loading || !acceptedTerms || !pricing}
@@ -545,19 +621,30 @@ export default function BookingModal({
                 </>
               ) : (
                 <>
-                  {paymentMethod === 'cash' ? (
-                    <Banknote className="w-5 h-5" />
+                  {/* ✅ FIX: Show appropriate button based on instant booking and payment method */}
+                  {listing.availability?.instantBook ? (
+                    <>
+                      {paymentMethod === 'cash' ? (
+                        <Banknote className="w-5 h-5" />
+                      ) : (
+                        <CreditCard className="w-5 h-5" />
+                      )}
+                      {paymentMethod === 'cash'
+                        ? ((t as any)?.buttons?.generateVoucher || 'Generate payment voucher')
+                        : ((t as any)?.buttons?.confirmAndPay || 'Confirm and Pay')
+                      }
+                      {pricing && ` ${formatPrice(pricing.total)}`}
+                    </>
                   ) : (
-                    <CreditCard className="w-5 h-5" />
+                    <>
+                      <Check className="w-5 h-5" />
+                      {(t as any)?.buttons?.submitRequest || 'Submit Request'}
+                    </>
                   )}
-                  {paymentMethod === 'cash'
-                    ? 'Générer le bon de paiement'
-                    : (listing.availability?.instantBook ? ((t as any)?.buttons?.confirmAndPay || 'Confirm and Pay') : ((t as any)?.buttons?.requestAndPay || 'Request and Pay'))
-                  }
-                  {pricing && ` ${formatPrice(pricing.total)}`}
                 </>
               )}
             </button>
+            )}
           </div>
           )}
 
@@ -568,7 +655,7 @@ export default function BookingModal({
               onClick={onClose}
               className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl font-semibold transition-colors"
             >
-              Fermer
+              {(t as any)?.buttons?.close || 'Close'}
             </button>
           </div>
           )}

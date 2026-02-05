@@ -57,8 +57,8 @@ export default function LeafletMap({ coordinates, title, address }: LeafletMapPr
   const customIcon = useMemo(() => createCustomIcon(), []);
 
   return (
-    <div className="relative">
-      <div className="border-2 border-gray-200 rounded-xl overflow-hidden shadow-md" style={{ height: '480px' }}>
+    <div className="relative z-0">
+      <div className="border-2 border-gray-200 rounded-xl overflow-hidden shadow-md" style={{ height: '480px', isolation: 'isolate' }}>
         <MapContainer
           center={position}
           zoom={15}
