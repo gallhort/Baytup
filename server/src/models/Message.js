@@ -211,13 +211,10 @@ ConversationSchema.index({ status: 1, updatedAt: -1 });
 MessageSchema.index({ conversation: 1, createdAt: -1 });
 MessageSchema.index({ sender: 1, createdAt: -1 });
 MessageSchema.index({ 'readBy.user': 1 });
+MessageSchema.index({ conversation: 1, 'readBy.user': 1 }); // Compound index for unread message queries
 MessageSchema.index({ type: 1 });
 
-// Virtual for unread message count per user
-ConversationSchema.virtual('unreadCount').get(function() {
-  // This will be calculated in the controller based on user context
-  return 0;
-});
+// Note: unread count is calculated per-user via getUnreadCount(userId) method
 
 // Virtual for message age
 MessageSchema.virtual('age').get(function() {

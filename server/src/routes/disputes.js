@@ -7,8 +7,11 @@ const { protect } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const disputeEmailService = require('../services/disputeEmailService');
 const escrowService = require('../services/escrowService');
+const mediationService = require('../services/mediationService');
+const { validateFileContent } = require('../middleware/upload');
 
 // Configure multer for evidence upload
 const storage = multer.diskStorage({
@@ -68,8 +71,8 @@ router.post('/', protect, async (req, res) => {
       });
     }
     
-    const isHost = booking.host.toString() === req.user._id.toString();
-    const isGuest = booking.guest.toString() === req.user._id.toString();
+    const isHost = booking.host.toString() === req.user.id.toString();
+    const isGuest = booking.guest.toString() === req.user.id.toString();
     
     if (!isHost && !isGuest) {
       return res.status(403).json({
@@ -80,24 +83,46 @@ router.post('/', protect, async (req, res) => {
     
     const existingDispute = await Dispute.findOne({
       booking: bookingId,
-      status: { $in: ['open', 'pending'] }
+      status: { $in: ['open', 'awaiting_response', 'mediation_proposed', 'contested', 'admin_review', 'pending'] }
     });
-    
+
     if (existingDispute) {
       return res.status(400).json({
         success: false,
         message: 'An open dispute already exists for this booking'
       });
     }
-    
+
+    // Determine reporter role
+    const reportedByRole = isGuest ? 'guest' : 'host';
+
+    // Calculate disputed amount (booking total)
+    const disputedAmount = booking.pricing?.totalAmount || booking.pricing?.totalPrice || 0;
+
+    // Set 48h response deadline for other party
+    const responseDeadline = new Date();
+    responseDeadline.setHours(responseDeadline.getHours() + 48);
+
     const dispute = await Dispute.create({
       booking: bookingId,
-      reportedBy: req.user._id,
+      reportedBy: req.user.id,
+      reportedByRole,
       reason,
       description,
       evidence: evidence || [],
-      status: 'open',
-      priority: 'medium'
+      status: 'awaiting_response',
+      priority: 'medium',
+      disputedAmount,
+      escrowFrozen: true,
+      responseDeadline,
+      timeline: [{
+        event: 'dispute_created',
+        actor: req.user.id,
+        actorRole: reportedByRole,
+        description: `Litige créé par le ${reportedByRole === 'guest' ? 'voyageur' : 'hôte'}`,
+        metadata: { reason, disputedAmount },
+        createdAt: new Date()
+      }]
     });
 
     // ✅ POPULATE COMPLET
@@ -162,7 +187,7 @@ router.get('/', protect, async (req, res) => {
     let query = {};
     
     if (req.user.role !== 'admin') {
-      query.reportedBy = req.user._id;
+      query.reportedBy = req.user.id;
     }
     
     if (status) {
@@ -380,8 +405,8 @@ router.get('/:id', protect, async (req, res) => {
     
     // ✅ Vérifier autorisation
     const booking = dispute.booking;
-    const isHost = booking.host && booking.host._id.toString() === req.user._id.toString();
-    const isGuest = booking.guest && booking.guest._id.toString() === req.user._id.toString();
+    const isHost = booking.host && booking.host._id.toString() === req.user.id.toString();
+    const isGuest = booking.guest && booking.guest._id.toString() === req.user.id.toString();
     const isAdmin = req.user.role === 'admin';
     
     if (!isHost && !isGuest && !isAdmin) {
@@ -431,7 +456,7 @@ router.post('/:id/notes', protect, async (req, res) => {
     
     // ✅ Add note
     dispute.notes.push({
-      user: req.user._id,
+      user: req.user.id,
       message,
       createdAt: new Date()
     });
@@ -477,7 +502,7 @@ router.post('/:id/notes', protect, async (req, res) => {
  * @route   POST /api/disputes/:id/evidence
  * @access  Private
  */
-router.post('/:id/evidence', protect, upload.array('files', 5), async (req, res) => {
+router.post('/:id/evidence', protect, upload.array('files', 5), validateFileContent, async (req, res) => {
   try {
     const dispute = await Dispute.findById(req.params.id)
       .populate('booking');
@@ -497,8 +522,8 @@ router.post('/:id/evidence', protect, upload.array('files', 5), async (req, res)
 
     // Verify authorization
     const booking = dispute.booking;
-    const isHost = booking.host && booking.host.toString() === req.user._id.toString();
-    const isGuest = booking.guest && booking.guest.toString() === req.user._id.toString();
+    const isHost = booking.host && booking.host.toString() === req.user.id.toString();
+    const isGuest = booking.guest && booking.guest.toString() === req.user.id.toString();
     const isAdmin = req.user.role === 'admin';
 
     if (!isHost && !isGuest && !isAdmin) {
@@ -519,7 +544,7 @@ router.post('/:id/evidence', protect, upload.array('files', 5), async (req, res)
       type: file.mimetype.startsWith('image/') ? 'photo' : 'document',
       url: `/uploads/disputes/${file.filename}`,
       description: req.body.description || file.originalname,
-      uploadedBy: req.user._id,
+      uploadedBy: req.user.id,
       uploadedAt: new Date()
     }));
 
@@ -548,7 +573,7 @@ router.post('/:id/evidence', protect, upload.array('files', 5), async (req, res)
 });
 
 /**
- * @desc    Resolve dispute (Admin only)
+ * @desc    Resolve dispute (Admin only) - Legacy endpoint
  * @route   PATCH /api/disputes/:id/resolve
  * @access  Private/Admin
  */
@@ -560,33 +585,44 @@ router.patch('/:id/resolve', protect, async (req, res) => {
         message: 'Only admins can resolve disputes'
       });
     }
-    
+
     // ✅ Accepter resolution OU resolutionText
     const resolution = req.body.resolution || req.body.resolutionText;
-    
+
     if (!resolution) {
       return res.status(400).json({
         success: false,
         message: 'Please provide resolution details'
       });
     }
-    
+
     const dispute = await Dispute.findById(req.params.id);
-    
+
     if (!dispute) {
       return res.status(404).json({
         success: false,
         message: 'Dispute not found'
       });
     }
-    
+
     dispute.status = 'resolved';
     dispute.resolution = resolution;
-    dispute.resolvedBy = req.user._id;
+    dispute.resolvedBy = req.user.id;
     dispute.resolvedAt = new Date();
-    
+    dispute.resolutionType = 'admin_decision';
+    dispute.escrowFrozen = false;
+
+    // Add timeline event
+    dispute.addTimelineEvent(
+      'dispute_resolved',
+      req.user.id,
+      'admin',
+      `Litige résolu par administrateur: ${resolution.substring(0, 100)}...`,
+      { resolution }
+    );
+
     await dispute.save();
-    
+
     // ✅ POPULATE après save
     await dispute.populate([
       {
@@ -615,6 +651,442 @@ router.patch('/:id/resolve', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error resolving dispute'
+    });
+  }
+});
+
+/**
+ * @desc    Other party responds to dispute
+ * @route   POST /api/disputes/:id/respond
+ * @access  Private (guest or host involved in booking)
+ */
+router.post('/:id/respond', protect, async (req, res) => {
+  try {
+    const { description, agreedWithReporter } = req.body;
+
+    if (!description) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide your response description'
+      });
+    }
+
+    const dispute = await Dispute.findById(req.params.id)
+      .populate('booking');
+
+    if (!dispute) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dispute not found'
+      });
+    }
+
+    if (dispute.status !== 'awaiting_response') {
+      return res.status(400).json({
+        success: false,
+        message: 'This dispute is not awaiting a response'
+      });
+    }
+
+    // Verify this is the other party (not the reporter)
+    const booking = dispute.booking;
+    const isHost = booking.host.toString() === req.user.id.toString();
+    const isGuest = booking.guest.toString() === req.user.id.toString();
+    const isReporter = dispute.reportedBy.toString() === req.user.id.toString();
+
+    if ((!isHost && !isGuest) || isReporter) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the other party can respond to this dispute'
+      });
+    }
+
+    const responderRole = isGuest ? 'guest' : 'host';
+
+    // Record response
+    dispute.otherPartyResponse = {
+      respondedAt: new Date(),
+      description,
+      agreedWithReporter: agreedWithReporter === true
+    };
+
+    // Add timeline event
+    dispute.addTimelineEvent(
+      'response_submitted',
+      req.user.id,
+      responderRole,
+      `${responderRole === 'guest' ? 'Voyageur' : 'Hôte'} a répondu au litige`,
+      { agreedWithReporter }
+    );
+
+    // Now generate mediation proposal automatically
+    await dispute.save();
+
+    try {
+      const proposal = await mediationService.generateMediationProposal(dispute._id);
+
+      // Re-fetch updated dispute
+      const updatedDispute = await Dispute.findById(dispute._id)
+        .populate({
+          path: 'booking',
+          populate: [
+            { path: 'listing', select: 'title address' },
+            { path: 'guest', select: 'firstName lastName email' },
+            { path: 'host', select: 'firstName lastName email' }
+          ]
+        })
+        .populate('reportedBy', 'firstName lastName email role');
+
+      res.status(200).json({
+        success: true,
+        message: 'Response recorded and mediation proposal generated',
+        data: {
+          dispute: updatedDispute,
+          mediation: proposal
+        }
+      });
+    } catch (mediationError) {
+      console.error('Error generating mediation:', mediationError);
+      res.status(200).json({
+        success: true,
+        message: 'Response recorded but mediation generation failed',
+        data: { dispute }
+      });
+    }
+  } catch (error) {
+    console.error('Error responding to dispute:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error responding to dispute'
+    });
+  }
+});
+
+/**
+ * @desc    Respond to mediation proposal
+ * @route   POST /api/disputes/:id/mediation/respond
+ * @access  Private (guest or host involved in booking)
+ */
+router.post('/:id/mediation/respond', protect, async (req, res) => {
+  try {
+    const { accepted, comment } = req.body;
+
+    if (typeof accepted !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        message: 'Please specify whether you accept the mediation (accepted: true/false)'
+      });
+    }
+
+    const dispute = await Dispute.findById(req.params.id)
+      .populate('booking');
+
+    if (!dispute) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dispute not found'
+      });
+    }
+
+    if (dispute.status !== 'mediation_proposed') {
+      return res.status(400).json({
+        success: false,
+        message: 'This dispute is not in mediation stage'
+      });
+    }
+
+    // Verify user is involved
+    const booking = dispute.booking;
+    const isHost = booking.host.toString() === req.user.id.toString();
+    const isGuest = booking.guest.toString() === req.user.id.toString();
+
+    if (!isHost && !isGuest) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to respond to this mediation'
+      });
+    }
+
+    const userRole = isGuest ? 'guest' : 'host';
+
+    // Check if user already responded
+    const responseField = userRole === 'guest' ? 'guestResponse' : 'hostResponse';
+    if (dispute.mediation[responseField]?.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already responded to this mediation'
+      });
+    }
+
+    // Process the response
+    const updatedDispute = await mediationService.processMediationResponse(
+      dispute._id,
+      req.user.id,
+      userRole,
+      accepted,
+      comment || ''
+    );
+
+    // Re-fetch with full populate
+    const populatedDispute = await Dispute.findById(updatedDispute._id)
+      .populate({
+        path: 'booking',
+        populate: [
+          { path: 'listing', select: 'title address' },
+          { path: 'guest', select: 'firstName lastName email' },
+          { path: 'host', select: 'firstName lastName email' }
+        ]
+      })
+      .populate('reportedBy', 'firstName lastName email role')
+      .populate('resolvedBy', 'firstName lastName');
+
+    res.status(200).json({
+      success: true,
+      message: accepted
+        ? 'Mediation accepted'
+        : 'Mediation rejected - escalating to admin review',
+      data: { dispute: populatedDispute }
+    });
+  } catch (error) {
+    console.error('Error responding to mediation:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error responding to mediation'
+    });
+  }
+});
+
+/**
+ * @desc    Admin decision on contested dispute
+ * @route   POST /api/disputes/:id/admin-decision
+ * @access  Private/Admin
+ */
+router.post('/:id/admin-decision', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can make dispute decisions'
+      });
+    }
+
+    const {
+      decision,
+      modifiedRefundAmount,
+      modifiedHostCompensation,
+      adminNotes,
+      customDecision
+    } = req.body;
+
+    if (!decision) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a decision (uphold_mediation, modify, reject_dispute, custom)'
+      });
+    }
+
+    const validDecisions = ['uphold_mediation', 'modify', 'reject_dispute', 'custom'];
+    if (!validDecisions.includes(decision)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid decision. Must be one of: ${validDecisions.join(', ')}`
+      });
+    }
+
+    const updatedDispute = await mediationService.adminDecision(
+      req.params.id,
+      req.user.id,
+      decision,
+      {
+        modifiedRefundAmount,
+        modifiedHostCompensation,
+        adminNotes,
+        customDecision
+      }
+    );
+
+    // Populate for response
+    await updatedDispute.populate([
+      {
+        path: 'booking',
+        populate: [
+          { path: 'listing', select: 'title address' },
+          { path: 'guest', select: 'firstName lastName email' },
+          { path: 'host', select: 'firstName lastName email' }
+        ]
+      },
+      { path: 'reportedBy', select: 'firstName lastName email role' },
+      { path: 'resolvedBy', select: 'firstName lastName' },
+      { path: 'adminReview.reviewedBy', select: 'firstName lastName' }
+    ]);
+
+    // Send notification email
+    disputeEmailService.sendDisputeResolvedNotification(updatedDispute, updatedDispute.booking)
+      .catch(err => console.error('Email notification error:', err));
+
+    res.status(200).json({
+      success: true,
+      message: 'Admin decision applied',
+      data: { dispute: updatedDispute }
+    });
+  } catch (error) {
+    console.error('Error making admin decision:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error making admin decision'
+    });
+  }
+});
+
+/**
+ * @desc    Get disputes requiring admin review
+ * @route   GET /api/disputes/admin/pending-review
+ * @access  Private/Admin
+ */
+router.get('/admin/pending-review', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can view pending reviews'
+      });
+    }
+
+    const disputes = await Dispute.find({
+      status: { $in: ['contested', 'admin_review'] },
+      'mediation.requiresAdminReview': true
+    })
+      .populate({
+        path: 'booking',
+        populate: [
+          { path: 'listing', select: 'title address' },
+          { path: 'guest', select: 'firstName lastName email' },
+          { path: 'host', select: 'firstName lastName email' }
+        ]
+      })
+      .populate('reportedBy', 'firstName lastName email role')
+      .sort('-createdAt');
+
+    res.status(200).json({
+      success: true,
+      data: {
+        disputes,
+        count: disputes.length
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching pending reviews:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching pending reviews'
+    });
+  }
+});
+
+/**
+ * @desc    Get dispute timeline
+ * @route   GET /api/disputes/:id/timeline
+ * @access  Private
+ */
+router.get('/:id/timeline', protect, async (req, res) => {
+  try {
+    const dispute = await Dispute.findById(req.params.id)
+      .populate('booking')
+      .populate('timeline.actor', 'firstName lastName');
+
+    if (!dispute) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dispute not found'
+      });
+    }
+
+    // Verify authorization
+    const booking = dispute.booking;
+    const isHost = booking.host.toString() === req.user.id.toString();
+    const isGuest = booking.guest.toString() === req.user.id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isHost && !isGuest && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this dispute timeline'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        timeline: dispute.timeline,
+        status: dispute.status,
+        timeUntilDeadline: dispute.timeUntilDeadline
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching timeline:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching timeline'
+    });
+  }
+});
+
+/**
+ * @desc    Manually trigger mediation for a dispute (Admin)
+ * @route   POST /api/disputes/:id/mediation/generate
+ * @access  Private/Admin
+ */
+router.post('/:id/mediation/generate', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can manually trigger mediation'
+      });
+    }
+
+    const dispute = await Dispute.findById(req.params.id);
+
+    if (!dispute) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dispute not found'
+      });
+    }
+
+    if (!['open', 'awaiting_response'].includes(dispute.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot generate mediation for disputes in current status'
+      });
+    }
+
+    const proposal = await mediationService.generateMediationProposal(dispute._id);
+
+    const updatedDispute = await Dispute.findById(dispute._id)
+      .populate({
+        path: 'booking',
+        populate: [
+          { path: 'listing', select: 'title address' },
+          { path: 'guest', select: 'firstName lastName email' },
+          { path: 'host', select: 'firstName lastName email' }
+        ]
+      })
+      .populate('reportedBy', 'firstName lastName email role');
+
+    res.status(200).json({
+      success: true,
+      message: 'Mediation proposal generated',
+      data: {
+        dispute: updatedDispute,
+        mediation: proposal
+      }
+    });
+  } catch (error) {
+    console.error('Error generating mediation:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error generating mediation'
     });
   }
 });

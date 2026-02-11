@@ -284,8 +284,8 @@ const mongoIdValidation = [
 // Update booking status validation
 const updateBookingStatusValidation = [
   body('status')
-    .isIn(['confirmed', 'cancelled', 'rejected'])
-    .withMessage('Status must be confirmed, cancelled, or rejected'),
+    .isIn(['pending_payment', 'confirmed', 'paid', 'active', 'cancelled_by_host', 'cancelled_by_guest', 'cancelled', 'rejected'])
+    .withMessage('Invalid booking status'),
   body('reason')
     .optional()
     .trim()

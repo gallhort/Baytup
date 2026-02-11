@@ -163,26 +163,26 @@ cashVoucherSchema.statics.findExpiredPending = function() {
   }).populate('booking');
 };
 
-// Static method to find vouchers needing 24h reminder
+// Static method to find vouchers needing 24h reminder (P1 #26 - widened window)
 cashVoucherSchema.statics.findNeedingReminder24h = function() {
-  const in24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const in25Hours = new Date(Date.now() + 25 * 60 * 60 * 1000);
+  const in20Hours = new Date(Date.now() + 20 * 60 * 60 * 1000);
+  const in28Hours = new Date(Date.now() + 28 * 60 * 60 * 1000);
 
   return this.find({
     status: 'pending',
-    expiresAt: { $gte: in24Hours, $lt: in25Hours },
+    expiresAt: { $gte: in20Hours, $lt: in28Hours },
     'remindersSent.reminder24h': false
   }).populate('booking');
 };
 
-// Static method to find vouchers needing 6h reminder
+// Static method to find vouchers needing 6h reminder (P1 #26 - widened window)
 cashVoucherSchema.statics.findNeedingReminder6h = function() {
-  const in6Hours = new Date(Date.now() + 6 * 60 * 60 * 1000);
-  const in7Hours = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  const in4Hours = new Date(Date.now() + 4 * 60 * 60 * 1000);
+  const in8Hours = new Date(Date.now() + 8 * 60 * 60 * 1000);
 
   return this.find({
     status: 'pending',
-    expiresAt: { $gte: in6Hours, $lt: in7Hours },
+    expiresAt: { $gte: in4Hours, $lt: in8Hours },
     'remindersSent.reminder6h': false
   }).populate('booking');
 };

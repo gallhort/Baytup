@@ -40,8 +40,8 @@ const listingStorage = multer.diskStorage({
     
     // ✅ Use userId if available, or listingId, or fallback to unique identifier
     let prefix = 'listing';
-    if (req.user?._id) {
-      prefix = `${req.user._id}`;
+    if (req.user?.id || req.user?._id) {
+      prefix = `${req.user.id || req.user._id}`;
     } else if (req.params.id) {
       prefix = `${req.params.id}`;
     }
@@ -128,6 +128,55 @@ const upload = multer({
   }
 });
 
+// Magic bytes signatures for file type validation
+const MAGIC_BYTES = {
+  jpg:  [0xFF, 0xD8, 0xFF],
+  png:  [0x89, 0x50, 0x4E, 0x47],
+  webp: [0x52, 0x49, 0x46, 0x46], // RIFF header (WebP starts with RIFF)
+  pdf:  [0x25, 0x50, 0x44, 0x46]  // %PDF
+};
+
+/**
+ * Post-upload middleware: validates file magic bytes match declared type.
+ * Deletes spoofed files from disk and returns 400.
+ */
+const validateFileContent = (req, res, next) => {
+  const files = req.files || (req.file ? [req.file] : []);
+  if (files.length === 0) return next();
+
+  for (const file of files) {
+    if (!file.path || !fs.existsSync(file.path)) continue;
+
+    const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
+    const normalizedExt = (ext === 'jpeg') ? 'jpg' : ext;
+    const expectedBytes = MAGIC_BYTES[normalizedExt];
+
+    if (!expectedBytes) continue; // Skip unknown extensions
+
+    try {
+      const fd = fs.openSync(file.path, 'r');
+      const buffer = Buffer.alloc(expectedBytes.length);
+      fs.readSync(fd, buffer, 0, expectedBytes.length, 0);
+      fs.closeSync(fd);
+
+      const matches = expectedBytes.every((byte, i) => buffer[i] === byte);
+      if (!matches) {
+        // Delete the spoofed file
+        fs.unlinkSync(file.path);
+        return res.status(400).json({
+          status: 'error',
+          message: `File "${file.originalname}" content does not match its extension. Upload rejected.`
+        });
+      }
+    } catch (err) {
+      console.error('[Upload] Magic bytes check error:', err.message);
+      // Don't block on read errors, let the request proceed
+    }
+  }
+
+  next();
+};
+
 // Error handling middleware for multer errors
 const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -161,3 +210,4 @@ module.exports.uploadDocument = uploadDocument;
 module.exports.uploadListingImage = uploadListingImage;
 module.exports.uploadAvatar = uploadAvatar;
 module.exports.handleUploadError = handleUploadError;
+module.exports.validateFileContent = validateFileContent;

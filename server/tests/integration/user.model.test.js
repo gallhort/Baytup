@@ -3,9 +3,23 @@
  */
 
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const User = require('../../src/models/User');
+const { connectDB, disconnectDB, clearDB } = require('../helpers/db');
 
 describe('User Model', () => {
+
+  beforeAll(async () => {
+    await connectDB();
+  });
+
+  afterAll(async () => {
+    await disconnectDB();
+  });
+
+  beforeEach(async () => {
+    await clearDB();
+  });
 
   describe('User Creation', () => {
     it('should create a user with valid data', async () => {
@@ -13,7 +27,7 @@ describe('User Model', () => {
         firstName: 'Test',
         lastName: 'User',
         email: 'test@example.com',
-        password: 'Password123!'
+        password: 'Password123@'
       };
 
       const user = new User(userData);
@@ -31,7 +45,7 @@ describe('User Model', () => {
         firstName: 'Test',
         lastName: 'User',
         email: 'hash@example.com',
-        password: 'Password123!'
+        password: 'Password123@'
       };
 
       const user = new User(userData);
@@ -65,7 +79,7 @@ describe('User Model', () => {
         firstName: 'Test',
         lastName: 'User',
         email: 'duplicate@example.com',
-        password: 'Password123!'
+        password: 'Password123@'
       };
 
       await User.create(userData);
@@ -86,7 +100,7 @@ describe('User Model', () => {
         firstName: 'Test',
         lastName: 'User',
         email: 'not-an-email',
-        password: 'Password123!'
+        password: 'Password123@'
       };
 
       let error;
@@ -107,11 +121,11 @@ describe('User Model', () => {
         firstName: 'Test',
         lastName: 'User',
         email: 'validate@example.com',
-        password: 'Password123!'
+        password: 'Password123@'
       };
 
       const user = await User.create(userData);
-      const isMatch = await user.matchPassword('Password123!');
+      const isMatch = await user.comparePassword('Password123@');
 
       expect(isMatch).toBe(true);
     });
@@ -121,11 +135,11 @@ describe('User Model', () => {
         firstName: 'Test',
         lastName: 'User',
         email: 'reject@example.com',
-        password: 'Password123!'
+        password: 'Password123@'
       };
 
       const user = await User.create(userData);
-      const isMatch = await user.matchPassword('WrongPassword!');
+      const isMatch = await user.comparePassword('WrongPassword@1');
 
       expect(isMatch).toBe(false);
     });
@@ -135,11 +149,11 @@ describe('User Model', () => {
         firstName: 'Test',
         lastName: 'User',
         email: 'jwt@example.com',
-        password: 'Password123!'
+        password: 'Password123@'
       };
 
       const user = await User.create(userData);
-      const token = user.getSignedJwtToken();
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
       expect(token).toBeDefined();
       expect(typeof token).toBe('string');
@@ -153,7 +167,7 @@ describe('User Model', () => {
         firstName: 'Guest',
         lastName: 'User',
         email: 'guest@example.com',
-        password: 'Password123!'
+        password: 'Password123@'
       });
 
       expect(user.role).toBe('guest');
@@ -164,7 +178,7 @@ describe('User Model', () => {
         firstName: 'Host',
         lastName: 'User',
         email: 'host@example.com',
-        password: 'Password123!',
+        password: 'Password123@',
         role: 'host'
       });
 
@@ -176,7 +190,7 @@ describe('User Model', () => {
         firstName: 'Admin',
         lastName: 'User',
         email: 'admin@example.com',
-        password: 'Password123!',
+        password: 'Password123@',
         role: 'admin'
       });
 
@@ -190,7 +204,7 @@ describe('User Model', () => {
         firstName: 'John',
         lastName: 'Doe',
         email: 'virtual@example.com',
-        password: 'Password123!'
+        password: 'Password123@'
       });
 
       expect(user.fullName).toBe('John Doe');
@@ -203,7 +217,7 @@ describe('User Model', () => {
         firstName: 'Timestamp',
         lastName: 'User',
         email: 'timestamp@example.com',
-        password: 'Password123!'
+        password: 'Password123@'
       });
 
       expect(user.createdAt).toBeDefined();

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { sendNotificationEmail } = require('../utils/emailService');
 
 const NotificationSchema = new mongoose.Schema({
   recipient: {
@@ -17,6 +18,7 @@ const NotificationSchema = new mongoose.Schema({
       'booking',
       'booking_created',
       'booking_confirmed',
+      'booking_cancelled',
       'booking_cancelled_by_guest',
       'booking_cancelled_by_host',
       'booking_status_changed',
@@ -28,14 +30,28 @@ const NotificationSchema = new mongoose.Schema({
       'booking_check_in',
       'booking_check_out',
       'booking_completed',
+      'booking_request',
+      'booking_request_sent',
+      'booking_approved',
+      'booking_rejected',
+      'booking_updated',
+      'booking_expired',
+      'booking_expired_host',
+      'booking_started',
       'review',
       'review_created',
       'review_received',
       'review_response',
       'review_reminder',
+      'review_updated',
+      'review_deleted',
+      'review_flagged',
+      'review_revealed',
+      'review_pending_pair',
       'message',
       'message_received',
       'conversation_created',
+      'conversation_deleted_by_admin',
       'wishlist_listing_added',
       'wishlist_price_drop',
       'wishlist_listing_unavailable',
@@ -45,6 +61,10 @@ const NotificationSchema = new mongoose.Schema({
       'payout_completed',
       'payout_rejected',
       'payout_cancelled',
+      'payout_delayed',
+      'payout_bank_required',
+      'payout_auto_created',
+      'payout_pending_admin',
       'host_application',
       'host_application_submitted',
       'host_application_approved',
@@ -67,7 +87,12 @@ const NotificationSchema = new mongoose.Schema({
       'user_activated',
       'user_deactivated',
       'user_deleted',
+      'user_created_by_admin',
+      'user_profile_updated_by_admin',
       'account_password_reset',
+      'password_changed',
+      'email_changed',
+      'email_verified_by_admin',
       'system',
       'auth_login',
       'auth_register',
@@ -75,27 +100,28 @@ const NotificationSchema = new mongoose.Schema({
       'auth_reset_password',
       'auth_verify_email',
       'auth_welcome',
-      'booking_updated',
-      'review_updated',
-      'review_deleted',
-      'review_flagged',
-      'conversation_deleted_by_admin',
-      'payout_cancelled',
-      'user_created_by_admin',
-      'user_profile_updated_by_admin',
-      'email_verified_by_admin',
       'payment_confirmed_by_host',
-      // ✅ NEW: Host response deadline notifications
+      // Host response deadline notifications
       'host_response_reminder',
       'host_response_urgent',
-      'booking_expired',
-      'booking_expired_host',
-      'booking_started',
-      // ✅ NEW: Stripe Connect notifications
+      // Stripe Connect notifications
       'stripe_onboarding_required',
       'stripe_onboarding_completed',
       'stripe_account_restricted',
-      'stripe_account_disconnected'
+      'stripe_account_disconnected',
+      // Dispute notifications
+      'dispute_opened',
+      'dispute_resolved',
+      // Voucher notifications
+      'voucher_expired',
+      'voucher_reminder_24h',
+      'voucher_reminder_6h',
+      // Ticket notifications
+      'ticket_created',
+      'ticket_reply',
+      'ticket_updated',
+      'ticket_resolved',
+      'ticket_assigned'
     ],
     required: [true, 'Notification type is required'],
     index: true
@@ -156,6 +182,41 @@ NotificationSchema.methods.markAsRead = async function() {
   return this;
 };
 
+// Notification types that already have dedicated email sends in their controllers
+// These are skipped to avoid sending duplicate/generic emails
+const TYPES_WITH_DEDICATED_EMAIL = new Set([
+  // Booking emails (bookingController)
+  'booking_approved',           // sendBookingApprovedEmail
+  'booking_rejected',           // sendBookingRejectedEmail
+  'payment_confirmed_by_host',  // sendPaymentConfirmedByHostEmail
+  'booking_cancelled_by_guest', // sendBookingCancelledEmail
+  'booking_cancelled_by_host',  // sendBookingCancelledEmail
+  // Auth emails (authController) - already have dedicated rich emails
+  'auth_register',              // sendEmailVerification
+  'auth_forgot_password',       // sendPasswordResetEmail
+  'auth_verify_email',          // sendWelcomeEmail
+  'auth_welcome',               // sendWelcomeEmail (same flow)
+  'auth_login',                 // no email needed on every login
+  // Settings emails (settingsController)
+  'password_changed',           // sendPasswordChangedEmail
+  'email_changed',              // sendEmailChangedEmail
+  // Listing emails (listingController)
+  'listing_approved',           // sendListingApprovedEmail
+  'listing_rejected',           // sendListingRejectedEmail
+  'listing_deleted',            // sendListingDeletedEmail
+  // Host application emails (hostApplicationController)
+  'host_application_submitted', // sendHostApplicationSubmitted
+  'host_application_approved',  // sendHostApplicationApproved
+  'host_application_rejected',  // sendHostApplicationRejected
+  'host_application_resubmission', // sendHostApplicationResubmission
+  // Payout emails (payoutController)
+  'payout_request',             // sendPayoutRequestEmail
+  'payout_completed',           // sendPayoutCompletedEmail
+  'payout_rejected',            // sendPayoutRejectedEmail
+  // Review emails (reviewController)
+  'review_revealed',            // sendReviewReceivedEmail
+]);
+
 // Static method to create notification
 NotificationSchema.statics.createNotification = async function(data) {
   try {
@@ -167,6 +228,26 @@ NotificationSchema.statics.createNotification = async function(data) {
       io.to(`user-${data.recipient}`).emit('new_notification', {
         notification: notification.toObject()
       });
+    }
+
+    // Auto-send email for notifications that don't have dedicated email handlers
+    if (!TYPES_WITH_DEDICATED_EMAIL.has(data.type) && !data.skipEmail) {
+      try {
+        // Lazy require to avoid circular dependency (User.js ↔ Notification.js)
+        const User = require('./User');
+        const recipient = await User.findById(data.recipient).select('email firstName lastName');
+        if (recipient && recipient.email) {
+          // Fire and forget - don't block notification creation
+          sendNotificationEmail(recipient.email, recipient.firstName, {
+            title: data.title,
+            message: data.message,
+            link: data.link,
+            priority: data.priority || 'normal'
+          }).catch(err => console.error('Auto-email failed for notification:', err.message));
+        }
+      } catch (emailError) {
+        console.error('Error in auto-email for notification:', emailError.message);
+      }
     }
 
     return notification;

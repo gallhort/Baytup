@@ -135,13 +135,6 @@ export default function MyListingsPage() {
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
     setCurrentPage(1);
-    
-    // FORCE FOCUS IMMÉDIATEMENT - Version Ultra-Agressive
-    requestAnimationFrame(() => {
-      if (searchInputRef.current) {
-        searchInputRef.current.focus();
-      }
-    });
   };
 
   const handleFilterStatusChange = (value: string) => {
@@ -169,6 +162,9 @@ export default function MyListingsPage() {
   const [newStatus, setNewStatus] = useState('');
   const [statusReason, setStatusReason] = useState('');
 
+  // Action menu state for mobile
+  const [showActionMenu, setShowActionMenu] = useState<string | null>(null);
+
   // Debounce: Update searchTerm 200ms after user stops typing in searchInput
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -180,7 +176,9 @@ export default function MyListingsPage() {
 
   // Fetch listings when searchTerm, page, or filterStatus changes
   useEffect(() => {
-    fetchListings();
+    const controller = new AbortController();
+    fetchListings(controller.signal);
+    return () => controller.abort();
   }, [currentPage, filterStatus, searchTerm]); // searchTerm (not searchInput!)
 
   // Client-side filtering for category only
@@ -188,38 +186,33 @@ export default function MyListingsPage() {
     filterListings();
   }, [filterCategory, listings]);
 
-  // FORCE FOCUS après chaque update
-  useEffect(() => {
-    if (searchInput && searchInputRef.current === document.activeElement) {
-      // Si l'input a du texte et avait le focus, le restaurer
-      searchInputRef.current?.focus();
-    }
-  }, [listings, filteredListings]);
+  // Focus is managed by React's normal input handling (P2 #37 - removed aggressive focus trap)
 
-  const fetchListings = async () => {
+  const fetchListings = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
+
       // Build query params for pagination, filters, and search
       const params = new URLSearchParams();
       params.append('page', currentPage.toString());
       params.append('limit', itemsPerPage.toString());
-      
+
       if (filterStatus !== 'all') {
         params.append('status', filterStatus);
       }
-      
+
       if (searchTerm) {
         params.append('search', searchTerm);
       }
-      
+
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/listings/my/listings?${params.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
-          }
+          },
+          signal
         }
       );
       
@@ -239,12 +232,16 @@ export default function MyListingsPage() {
         console.log('[My Listings] Pagination:', { pages, total, currentPage });
       } else {
         // Fallback: calculate from listings array
-        const calculatedPages = Math.ceil(listingsData.length / itemsPerPage);
-        setTotalPages(calculatedPages || 1);
+        const calculatedPages = Math.ceil(listingsData.length / itemsPerPage) || 1;
+        setTotalPages(calculatedPages);
         setTotalListings(listingsData.length);
-        console.log('[My Listings] No pagination data, using fallback:', { calculatedPages, total: listingsData.length });
+        // Reset currentPage if it exceeds new total pages (P2 #38)
+        if (currentPage > calculatedPages) {
+          setCurrentPage(1);
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (axios.isCancel(error) || error?.name === 'CanceledError') return; // Aborted by cleanup
       console.error('Error fetching listings:', error);
       toast.error((t as any)?.messages?.error?.failed || 'Failed to load listings');
       setListings([]); // Set empty array on error
@@ -431,151 +428,384 @@ export default function MyListingsPage() {
     );
   }
 
+  // Status label helper
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'active': return 'Publiée';
+      case 'paused': return 'Masquée';
+      case 'inactive': return 'Inactive';
+      case 'pending': return 'En attente';
+      case 'rejected': return 'Rejetée';
+      case 'draft': return 'Brouillon';
+      default: return status;
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">{(t as any)?.header?.title || 'My Listings'}</h1>
-          <p className="text-gray-600 mt-1">{(t as any)?.header?.subtitle || 'Manage and monitor your listings'}</p>
-        </div>
-        <Link
-          href="/dashboard/my-listings/create"
-          className="flex items-center space-x-2 px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors shadow-sm"
-        >
-          <FaPlus />
-          <span>{(t as any)?.header?.createButton || 'Create New Listing'}</span>
-        </Link>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">{(t as any)?.stats?.totalListings || 'Total Listings'}</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{totalListings}</p>
-              {totalPages > 1 && (
-                <p className="text-xs text-gray-500 mt-1">Tous les listings</p>
-              )}
-            </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <FaBed className="text-blue-600 text-xl" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">{(t as any)?.stats?.active || 'Active'}</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">
-                {filteredListings.filter(l => l.status === 'active').length}
-              </p>
-              {totalPages > 1 && (
-                <p className="text-xs text-gray-500 mt-1">Sur cette page</p>
-              )}
-            </div>
-            <div className="bg-green-100 p-3 rounded-lg">
-              <FaCheck className="text-green-600 text-xl" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">{(t as any)?.stats?.totalViews || 'Total Views'}</p>
-              <p className="text-2xl font-bold text-purple-600 mt-1">
-                {filteredListings.reduce((sum, l) => sum + (l.stats?.views || 0), 0)}
-              </p>
-              {totalPages > 1 && (
-                <p className="text-xs text-gray-500 mt-1">Sur cette page</p>
-              )}
-            </div>
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <FaEye className="text-purple-600 text-xl" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">{(t as any)?.stats?.totalBookings || 'Total Bookings'}</p>
-              <p className="text-2xl font-bold text-[#FF6B35] mt-1">
-                {filteredListings.reduce((sum, l) => sum + (l.stats?.bookings || 0), 0)}
-              </p>
-              {totalPages > 1 && (
-                <p className="text-xs text-gray-500 mt-1">Sur cette page</p>
-              )}
-            </div>
-            <div className="bg-orange-100 p-3 rounded-lg">
-              <FaClipboardCheck className="text-[#FF6B35] text-xl" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FaSearch className="inline mr-2" />
-              {(t as any)?.filters?.search || 'Search'}
-            </label>
-            <input
-              ref={searchInputRef}
-              type="text"
-              autoFocus={!!searchInput}
-              placeholder={(t as any)?.filters?.searchPlaceholder || 'Search listings...'}
-              value={searchInput}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onBlur={(e) => {
-                // Re-focus si on a du texte
-                if (searchInput) {
-                  setTimeout(() => e.target.focus(), 10);
-                }
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FaFilter className="inline mr-2" />
-              {(t as any)?.filters?.status || 'Status'}
-            </label>
-            <select
-              value={filterStatus}
-              onChange={(e) => handleFilterStatusChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
+      {/* ========== MOBILE HEADER ========== */}
+      <div className="lg:hidden">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">Mes annonces</h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowViewModal(true)}
+              className="p-2.5 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
             >
-              <option value="all">{(t as any)?.filters?.allStatus || 'All Status'}</option>
-              <option value="active">{(t as any)?.filters?.statusActive || 'Active'}</option>
-              <option value="draft">{(t as any)?.filters?.statusDraft || 'Draft'}</option>
-              <option value="paused">{(t as any)?.filters?.statusPaused || 'Paused'}</option>
-              <option value="pending">{(t as any)?.filters?.statusPending || 'Pending'}</option>
-              <option value="inactive">{(t as any)?.filters?.statusInactive || 'Inactive'}</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FaFilter className="inline mr-2" />
-              {(t as any)?.filters?.category || 'Category'}
-            </label>
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
+              <FaFilter className="w-4 h-4 text-gray-600" />
+            </button>
+            <Link
+              href="/dashboard/my-listings/create"
+              className="p-2.5 bg-gray-900 rounded-full hover:bg-gray-800 transition-colors"
             >
-              <option value="all">{(t as any)?.filters?.allCategories || 'All Categories'}</option>
-              <option value="stay">{(t as any)?.filters?.categoryStays || 'Stays'}</option>
-              <option value="vehicle">{(t as any)?.filters?.categoryVehicles || 'Vehicles'}</option>
-            </select>
+              <FaPlus className="w-4 h-4 text-white" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile Filter Pills */}
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+          <select
+            value={filterStatus}
+            onChange={(e) => handleFilterStatusChange(e.target.value)}
+            className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 whitespace-nowrap"
+          >
+            <option value="all">Tous les statuts</option>
+            <option value="active">Publiées</option>
+            <option value="draft">Brouillons</option>
+            <option value="paused">Masquées</option>
+            <option value="pending">En attente</option>
+            <option value="inactive">Inactives</option>
+          </select>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 whitespace-nowrap"
+          >
+            <option value="all">Toutes les Catégories</option>
+            <option value="stay">Logements</option>
+            <option value="vehicle">Véhicules</option>
+          </select>
+        </div>
+      </div>
+
+      {/* ========== MOBILE LISTINGS (Cards) ========== */}
+      <div className="lg:hidden space-y-4">
+        {filteredListings.length > 0 ? (
+          filteredListings.map((listing) => (
+            <div key={listing._id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+              {/* Listing Card - Clickable */}
+              <Link href={`/dashboard/my-listings/edit/${listing._id}`} className="block">
+                <div className="relative">
+                  {/* Image */}
+                  <div className="aspect-[4/3] bg-gray-100">
+                    {listing.images?.[0] ? (
+                      <img
+                        src={listing.images[0].url}
+                        alt={listing.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        {listing.category === 'vehicle' ? <FaCar size={48} /> : <FaBed size={48} />}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="absolute top-3 left-3">
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm ${
+                      listing.status === 'active' ? 'bg-white text-gray-900' :
+                      listing.status === 'paused' ? 'bg-gray-900 text-white' :
+                      listing.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      listing.status === 'draft' ? 'bg-gray-100 text-gray-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {listing.status === 'active' && <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>}
+                      {listing.status === 'paused' && <span className="w-2 h-2 bg-gray-400 rounded-full mr-1.5"></span>}
+                      {getStatusLabel(listing.status)}
+                    </span>
+                  </div>
+
+                  {/* Featured Badge */}
+                  {listing.featured && (
+                    <div className="absolute top-3 right-3">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-400 text-yellow-900">
+                        <FaStar className="w-3 h-3 mr-1" />
+                        Mise en avant
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Card Content */}
+                <div className="p-4">
+                  <h3 className="font-semibold text-gray-900 text-base truncate">{listing.title}</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    {listing.category === 'stay' ? 'Logement' : 'Véhicule'} · {listing.address.city}, {listing.address.state}
+                  </p>
+                </div>
+              </Link>
+
+              {/* Action Buttons Row */}
+              <div className="px-4 pb-4 pt-0 flex items-center gap-2">
+                <Link
+                  href={`/dashboard/my-listings/edit/${listing._id}`}
+                  className="flex-1 py-2.5 px-4 bg-gray-900 text-white text-sm font-medium rounded-lg text-center hover:bg-gray-800 transition-colors"
+                >
+                  Modifier
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedListing(listing);
+                    setShowActionMenu(showActionMenu === listing._id ? null : listing._id);
+                  }}
+                  className="py-2.5 px-4 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  •••
+                </button>
+              </div>
+
+              {/* Action Menu Dropdown */}
+              {showActionMenu === listing._id && (
+                <div className="px-4 pb-4 space-y-1 border-t border-gray-100 pt-3">
+                  <Link
+                    href={`/listing/${listing._id}`}
+                    target="_blank"
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <FaEye className="w-4 h-4 text-gray-400" />
+                    Voir l'annonce
+                  </Link>
+                  <button
+                    onClick={() => {
+                      openDuplicateModal(listing);
+                      setShowActionMenu(null);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <FaCopy className="w-4 h-4 text-gray-400" />
+                    Dupliquer
+                  </button>
+                  <button
+                    onClick={() => {
+                      openStatusModal(listing, listing.status === 'active' ? 'paused' : 'active');
+                      setShowActionMenu(null);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    {listing.status === 'active' ? (
+                      <>
+                        <FaPause className="w-4 h-4 text-gray-400" />
+                        Masquer l'annonce
+                      </>
+                    ) : (
+                      <>
+                        <FaPlay className="w-4 h-4 text-gray-400" />
+                        Activer l'annonce
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      openDeleteModal(listing);
+                      setShowActionMenu(null);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <FaTrash className="w-4 h-4" />
+                    Supprimer
+                  </button>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-12 bg-white rounded-2xl">
+            <FaExclamationCircle className="mx-auto text-4xl text-gray-300 mb-3" />
+            <p className="text-gray-500 mb-4">Aucune annonce trouvée</p>
+            <Link
+              href="/dashboard/my-listings/create"
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors"
+            >
+              <FaPlus />
+              <span>Créer votre première annonce</span>
+            </Link>
+          </div>
+        )}
+
+        {/* Mobile Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 py-4">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-full ${currentPage === 1 ? 'text-gray-300' : 'text-gray-700 hover:bg-gray-100'}`}
+            >
+              <FaChevronLeft />
+            </button>
+            <span className="text-sm text-gray-600">
+              Page {currentPage} sur {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-full ${currentPage === totalPages ? 'text-gray-300' : 'text-gray-700 hover:bg-gray-100'}`}
+            >
+              <FaChevronRight />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ========== DESKTOP HEADER & CONTENT ========== */}
+      <div className="hidden lg:block">
+        {/* Desktop Header */}
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{(t as any)?.header?.title || 'My Listings'}</h1>
+            <p className="text-gray-600 mt-1">{(t as any)?.header?.subtitle || 'Manage and monitor your listings'}</p>
+          </div>
+          <Link
+            href="/dashboard/my-listings/create"
+            className="flex items-center space-x-2 px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors shadow-sm"
+          >
+            <FaPlus />
+            <span>{(t as any)?.header?.createButton || 'Create New Listing'}</span>
+          </Link>
+        </div>
+
+        {/* Stats Overview - Desktop only */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">{(t as any)?.stats?.totalListings || 'Total Listings'}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{totalListings}</p>
+                {totalPages > 1 && (
+                  <p className="text-xs text-gray-500 mt-1">Tous les listings</p>
+                )}
+              </div>
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <FaBed className="text-blue-600 text-xl" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">{(t as any)?.stats?.active || 'Active'}</p>
+                <p className="text-2xl font-bold text-green-600 mt-1">
+                  {filteredListings.filter(l => l.status === 'active').length}
+                </p>
+                {totalPages > 1 && (
+                  <p className="text-xs text-gray-500 mt-1">Sur cette page</p>
+                )}
+              </div>
+              <div className="bg-green-100 p-3 rounded-lg">
+                <FaCheck className="text-green-600 text-xl" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">{(t as any)?.stats?.totalViews || 'Total Views'}</p>
+                <p className="text-2xl font-bold text-purple-600 mt-1">
+                  {filteredListings.reduce((sum, l) => sum + (l.stats?.views || 0), 0)}
+                </p>
+                {totalPages > 1 && (
+                  <p className="text-xs text-gray-500 mt-1">Sur cette page</p>
+                )}
+              </div>
+              <div className="bg-purple-100 p-3 rounded-lg">
+                <FaEye className="text-purple-600 text-xl" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">{(t as any)?.stats?.totalBookings || 'Total Bookings'}</p>
+                <p className="text-2xl font-bold text-[#FF6B35] mt-1">
+                  {filteredListings.reduce((sum, l) => sum + (l.stats?.bookings || 0), 0)}
+                </p>
+                {totalPages > 1 && (
+                  <p className="text-xs text-gray-500 mt-1">Sur cette page</p>
+                )}
+              </div>
+              <div className="bg-orange-100 p-3 rounded-lg">
+                <FaClipboardCheck className="text-[#FF6B35] text-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters - Desktop */}
+        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaSearch className="inline mr-2" />
+                {(t as any)?.filters?.search || 'Search'}
+              </label>
+              <input
+                ref={searchInputRef}
+                type="text"
+                autoFocus={!!searchInput}
+                placeholder={(t as any)?.filters?.searchPlaceholder || 'Search listings...'}
+                value={searchInput}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onBlur={(e) => {
+                  // Re-focus si on a du texte
+                  if (searchInput) {
+                    setTimeout(() => e.target.focus(), 10);
+                  }
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaFilter className="inline mr-2" />
+                {(t as any)?.filters?.status || 'Status'}
+              </label>
+              <select
+                value={filterStatus}
+                onChange={(e) => handleFilterStatusChange(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
+              >
+                <option value="all">{(t as any)?.filters?.allStatus || 'All Status'}</option>
+                <option value="active">{(t as any)?.filters?.statusActive || 'Active'}</option>
+                <option value="draft">{(t as any)?.filters?.statusDraft || 'Draft'}</option>
+                <option value="paused">{(t as any)?.filters?.statusPaused || 'Paused'}</option>
+                <option value="pending">{(t as any)?.filters?.statusPending || 'Pending'}</option>
+                <option value="inactive">{(t as any)?.filters?.statusInactive || 'Inactive'}</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaFilter className="inline mr-2" />
+                {(t as any)?.filters?.category || 'Category'}
+              </label>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
+              >
+                <option value="all">{(t as any)?.filters?.allCategories || 'All Categories'}</option>
+                <option value="stay">{(t as any)?.filters?.categoryStays || 'Stays'}</option>
+                <option value="vehicle">{(t as any)?.filters?.categoryVehicles || 'Vehicles'}</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Listings Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* ========== DESKTOP Listings Table ========== */}
+      <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gradient-to-r from-[#FF6B35] to-[#ff8255] text-white">
@@ -710,7 +940,7 @@ export default function MyListingsPage() {
                     <FaExclamationCircle className="mx-auto text-4xl text-gray-300 mb-3" />
                     <p className="text-gray-500 mb-4">{(t as any)?.table?.empty?.message || 'No listings found'}</p>
                     <Link
-                      href="/listings/create"
+                      href="/dashboard/my-listings/create"
                       className="inline-flex items-center space-x-2 px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors"
                     >
                       <FaPlus />
@@ -724,9 +954,9 @@ export default function MyListingsPage() {
         </div>
       </div>
 
-      {/* Pagination Controls */}
+      {/* Desktop Pagination Controls */}
       {totalPages > 1 && (
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+        <div className="hidden lg:block bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between flex-wrap gap-4">
             {/* Page Info */}
             <div className="text-sm text-gray-600">

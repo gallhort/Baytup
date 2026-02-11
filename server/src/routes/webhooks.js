@@ -2,13 +2,30 @@ const express = require('express');
 const router = express.Router();
 const {
   handleSlickPayWebhook,
+  handleChargilyWebhook,
   handleStripeWebhook,
   testWebhook
 } = require('../controllers/webhookController');
 const { protect } = require('../middleware/auth');
 
 /**
- * Slick Pay webhook endpoint
+ * Middleware to capture raw body for webhook signature verification
+ */
+const captureRawBody = express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+});
+
+/**
+ * Chargily Pay webhook endpoint
+ * This is a public endpoint that Chargily will call
+ * Requires raw body for signature verification
+ */
+router.post('/chargily', captureRawBody, handleChargilyWebhook);
+
+/**
+ * Slick Pay webhook endpoint (DEPRECATED - kept for backward compatibility)
  * This is a public endpoint that Slick Pay will call
  * No authentication required
  */

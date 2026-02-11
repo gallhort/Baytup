@@ -17,6 +17,7 @@ import {
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { IconType } from 'react-icons';
+import MobileBottomNav from '@/components/dashboard/MobileBottomNav';
 
 // Types pour les items du menu
 interface MenuSection {
@@ -59,9 +60,13 @@ export default function DashboardLayout({
   // Check if current language is RTL
   const isRTL = language === 'ar';
 
-  // ✅ FIX: Prevent body scroll when on messages page
+  // Check if we're on a full-screen page (listing editor, messages)
+  const isListingEditorPage = pathname?.startsWith('/dashboard/my-listings/edit/');
+  const isFullScreenPage = pathname === '/dashboard/messages' || isListingEditorPage;
+
+  // ✅ FIX: Prevent body scroll when on full-screen pages
   useEffect(() => {
-    if (pathname === '/dashboard/messages') {
+    if (isFullScreenPage) {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -73,7 +78,7 @@ export default function DashboardLayout({
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
-  }, [pathname]);
+  }, [pathname, isFullScreenPage]);
 
   // Define menu items with separate Guest and Host sections
   const getMenuItems = (): MenuItemType[] => {
@@ -316,7 +321,7 @@ export default function DashboardLayout({
     };
 
     checkEurListings();
-  }, [user]);
+  }, [user?.id, user?.role]);
 
   // ✅ FIX BQ-31: Fetch unread messages count
   useEffect(() => {
@@ -358,7 +363,7 @@ export default function DashboardLayout({
     // Refresh every 30 seconds
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user?.id]);
 
   const handleLogout = () => {
     logout();
@@ -370,31 +375,23 @@ export default function DashboardLayout({
     return null;
   }
 
+  // For full-screen pages like listing editor, render children directly without sidebar
+  if (isListingEditorPage) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`min-h-screen bg-gray-50 transition-all duration-300 ${pathname === '/dashboard/messages' ? 'overflow-hidden' : ''}`}
+      className={`min-h-screen bg-gray-50 transition-all duration-300 ${isFullScreenPage ? 'overflow-hidden' : ''}`}
       style={{
-        paddingTop: pathname === '/dashboard/messages' ? '0' : (headerHeight ? `${headerHeight}px` : '96px'),
-        ...(pathname === '/dashboard/messages' ? { height: '100vh', maxHeight: '100vh' } : {})
+        paddingTop: isFullScreenPage ? '0' : (headerHeight ? `${headerHeight}px` : '96px'),
+        ...(isFullScreenPage ? { height: '100vh', maxHeight: '100vh' } : {})
       }}
     >
-      {/* Mobile sidebar toggle */}
-      <div
-        className={`lg:hidden fixed z-50 transition-all duration-300 ${
-          isRTL ? 'right-4' : 'left-4'
-        }`}
-        style={{
-          top: headerHeight ? `${headerHeight + 16}px` : '112px'
-        }}
-      >
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
-          aria-label={(t as any)?.actions?.toggleMenu || 'Toggle Menu'}
-        >
-          {sidebarOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-        </button>
-      </div>
 
       {/* Sidebar */}
       <div
@@ -410,8 +407,20 @@ export default function DashboardLayout({
         }}
       >
         <div className="flex flex-col h-full">
+          {/* Mobile Close Button */}
+          <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-100">
+            <span className="font-semibold text-gray-900">Menu</span>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Fermer le menu"
+            >
+              <FaTimes size={18} className="text-gray-500" />
+            </button>
+          </div>
+
           {/* Navigation */}
-          <nav className="flex-1 p-4 overflow-y-auto">
+          <nav className="flex-1 p-4 overflow-y-auto pb-20 lg:pb-4">
             {menuItems.map((item, index) => {
               // Render section header
               if ('type' in item && item.type === 'section') {
@@ -505,12 +514,15 @@ export default function DashboardLayout({
           }
         `}</style>
         <div className="main-content">
-          {/* Page content */}
-          <div className={pathname === '/dashboard/messages' ? '' : 'p-6'}>
+          {/* Page content - Added pb-20 on mobile for bottom nav */}
+          <div className={isFullScreenPage ? '' : 'p-6 pb-24 lg:pb-6'}>
             {children}
           </div>
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation (Airbnb style) */}
+      {!isFullScreenPage && <MobileBottomNav onMenuClick={() => setSidebarOpen(true)} userRole={user.role} />}
 
       {/* Overlay for mobile */}
       {sidebarOpen && (

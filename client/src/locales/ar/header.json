@@ -60,6 +60,8 @@
   "vehicleType": "نوع المركبة",
   "addVehicleType": "إضافة نوع المركبة",
   "noNotifications": "لا توجد إشعارات جديدة",
+  "markAllRead": "تحديد الكل كمقروء",
+  "viewAllNotifications": "عرض جميع الإشعارات",
   "bookings": "الرحلات",
   "myBookings": "حجوزاتي",
   "trips": "الرحلات",

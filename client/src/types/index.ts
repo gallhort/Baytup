@@ -72,13 +72,15 @@ export interface Listing {
   stayDetails?: {
     stayType: 'apartment' | 'house' | 'villa' | 'studio' | 'room' | 'riad' | 'guesthouse' | 'hotel_room';
     bedrooms?: number;
+    beds?: number;
     bathrooms?: number;
     area?: number;
     floor?: number;
-    furnished: 'furnished' | 'semi-furnished' | 'unfurnished';
+    furnished?: 'furnished' | 'semi-furnished' | 'unfurnished';
     capacity?: number;
     amenities: string[];
   };
+  cancellationPolicy?: 'flexible' | 'moderate' | 'strict' | 'strict_long_term' | 'non_refundable';
   vehicleDetails?: {
     vehicleType: 'car' | 'motorcycle' | 'truck' | 'van' | 'suv' | 'bus' | 'bicycle' | 'scooter' | 'boat';
     make?: string;

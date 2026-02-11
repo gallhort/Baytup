@@ -37,7 +37,7 @@ const UserSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    match: [/^(\+213|0)[1-9][0-9]{8}$/, 'Please provide a valid Algerian phone number']
+    match: [/^\+?[1-9]\d{6,14}$/, 'Please provide a valid phone number (E.164 format)']
   },
 
   // User Role
@@ -360,5 +360,34 @@ UserSchema.methods.updateLastActive = function() {
   this.lastActive = new Date();
   return this.save({ validateBeforeSave: false });
 };
+
+// Cascade delete related data when user is removed (P0 #14)
+UserSchema.pre('findOneAndDelete', async function(next) {
+  const userId = this.getQuery()._id;
+  if (!userId) return next();
+  try {
+    const Listing = require('./Listing');
+    const Booking = require('./Booking');
+    const { Conversation, Message } = require('./Message');
+    const Notification = require('./Notification');
+    const Review = require('./Review');
+
+    // Deactivate listings instead of deleting (preserve booking history)
+    await Listing.updateMany({ host: userId }, { $set: { status: 'inactive', deletedAt: new Date() } });
+    // Cancel pending bookings
+    await Booking.updateMany(
+      { $or: [{ guest: userId }, { host: userId }], status: { $in: ['pending', 'confirmed'] } },
+      { $set: { status: 'cancelled_by_admin', 'cancellation.reason': 'user_account_deleted' } }
+    );
+    // Clean up notifications
+    await Notification.deleteMany({ recipient: userId });
+    // Anonymize reviews
+    await Review.updateMany({ author: userId }, { $set: { authorDeleted: true } });
+    console.log(`[User] Cascade cleanup for deleted user ${userId}`);
+  } catch (error) {
+    console.error('[User] Cascade delete error:', error);
+  }
+  next();
+});
 
 module.exports = mongoose.model('User', UserSchema);

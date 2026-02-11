@@ -3,6 +3,7 @@ const AppError = require('../../utils/appError');
 const Booking = require('../models/Booking');
 const Listing = require('../models/Listing');
 const Payout = require('../models/Payout');
+const { HOST_COMMISSION_RATE } = require('../config/fees');
 
 /**
  * Calculate host earning for a booking
@@ -17,7 +18,7 @@ const calculateHostEarning = (booking) => {
   if (booking.pricing.hostPayout) {
     return booking.pricing.hostPayout;
   }
-  const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * 0.03);
+  const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * HOST_COMMISSION_RATE);
   return baseAmount - hostCommission;
 };
 
@@ -165,7 +166,7 @@ exports.getEarningsTransactions = catchAsync(async (req, res, next) => {
   const formattedTransactions = transactions.map(booking => {
     const baseAmount = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
     // Host commission is 3% of baseAmount (deducted from host payout)
-    const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * 0.03);
+    const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * HOST_COMMISSION_RATE);
     // Host receives: baseAmount - 3% commission
     const hostEarning = booking.pricing.hostPayout || (baseAmount - hostCommission);
     // Platform revenue: 8% guest fee + 3% host commission

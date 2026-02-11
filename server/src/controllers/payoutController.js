@@ -367,7 +367,7 @@ exports.updatePayoutStatus = catchAsync(async (req, res, next) => {
   try {
     let notificationData = {
       recipient: payout.host._id,
-      sender: req.user._id,
+      sender: req.user.id,
       data: {
         payoutId: payout._id,
         amount: payout.amount,

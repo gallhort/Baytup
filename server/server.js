@@ -64,18 +64,17 @@ connectDB().then(async () => {
   console.error('Failed to initialize booking automation');
 });
 
-// Make io accessible to routes
+// Make io accessible to routes and models (Notification.createNotification uses global.io)
 app.set('socketio', io);
+global.io = io;
 
-// Socket.IO authentication middleware
+// Socket.IO authentication middleware - reject unauthenticated connections (P0 #8)
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth.token;
 
     if (!token) {
-      // Allow connection but mark as unauthenticated
-      socket.user = null;
-      return next();
+      return next(new Error('Authentication required'));
     }
 
     // Verify JWT token
@@ -87,29 +86,47 @@ io.use(async (socket, next) => {
     const user = await User.findById(decoded.id).select('-password');
 
     if (!user) {
-      socket.user = null;
-      return next();
+      return next(new Error('User not found'));
     }
 
     socket.user = user;
-    console.log(`✅ Authenticated socket connection: User ${user._id} (${user.firstName} ${user.lastName})`);
+    // Rate limiting state (P0 #9)
+    socket._eventCount = 0;
+    socket._eventResetTime = Date.now() + 60000;
     next();
   } catch (error) {
     console.error('Socket authentication error:', error.message);
-    socket.user = null;
-    next();
+    next(new Error('Invalid token'));
   }
 });
 
+// Socket.IO rate limit helper (P0 #9)
+const SOCKET_RATE_LIMIT = 100; // max events per minute
+function checkSocketRateLimit(socket) {
+  const now = Date.now();
+  if (now > socket._eventResetTime) {
+    socket._eventCount = 0;
+    socket._eventResetTime = now + 60000;
+  }
+  socket._eventCount++;
+  if (socket._eventCount > SOCKET_RATE_LIMIT) {
+    socket.emit('error', { message: 'Rate limit exceeded. Please slow down.' });
+    return false;
+  }
+  return true;
+}
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  console.log(`🔌 Client connected: ${socket.id} from ${socket.handshake.address}`);
+  // Join user's personal room for private messages
+  socket.join(`user-${socket.user._id}`);
 
-  if (socket.user) {
-    // Join user's personal room for private messages
-    socket.join(`user-${socket.user._id}`);
-    console.log(`👤 User ${socket.user._id} joined personal room`);
-  }
+  // Apply rate limiting to all incoming events (P0 #9)
+  const originalOnEvent = socket.onevent;
+  socket.onevent = function(packet) {
+    if (!checkSocketRateLimit(socket)) return;
+    originalOnEvent.call(this, packet);
+  };
 
   // Join rooms based on client needs
   socket.on('join-listings', (filters) => {
@@ -497,6 +514,19 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // XSS Sanitization middleware - sanitize all user input
 app.use(sanitizeInput);
 
+// Pagination sanitization middleware - prevent NaN, negative, or excessive values
+app.use((req, res, next) => {
+  if (req.query.page) {
+    const page = parseInt(req.query.page);
+    req.query.page = (isNaN(page) || page < 1) ? '1' : String(page);
+  }
+  if (req.query.limit) {
+    const limit = parseInt(req.query.limit);
+    req.query.limit = (isNaN(limit) || limit < 1) ? '20' : String(Math.min(limit, 100));
+  }
+  next();
+});
+
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -555,6 +585,7 @@ app.use('/api/cities', require('./src/routes/cities'));
 app.use('/api/faq', require('./src/routes/faq')); // ✅ NEW: FAQ / Knowledge Base
 app.use('/api/escrow', limiter, require('./src/routes/escrow')); // ✅ NEW: Escrow / Séquestre
 app.use('/api/stripe-connect', limiter, require('./src/routes/stripeConnect')); // ✅ NEW: Stripe Connect for host payouts
+app.use('/api/pricing', limiter, require('./src/routes/pricing')); // ✅ NEW: Dynamic Pricing Calculator
 
 // 404 handler
 app.use('*', (req, res) => {

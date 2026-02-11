@@ -3565,6 +3565,141 @@ L'équipe Baytup
   }
 };
 
+// Generic notification email - used for ALL notifications that don't have a dedicated email template
+const sendNotificationEmail = async (recipientEmail, recipientName, notification) => {
+  try {
+    const transporter = createTransporter();
+
+    const clientUrl = process.env.CLIENT_URL || 'https://baytup.fr';
+    const linkUrl = notification.link ? `${clientUrl}${notification.link}` : clientUrl;
+
+    // Clean title (remove emojis for email subject)
+    const cleanTitle = (notification.title || 'Notification Baytup').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{200D}\u{20E3}]/gu, '').trim();
+
+    // Priority-based styling
+    const priorityColors = {
+      urgent: { bg: '#FEE2E2', border: '#EF4444', text: '#991B1B', label: 'URGENT' },
+      high: { bg: '#FEF3C7', border: '#F59E0B', text: '#92400E', label: 'IMPORTANT' },
+      normal: { bg: '#EFF6FF', border: '#3B82F6', text: '#1E40AF', label: '' },
+      low: { bg: '#F0FDF4', border: '#22C55E', text: '#166534', label: '' }
+    };
+    const priority = priorityColors[notification.priority] || priorityColors.normal;
+
+    const priorityBanner = (notification.priority === 'urgent' || notification.priority === 'high')
+      ? `<div style="background: ${priority.bg}; border: 1px solid ${priority.border}; color: ${priority.text}; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: 600; text-align: center;">${priority.label}</div>`
+      : '';
+
+    const mailOptions = {
+      from: `"Baytup" <${process.env.EMAIL_FROM}>`,
+      to: recipientEmail,
+      subject: `${cleanTitle} - Baytup`,
+      html: `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${cleanTitle} - Baytup</title>
+          <style>
+            body {
+              font-family: 'Inter', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(135deg, #FF6B35, #F7931E);
+              color: white;
+              padding: 30px 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+            }
+            .logo {
+              font-size: 28px;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            .content {
+              background: white;
+              padding: 30px;
+              border: 1px solid #e5e5e5;
+              border-top: none;
+              border-radius: 0 0 8px 8px;
+            }
+            .button {
+              display: inline-block;
+              background: linear-gradient(135deg, #FF6B35, #F7931E);
+              color: white;
+              padding: 15px 30px;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: 600;
+              margin: 20px 0;
+              text-align: center;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              color: #666;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">Baytup</div>
+            <p>${notification.title || 'Notification'}</p>
+          </div>
+
+          <div class="content">
+            <h2>Bonjour ${recipientName || 'Utilisateur'},</h2>
+
+            ${priorityBanner}
+
+            <p>${notification.message || ''}</p>
+
+            ${notification.link ? `
+            <div style="text-align: center;">
+              <a href="${linkUrl}" class="button">Voir les détails</a>
+            </div>
+            ` : ''}
+
+            <p>Cordialement,</p>
+            <p><strong>L'équipe Baytup</strong></p>
+          </div>
+
+          <div class="footer">
+            <p>&copy; 2025 Baytup. Tous droits réservés.</p>
+            <p>La marketplace de location en Algérie</p>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+Bonjour ${recipientName || 'Utilisateur'},
+
+${notification.title || 'Notification'}
+
+${notification.message || ''}
+
+${notification.link ? `Voir les détails: ${linkUrl}` : ''}
+
+Cordialement,
+L'équipe Baytup
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending notification email:', error);
+    // Don't throw - email failure should not block notification creation
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendEmailVerification,
   sendPasswordResetEmail,
@@ -3590,5 +3725,6 @@ module.exports = {
   sendPasswordChangedEmail,
   sendEmailChangedEmail,
   sendBookingCancelledEmail,
-  sendPreArrivalReminderEmail  // ✅ NEW
+  sendPreArrivalReminderEmail,
+  sendNotificationEmail
 };

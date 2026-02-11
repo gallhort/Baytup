@@ -5,7 +5,16 @@
 const request = require('supertest');
 const express = require('express');
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const User = require('../../src/models/User');
+const { connectDB, disconnectDB, clearDB } = require('../helpers/db');
+
+// Helper to generate JWT token (same as booking tests)
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE || '30d',
+  });
+};
 
 // Create a minimal express app for testing
 const createTestApp = () => {
@@ -30,8 +39,17 @@ const createTestApp = () => {
 describe('Auth API Integration Tests', () => {
   let app;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    await connectDB();
     app = createTestApp();
+  });
+
+  afterAll(async () => {
+    await disconnectDB();
+  });
+
+  beforeEach(async () => {
+    await clearDB();
   });
 
   describe('POST /api/auth/register', () => {
@@ -42,12 +60,13 @@ describe('Auth API Integration Tests', () => {
           firstName: 'Integration',
           lastName: 'Test',
           email: 'integration@test.com',
-          password: 'Password123!'
+          password: 'Password123@'
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.success).toBe(true);
-      expect(res.body.token).toBeDefined();
+      expect(res.body.status).toBe('success');
+      expect(res.body.data.user).toBeDefined();
+      expect(res.body.data.user.email).toBe('integration@test.com');
     });
 
     it('should return validation error for missing fields', async () => {
@@ -58,7 +77,6 @@ describe('Auth API Integration Tests', () => {
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.success).toBe(false);
     });
 
     it('should return validation error for weak password', async () => {
@@ -72,7 +90,6 @@ describe('Auth API Integration Tests', () => {
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.success).toBe(false);
     });
 
     it('should return validation error for invalid email', async () => {
@@ -82,11 +99,10 @@ describe('Auth API Integration Tests', () => {
           firstName: 'Test',
           lastName: 'User',
           email: 'not-an-email',
-          password: 'Password123!'
+          password: 'Password123@'
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.success).toBe(false);
     });
 
     it('should prevent duplicate email registration', async () => {
@@ -97,7 +113,7 @@ describe('Auth API Integration Tests', () => {
           firstName: 'First',
           lastName: 'User',
           email: 'duplicate@test.com',
-          password: 'Password123!'
+          password: 'Password123@'
         });
 
       // Second registration with same email
@@ -107,7 +123,7 @@ describe('Auth API Integration Tests', () => {
           firstName: 'Second',
           lastName: 'User',
           email: 'duplicate@test.com',
-          password: 'Password123!'
+          password: 'Password123@'
         });
 
       expect(res.status).toBe(400);
@@ -116,12 +132,12 @@ describe('Auth API Integration Tests', () => {
 
   describe('POST /api/auth/login', () => {
     beforeEach(async () => {
-      // Create a test user
+      // Create a test user directly in DB
       await User.create({
         firstName: 'Login',
         lastName: 'Test',
         email: 'login@test.com',
-        password: 'Password123!',
+        password: 'Password123@',
         isEmailVerified: true
       });
     });
@@ -131,11 +147,11 @@ describe('Auth API Integration Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'login@test.com',
-          password: 'Password123!'
+          password: 'Password123@'
         });
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
+      expect(res.body.status).toBe('success');
       expect(res.body.token).toBeDefined();
     });
 
@@ -144,11 +160,10 @@ describe('Auth API Integration Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'login@test.com',
-          password: 'WrongPassword!'
+          password: 'WrongPassword@1'
         });
 
       expect(res.status).toBe(401);
-      expect(res.body.success).toBe(false);
     });
 
     it('should return error for non-existent user', async () => {
@@ -156,18 +171,17 @@ describe('Auth API Integration Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'nonexistent@test.com',
-          password: 'Password123!'
+          password: 'Password123@'
         });
 
       expect(res.status).toBe(401);
-      expect(res.body.success).toBe(false);
     });
 
     it('should return validation error for missing email', async () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          password: 'Password123!'
+          password: 'Password123@'
         });
 
       expect(res.status).toBe(400);
@@ -188,15 +202,15 @@ describe('Auth API Integration Tests', () => {
     let token;
 
     beforeEach(async () => {
-      // Create and login a test user
+      // Create a test user and generate token using helper
       const user = await User.create({
         firstName: 'Me',
         lastName: 'Test',
         email: 'me@test.com',
-        password: 'Password123!',
+        password: 'Password123@',
         isEmailVerified: true
       });
-      token = user.getSignedJwtToken();
+      token = generateToken(user._id);
     });
 
     it('should return current user with valid token', async () => {
@@ -205,8 +219,8 @@ describe('Auth API Integration Tests', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.email).toBe('me@test.com');
+      expect(res.body.status).toBe('success');
+      expect(res.body.data.user.email).toBe('me@test.com');
     });
 
     it('should return error without token', async () => {

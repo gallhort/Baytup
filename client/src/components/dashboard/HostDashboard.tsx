@@ -240,9 +240,17 @@ export default function HostDashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl shadow-lg p-8 text-white">
+    <div className="space-y-4 lg:space-y-6">
+      {/* ========== MOBILE HEADER (Compact) ========== */}
+      <div className="lg:hidden">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+          Bonjour, {user?.firstName}
+        </h1>
+        <p className="text-sm text-gray-500">Voici l'état de vos annonces</p>
+      </div>
+
+      {/* ========== DESKTOP HEADER ========== */}
+      <div className="hidden lg:block bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl shadow-lg p-8 text-white">
         <div className="flex items-center space-x-6">
           {/* Profile Picture */}
           <Link href="/dashboard/settings" className="group relative flex-shrink-0">
@@ -275,8 +283,32 @@ export default function HostDashboard() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* ========== MOBILE STATS (Compact 2x2 Grid) ========== */}
+      <div className="lg:hidden grid grid-cols-2 gap-3">
+        {statCards.map((stat, index) => (
+          <div key={index} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className={`${stat.color} p-2.5 rounded-lg text-white w-fit mb-3`}>
+              <stat.icon size={18} />
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
+              {stat.subValue && (
+                <span className="text-xs text-gray-500">{stat.subValue}</span>
+              )}
+            </div>
+            <p className="text-xs text-gray-600 mt-1">{stat.label}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              {stat.total && `${stat.total} total`}
+              {stat.active && `${stat.active} active`}
+              {stat.avg}
+              {stat.views}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* ========== DESKTOP STATS ========== */}
+      <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, index) => (
           <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
@@ -301,19 +333,19 @@ export default function HostDashboard() {
         ))}
       </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200 bg-white rounded-t-xl">
-        <nav className="-mb-px flex space-x-8 px-6 pt-4">
+      {/* Tab Navigation - Scrollable on mobile */}
+      <div className="border-b border-gray-200 bg-white lg:rounded-t-xl sticky top-0 z-10 -mx-6 px-6 lg:mx-0 lg:px-0">
+        <nav className="-mb-px flex space-x-6 lg:space-x-8 px-0 lg:px-6 pt-3 lg:pt-4 overflow-x-auto scrollbar-hide">
           {[
-            { key: 'overview', label: (t as any)?.tabs?.overview || 'Overview' },
-            { key: 'listings', label: (t as any)?.tabs?.listings || 'Listings' },
-            { key: 'bookings', label: (t as any)?.tabs?.bookings || 'Bookings' },
-            { key: 'reviews', label: (t as any)?.tabs?.reviews || 'Reviews' }
+            { key: 'overview', label: 'Aperçu' },
+            { key: 'listings', label: 'Annonces' },
+            { key: 'bookings', label: 'Réservations' },
+            { key: 'reviews', label: 'Avis' }
           ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setSelectedTab(tab.key)}
-              className={`py-3 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${
+              className={`py-3 px-1 border-b-2 font-medium text-sm capitalize transition-colors whitespace-nowrap ${
                 selectedTab === tab.key
                   ? 'border-[#FF6B35] text-[#FF6B35]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -327,17 +359,17 @@ export default function HostDashboard() {
 
       {/* Tab Content */}
       {selectedTab === 'overview' && (
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             {/* Revenue Chart */}
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-[400px] flex flex-col">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+            <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6 border border-gray-100 h-[280px] lg:h-[400px] flex flex-col">
+              <div className="mb-2 lg:mb-4">
+                <h3 className="text-base lg:text-lg font-semibold text-gray-900 flex items-center">
                   <FaChartLine className="mr-2 text-[#FF6B35]" />
                   {(t as any)?.charts?.revenue?.title || 'Revenue Trend'}
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">{(t as any)?.charts?.revenue?.subtitle || 'Monthly revenue overview'}</p>
+                <p className="text-xs lg:text-sm text-gray-500 mt-1 hidden lg:block">{(t as any)?.charts?.revenue?.subtitle || 'Monthly revenue overview'}</p>
               </div>
               <div className="flex-1 min-h-0">
                 <Line
@@ -382,13 +414,13 @@ export default function HostDashboard() {
             </div>
 
             {/* Performance Chart */}
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-[400px] flex flex-col">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+            <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6 border border-gray-100 h-[280px] lg:h-[400px] flex flex-col">
+              <div className="mb-2 lg:mb-4">
+                <h3 className="text-base lg:text-lg font-semibold text-gray-900 flex items-center">
                   <FaEye className="mr-2 text-blue-500" />
                   {(t as any)?.charts?.performance?.title || 'Listing Performance'}
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">{(t as any)?.charts?.performance?.subtitle || 'Top 5 performing listings'}</p>
+                <p className="text-xs lg:text-sm text-gray-500 mt-1 hidden lg:block">{(t as any)?.charts?.performance?.subtitle || 'Top 5 performing listings'}</p>
               </div>
               <div className="flex-1 min-h-0">
                 <Bar
@@ -400,9 +432,9 @@ export default function HostDashboard() {
                       legend: {
                         position: 'bottom',
                         labels: {
-                          padding: 15,
+                          padding: 10,
                           font: {
-                            size: 11
+                            size: 10
                           }
                         }
                       },
@@ -433,19 +465,48 @@ export default function HostDashboard() {
           </div>
 
           {/* Upcoming Bookings */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 h-[450px] flex flex-col overflow-hidden">
-            <div className="p-6 border-b bg-gradient-to-r from-green-50 to-green-100">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 lg:h-[450px] flex flex-col overflow-hidden">
+            <div className="p-4 lg:p-6 border-b bg-gradient-to-r from-green-50 to-green-100">
+              <h3 className="text-base lg:text-lg font-semibold text-gray-900 flex items-center">
                 <FaCalendarAlt className="mr-2 text-green-600" />
                 {(t as any)?.sections?.upcomingBookings?.title || 'Upcoming Bookings'}
               </h3>
-              <p className="text-sm text-gray-600 mt-1">{(t as any)?.sections?.upcomingBookings?.subtitle || 'Next 5 upcoming reservations'}</p>
+              <p className="text-xs lg:text-sm text-gray-600 mt-1 hidden lg:block">{(t as any)?.sections?.upcomingBookings?.subtitle || 'Next 5 upcoming reservations'}</p>
             </div>
             <div className="divide-y flex-1 overflow-y-auto">
               {filteredUpcomingBookings?.length > 0 ? (
                 filteredUpcomingBookings.slice(0, 5).map((booking: any, index: number) => (
-                  <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
+                  <div key={index} className="p-3 lg:p-4 hover:bg-gray-50 transition-colors">
+                    {/* Mobile layout */}
+                    <div className="lg:hidden">
+                      <div className="flex items-center gap-3">
+                        <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-100 shadow-sm flex-shrink-0">
+                          {booking.listing?.images?.[0] ? (
+                            <img
+                              src={booking.listing.images[0].url}
+                              alt={booking.listing.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <FaBed size={20} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 text-sm truncate">{booking.listing?.title}</h4>
+                          <p className="text-xs text-gray-500">{booking.guest?.firstName} {booking.guest?.lastName}</p>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="text-xs text-gray-500">
+                              {new Date(booking.checkIn).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                            </span>
+                            <span className="font-bold text-[#FF6B35] text-sm">{booking.totalPrice} DZD</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Desktop layout */}
+                    <div className="hidden lg:flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shadow-sm flex-shrink-0">
                           {booking.listing?.images?.[0] ? (
@@ -484,9 +545,9 @@ export default function HostDashboard() {
                   </div>
                 ))
               ) : (
-                <div className="p-12 text-center text-gray-500">
-                  <FaCalendarAlt className="mx-auto text-4xl text-gray-300 mb-3" />
-                  <p>{(t as any)?.emptyStates?.noUpcomingBookings || 'No upcoming bookings'}</p>
+                <div className="p-8 lg:p-12 text-center text-gray-500">
+                  <FaCalendarAlt className="mx-auto text-3xl lg:text-4xl text-gray-300 mb-3" />
+                  <p className="text-sm lg:text-base">{(t as any)?.emptyStates?.noUpcomingBookings || 'No upcoming bookings'}</p>
                 </div>
               )}
             </div>
@@ -495,24 +556,86 @@ export default function HostDashboard() {
       )}
 
       {selectedTab === 'listings' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 h-[600px] flex flex-col overflow-hidden">
-          <div className="p-6 border-b flex justify-between items-center bg-gradient-to-r from-blue-50 to-blue-100">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 lg:h-[600px] flex flex-col overflow-hidden">
+          <div className="p-4 lg:p-6 border-b flex justify-between items-center bg-gradient-to-r from-blue-50 to-blue-100">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{(t as any)?.sections?.myListings?.title || 'My Listings'}</h3>
-              <p className="text-sm text-gray-600 mt-1">{(t as any)?.sections?.myListings?.subtitle || 'Manage your property listings'}</p>
+              <h3 className="text-base lg:text-lg font-semibold text-gray-900">{(t as any)?.sections?.myListings?.title || 'My Listings'}</h3>
+              <p className="text-xs lg:text-sm text-gray-600 mt-1 hidden lg:block">{(t as any)?.sections?.myListings?.subtitle || 'Manage your property listings'}</p>
             </div>
             <Link
               href="/host/listings/create"
-              className="px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors shadow-sm"
+              className="px-3 py-1.5 lg:px-4 lg:py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors shadow-sm text-sm"
             >
-              {(t as any)?.actions?.addNewListing || 'Add New Listing'}
+              <span className="lg:hidden">+ Ajouter</span>
+              <span className="hidden lg:inline">{(t as any)?.actions?.addNewListing || 'Add New Listing'}</span>
             </Link>
           </div>
           <div className="divide-y flex-1 overflow-y-auto">
             {filteredListings?.length > 0 ? (
               filteredListings.map((listing: any, index: number) => (
-                <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center justify-between">
+                <div key={index} className="p-3 lg:p-4 hover:bg-gray-50 transition-colors">
+                  {/* Mobile layout */}
+                  <div className="lg:hidden">
+                    <div className="flex gap-3">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shadow-sm flex-shrink-0">
+                        {listing.images?.[0] ? (
+                          <img
+                            src={listing.images[0].url}
+                            alt={listing.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <FaBed size={20} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="font-semibold text-gray-900 text-sm truncate">{listing.title}</h4>
+                          <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full flex-shrink-0 ${
+                            listing.status === 'active' ? 'bg-green-100 text-green-800' :
+                            listing.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {listing.status === 'active' ? 'Actif' : listing.status === 'paused' ? 'Pause' : 'Brouillon'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 capitalize mt-0.5">{listing.category}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-500 flex items-center">
+                              <FaEye className="mr-0.5" size={10} />
+                              {listing.stats?.views || 0}
+                            </span>
+                            <span className="text-[10px] text-gray-500 flex items-center">
+                              <FaStar className="mr-0.5 text-yellow-400" size={10} />
+                              {listing.stats?.averageRating?.toFixed(1) || '0.0'}
+                            </span>
+                          </div>
+                          <div className="flex gap-1">
+                            <Link
+                              href={`/dashboard/my-listings/edit/${listing._id}`}
+                              className="p-1.5 text-gray-500 hover:text-blue-600 bg-gray-100 rounded-lg"
+                            >
+                              <FaEdit size={14} />
+                            </Link>
+                            <button
+                              onClick={() => handleListingAction(
+                                listing._id,
+                                listing.status === 'active' ? 'paused' : 'active'
+                              )}
+                              className="p-1.5 text-gray-500 hover:text-yellow-600 bg-gray-100 rounded-lg"
+                            >
+                              {listing.status === 'active' ? <FaPause size={14} /> : <FaPlay size={14} />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Desktop layout */}
+                  <div className="hidden lg:flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shadow-sm flex-shrink-0">
                         {listing.images?.[0] ? (
@@ -558,7 +681,7 @@ export default function HostDashboard() {
                       </span>
                       <div className="flex space-x-2">
                         <Link
-                          href={`/host/listings/${listing._id}/edit`}
+                          href={`/dashboard/my-listings/edit/${listing._id}`}
                           className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         >
                           <FaEdit size={16} />
@@ -578,12 +701,12 @@ export default function HostDashboard() {
                 </div>
               ))
             ) : (
-              <div className="p-12 text-center text-gray-500">
-                <FaBed className="mx-auto text-4xl text-gray-300 mb-3" />
-                <p className="mb-4">{(t as any)?.emptyStates?.noListings || 'No listings yet'}</p>
+              <div className="p-8 lg:p-12 text-center text-gray-500">
+                <FaBed className="mx-auto text-3xl lg:text-4xl text-gray-300 mb-3" />
+                <p className="mb-4 text-sm lg:text-base">{(t as any)?.emptyStates?.noListings || 'No listings yet'}</p>
                 <Link
                   href="/host/listings/create"
-                  className="inline-block px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors"
+                  className="inline-block px-4 py-2 lg:px-6 lg:py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors text-sm"
                 >
                   {(t as any)?.actions?.createFirstListing || 'Create Your First Listing'}
                 </Link>
@@ -594,26 +717,65 @@ export default function HostDashboard() {
       )}
 
       {selectedTab === 'bookings' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 h-[600px] flex flex-col overflow-hidden">
-          <div className="p-6 border-b bg-gradient-to-r from-purple-50 to-purple-100">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 lg:h-[600px] flex flex-col overflow-hidden">
+          <div className="p-4 lg:p-6 border-b bg-gradient-to-r from-purple-50 to-purple-100">
+            <h3 className="text-base lg:text-lg font-semibold text-gray-900 flex items-center">
               <FaClipboardCheck className="mr-2 text-purple-600" />
               {(t as any)?.sections?.allBookings?.title || 'All Bookings'}
             </h3>
-            <p className="text-sm text-gray-600 mt-1">{(t as any)?.sections?.allBookings?.subtitle || 'View and manage all bookings'}</p>
+            <p className="text-xs lg:text-sm text-gray-600 mt-1 hidden lg:block">{(t as any)?.sections?.allBookings?.subtitle || 'View and manage all bookings'}</p>
           </div>
-          
+
           {loadingBookings ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-              <p className="ml-3 text-gray-600">Loading bookings...</p>
+            <div className="flex items-center justify-center py-8 lg:py-12">
+              <div className="animate-spin rounded-full h-8 w-8 lg:h-12 lg:w-12 border-b-2 border-purple-600"></div>
+              <p className="ml-3 text-gray-600 text-sm">Loading bookings...</p>
             </div>
           ) : (
             <div className="divide-y flex-1 overflow-y-auto">
               {filteredAllBookings?.length > 0 ? (
                 filteredAllBookings.map((booking: any, index: number) => (
-                  <div key={booking._id || index} className="p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
+                  <div key={booking._id || index} className="p-3 lg:p-4 hover:bg-gray-50 transition-colors">
+                    {/* Mobile layout */}
+                    <div className="lg:hidden">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-gray-900 text-sm truncate">
+                              {booking.guest?.firstName || 'N/A'} {booking.guest?.lastName || ''}
+                            </h4>
+                            <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full flex-shrink-0 ${
+                              booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                              booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              booking.status === 'active' ? 'bg-blue-100 text-blue-800' :
+                              booking.status === 'completed' ? 'bg-purple-100 text-purple-800' :
+                              booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {booking.status === 'confirmed' ? 'Confirmé' :
+                               booking.status === 'pending' ? 'En attente' :
+                               booking.status === 'active' ? 'Actif' :
+                               booking.status === 'completed' ? 'Terminé' :
+                               booking.status === 'cancelled' ? 'Annulé' :
+                               booking.status}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">{booking.listing?.title || 'Listing N/A'}</p>
+                          <div className="flex items-center justify-between mt-1.5">
+                            <p className="text-xs text-gray-500">
+                              {booking.checkIn ? new Date(booking.checkIn).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : 'N/A'}
+                              {' - '}
+                              {booking.checkOut ? new Date(booking.checkOut).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : 'N/A'}
+                            </p>
+                            <span className="font-bold text-[#FF6B35] text-sm">
+                              {booking.pricing?.totalAmount || booking.totalPrice || 0} DZD
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Desktop layout */}
+                    <div className="hidden lg:flex items-center justify-between">
                       <div>
                         <h4 className="font-semibold text-gray-900">
                           {booking.guest?.firstName || 'N/A'} {booking.guest?.lastName || ''}
@@ -648,9 +810,9 @@ export default function HostDashboard() {
                   </div>
                 ))
               ) : (
-                <div className="p-12 text-center text-gray-500">
-                  <FaClipboardCheck className="mx-auto text-4xl text-gray-300 mb-3" />
-                  <p>{(t as any)?.emptyStates?.noBookings || 'No bookings yet'}</p>
+                <div className="p-8 lg:p-12 text-center text-gray-500">
+                  <FaClipboardCheck className="mx-auto text-3xl lg:text-4xl text-gray-300 mb-3" />
+                  <p className="text-sm lg:text-base">{(t as any)?.emptyStates?.noBookings || 'No bookings yet'}</p>
                 </div>
               )}
             </div>
@@ -659,19 +821,59 @@ export default function HostDashboard() {
       )}
 
       {selectedTab === 'reviews' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 h-[600px] flex flex-col overflow-hidden">
-          <div className="p-6 border-b bg-gradient-to-r from-yellow-50 to-yellow-100">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 lg:h-[600px] flex flex-col overflow-hidden">
+          <div className="p-4 lg:p-6 border-b bg-gradient-to-r from-yellow-50 to-yellow-100">
+            <h3 className="text-base lg:text-lg font-semibold text-gray-900 flex items-center">
               <FaStar className="mr-2 text-yellow-600" />
               {(t as any)?.sections?.recentReviews?.title || 'Recent Reviews'}
             </h3>
-            <p className="text-sm text-gray-600 mt-1">{(t as any)?.sections?.recentReviews?.subtitle || 'Latest guest feedback'}</p>
+            <p className="text-xs lg:text-sm text-gray-600 mt-1 hidden lg:block">{(t as any)?.sections?.recentReviews?.subtitle || 'Latest guest feedback'}</p>
           </div>
           <div className="divide-y flex-1 overflow-y-auto">
             {recentReviews?.length > 0 ? (
               recentReviews.map((review: any, index: number) => (
-                <div key={index} className="p-5 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start space-x-4">
+                <div key={index} className="p-3 lg:p-5 hover:bg-gray-50 transition-colors">
+                  {/* Mobile layout */}
+                  <div className="lg:hidden">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                        {review.reviewer?.avatar ? (
+                          <img
+                            src={review.reviewer.avatar}
+                            alt={review.reviewer.firstName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#FF6B35] to-[#ff8255] text-white font-bold text-sm">
+                            {review.reviewer?.firstName?.[0]}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h4 className="font-semibold text-gray-900 text-sm truncate">
+                            {review.reviewer?.firstName} {review.reviewer?.lastName}
+                          </h4>
+                          <div className="flex items-center flex-shrink-0">
+                            {[...Array(5)].map((_, i) => (
+                              <FaStar
+                                key={i}
+                                className={i < review.rating ? 'text-yellow-400' : 'text-gray-200'}
+                                size={10}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{review.listing?.title}</p>
+                        <p className="text-xs text-gray-700 mt-1.5 line-clamp-2">{review.comment}</p>
+                        <p className="text-[10px] text-gray-400 mt-1">
+                          {new Date(review.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Desktop layout */}
+                  <div className="hidden lg:flex items-start space-x-4">
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 shadow-sm">
                       {review.reviewer?.avatar ? (
                         <img
@@ -710,9 +912,9 @@ export default function HostDashboard() {
                 </div>
               ))
             ) : (
-              <div className="p-12 text-center text-gray-500">
-                <FaStar className="mx-auto text-4xl text-gray-300 mb-3" />
-                <p>{(t as any)?.emptyStates?.noReviews || 'No reviews yet'}</p>
+              <div className="p-8 lg:p-12 text-center text-gray-500">
+                <FaStar className="mx-auto text-3xl lg:text-4xl text-gray-300 mb-3" />
+                <p className="text-sm lg:text-base">{(t as any)?.emptyStates?.noReviews || 'No reviews yet'}</p>
               </div>
             )}
           </div>

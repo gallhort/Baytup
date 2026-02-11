@@ -8,6 +8,7 @@ const {
 } = require('../controllers/hostApplicationController');
 const { protect } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { validateFileContent, handleUploadError } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -37,6 +38,6 @@ router.post('/:id/submit', submitApplication);
 // @route   POST /api/host-applications/:id/documents/:documentType
 // @desc    Upload document
 // @access  Private
-router.post('/:id/documents/:documentType', upload.single('document'), uploadDocument);
+router.post('/:id/documents/:documentType', upload.single('document'), handleUploadError, validateFileContent, uploadDocument);
 
 module.exports = router;

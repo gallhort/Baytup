@@ -4,6 +4,7 @@ const Booking = require('../models/Booking');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const slickPayService = require('../services/slickPayService');
+// Note: chargilyService is loaded lazily to avoid server crash if @chargily/chargily-pay not installed
 const escrowService = require('../services/escrowService');
 const stripeService = require('../services/stripeService');
 
@@ -55,45 +56,55 @@ const handleSlickPayWebhook = catchAsync(async (req, res, next) => {
   switch (eventType) {
     case 'invoice.paid':
     case 'paid':
-    case 'completed':
-      // Payment successful - idempotency check
-      if (booking.payment.status !== 'paid') {
-        booking.status = 'confirmed';
-        booking.payment.status = 'paid';
-        booking.payment.paidAmount = booking.pricing.totalAmount;
-        booking.payment.paidAt = new Date();
+    case 'completed': {
+      // Payment successful - atomic update prevents race condition (P0 #1)
+      const updatedSlickPay = await Booking.findOneAndUpdate(
+        { _id: booking._id, 'payment.status': { $ne: 'paid' } },
+        {
+          $set: {
+            status: 'confirmed',
+            'payment.status': 'paid',
+            'payment.paidAmount': booking.pricing.totalAmount,
+            'payment.paidAt': new Date()
+          }
+        },
+        { new: true }
+      ).populate('listing', 'title host')
+       .populate('guest', 'firstName lastName email')
+       .populate('host', 'firstName lastName email');
 
-        await booking.save({ validateBeforeSave: false });
-
-        // ✅ Create escrow for fund holding
+      if (updatedSlickPay) {
+        // Create escrow - revert payment if escrow fails (P0 #2)
         try {
-          const escrow = await escrowService.createEscrow(booking, {
+          const escrow = await escrowService.createEscrow(updatedSlickPay, {
             provider: 'slickpay',
-            transactionId: booking.payment.transactionId
+            transactionId: updatedSlickPay.payment.transactionId
           });
-          console.log(`[Webhook] Created escrow ${escrow._id} for booking ${booking._id}`);
+          console.log(`[Webhook] Created escrow ${escrow._id} for booking ${updatedSlickPay._id}`);
         } catch (escrowError) {
-          console.error('[Webhook] Failed to create escrow:', escrowError);
+          console.error('[Webhook] Escrow failed, reverting payment:', escrowError);
+          await Booking.findByIdAndUpdate(updatedSlickPay._id, {
+            $set: { 'payment.status': 'escrow_failed', 'payment.escrowError': escrowError.message }
+          });
+          return res.status(200).json({ status: 'error', message: 'Escrow creation failed' });
         }
 
-        // ✅ Notify guest
         await Notification.createNotification({
-          recipient: booking.guest._id,
+          recipient: updatedSlickPay.guest._id,
           type: 'booking_payment_successful',
           title: 'Paiement confirmé!',
-          message: `Votre paiement de ${booking.pricing.totalAmount} DZD pour "${booking.listing?.title}" a été confirmé.`,
-          data: { bookingId: booking._id },
-          link: `/dashboard/bookings/${booking._id}`
+          message: `Votre paiement de ${updatedSlickPay.pricing.totalAmount} DZD pour "${updatedSlickPay.listing?.title}" a été confirmé.`,
+          data: { bookingId: updatedSlickPay._id },
+          link: `/dashboard/bookings/${updatedSlickPay._id}`
         });
 
-        // ✅ Notify host
         await Notification.createNotification({
-          recipient: booking.host._id,
+          recipient: updatedSlickPay.host._id,
           type: 'booking_confirmed',
           title: 'Nouvelle réservation confirmée!',
-          message: `${booking.guest?.firstName} a réservé "${booking.listing?.title}" du ${new Date(booking.startDate).toLocaleDateString('fr-FR')} au ${new Date(booking.endDate).toLocaleDateString('fr-FR')}.`,
-          data: { bookingId: booking._id },
-          link: `/dashboard/host/bookings/${booking._id}`
+          message: `${updatedSlickPay.guest?.firstName} a réservé "${updatedSlickPay.listing?.title}" du ${new Date(updatedSlickPay.startDate).toLocaleDateString('fr-FR')} au ${new Date(updatedSlickPay.endDate).toLocaleDateString('fr-FR')}.`,
+          data: { bookingId: updatedSlickPay._id },
+          link: `/dashboard/host/bookings/${updatedSlickPay._id}`
         });
       }
 
@@ -101,6 +112,7 @@ const handleSlickPayWebhook = catchAsync(async (req, res, next) => {
         status: 'success',
         message: 'Payment confirmed, booking updated'
       });
+    }
 
     case 'invoice.failed':
     case 'failed':
@@ -186,6 +198,191 @@ const handleSlickPayWebhook = catchAsync(async (req, res, next) => {
     default:
       // Unknown event type
 
+      return res.status(200).json({
+        status: 'success',
+        message: 'Webhook received'
+      });
+  }
+});
+
+/**
+ * Handle Chargily Pay webhook for payment notifications
+ * This endpoint is called by Chargily when a payment status changes
+ * Events: checkout.paid, checkout.failed, checkout.canceled, checkout.expired
+ */
+const handleChargilyWebhook = catchAsync(async (req, res, next) => {
+  // Lazy load chargilyService to avoid crash if package not installed
+  const chargilyService = require('../services/chargilyService');
+
+  const signature = req.headers['signature'] || req.headers['x-chargily-signature'];
+  const rawBody = req.rawBody; // Set by bodyParser middleware
+
+  console.log('[Chargily Webhook] Received webhook:', {
+    hasSignature: !!signature,
+    hasRawBody: !!rawBody,
+    eventType: req.body?.type
+  });
+
+  // Verify webhook signature
+  if (!chargilyService.verifyWebhookSignature(rawBody, signature)) {
+    console.error('[Chargily Webhook] Invalid signature');
+    return res.status(401).json({
+      status: 'error',
+      message: 'Invalid webhook signature'
+    });
+  }
+
+  // Process the webhook event
+  const processedEvent = chargilyService.processWebhookEvent(req.body);
+  const { eventType, checkoutId, metadata } = processedEvent;
+
+  // Extract booking ID from metadata
+  const bookingId = metadata?.bookingId;
+
+  if (!bookingId) {
+    console.error('[Chargily Webhook] Booking ID not found in metadata');
+    return res.status(400).json({
+      status: 'error',
+      message: 'Booking ID not found in webhook metadata'
+    });
+  }
+
+  // Find booking
+  const booking = await Booking.findById(bookingId)
+    .populate('listing', 'title host')
+    .populate('guest', 'firstName lastName email')
+    .populate('host', 'firstName lastName email');
+
+  if (!booking) {
+    console.error('[Chargily Webhook] Booking not found:', bookingId);
+    return res.status(404).json({
+      status: 'error',
+      message: 'Booking not found'
+    });
+  }
+
+  // Process based on event type
+  switch (eventType) {
+    case 'payment_success': {
+      // Payment successful - atomic update prevents race condition (P0 #1)
+      const updatedChargily = await Booking.findOneAndUpdate(
+        { _id: booking._id, 'payment.status': { $ne: 'paid' } },
+        {
+          $set: {
+            status: 'confirmed',
+            'payment.status': 'paid',
+            'payment.paidAmount': booking.pricing.totalAmount,
+            'payment.paidAt': new Date(),
+            'payment.transactionId': checkoutId
+          }
+        },
+        { new: true }
+      ).populate('listing', 'title host')
+       .populate('guest', 'firstName lastName email')
+       .populate('host', 'firstName lastName email');
+
+      if (updatedChargily) {
+        console.log(`[Chargily Webhook] Payment confirmed for booking ${bookingId}`);
+
+        // Create escrow - revert payment if escrow fails (P0 #2)
+        try {
+          const escrow = await escrowService.createEscrow(updatedChargily, {
+            provider: 'chargily',
+            transactionId: checkoutId
+          });
+          console.log(`[Chargily Webhook] Created escrow ${escrow._id} for booking ${updatedChargily._id}`);
+        } catch (escrowError) {
+          console.error('[Chargily Webhook] Escrow failed, reverting payment:', escrowError);
+          await Booking.findByIdAndUpdate(updatedChargily._id, {
+            $set: { 'payment.status': 'escrow_failed', 'payment.escrowError': escrowError.message }
+          });
+          return res.status(200).json({ status: 'error', message: 'Escrow creation failed' });
+        }
+
+        await Notification.createNotification({
+          recipient: updatedChargily.guest._id,
+          type: 'booking_payment_successful',
+          title: 'Paiement confirmé!',
+          message: `Votre paiement de ${updatedChargily.pricing.totalAmount} DZD pour "${updatedChargily.listing?.title}" a été confirmé.`,
+          data: { bookingId: updatedChargily._id },
+          link: `/dashboard/bookings/${updatedChargily._id}`
+        });
+
+        await Notification.createNotification({
+          recipient: updatedChargily.host._id,
+          type: 'booking_confirmed',
+          title: 'Nouvelle réservation confirmée!',
+          message: `${updatedChargily.guest?.firstName} a réservé "${updatedChargily.listing?.title}" du ${new Date(updatedChargily.startDate).toLocaleDateString('fr-FR')} au ${new Date(updatedChargily.endDate).toLocaleDateString('fr-FR')}.`,
+          data: { bookingId: updatedChargily._id },
+          link: `/dashboard/host/bookings/${updatedChargily._id}`
+        });
+      }
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Payment confirmed, booking updated'
+      });
+    }
+
+    case 'payment_failed':
+      booking.payment.status = 'failed';
+      booking.status = 'expired';
+
+      await booking.save({ validateBeforeSave: false });
+
+      console.log(`[Chargily Webhook] Payment failed for booking ${bookingId}`);
+
+      // Notify guest
+      await Notification.createNotification({
+        recipient: booking.guest._id,
+        type: 'booking_payment_failed',
+        title: 'Paiement échoué',
+        message: `Votre paiement pour "${booking.listing?.title}" a échoué. Veuillez réessayer.`,
+        data: { bookingId: booking._id },
+        link: `/dashboard/bookings/${booking._id}`
+      });
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Payment failure recorded'
+      });
+
+    case 'payment_canceled':
+    case 'payment_expired':
+      booking.payment.status = 'failed';
+      booking.status = 'cancelled_by_guest';
+
+      await booking.save({ validateBeforeSave: false });
+
+      console.log(`[Chargily Webhook] Payment ${eventType} for booking ${bookingId}`);
+
+      // Notify guest
+      await Notification.createNotification({
+        recipient: booking.guest._id,
+        type: 'booking_cancelled',
+        title: eventType === 'payment_expired' ? 'Paiement expiré' : 'Paiement annulé',
+        message: `Votre paiement pour "${booking.listing?.title}" a été ${eventType === 'payment_expired' ? 'expiré' : 'annulé'}.`,
+        data: { bookingId: booking._id },
+        link: `/dashboard/bookings/${booking._id}`
+      });
+
+      // Notify host
+      await Notification.createNotification({
+        recipient: booking.host._id,
+        type: 'booking_cancelled',
+        title: 'Réservation annulée',
+        message: `La réservation de ${booking.guest?.firstName} pour "${booking.listing?.title}" a été annulée (paiement non effectué).`,
+        data: { bookingId: booking._id },
+        link: `/dashboard/host/bookings/${booking._id}`
+      });
+
+      return res.status(200).json({
+        status: 'success',
+        message: `Payment ${eventType} recorded`
+      });
+
+    default:
+      console.log('[Chargily Webhook] Unknown event type:', eventType);
       return res.status(200).json({
         status: 'success',
         message: 'Webhook received'
@@ -325,7 +522,8 @@ const handleStripeWebhook = async (req, res) => {
     res.json({ received: true });
   } catch (error) {
     console.error(`[Stripe Webhook] Error processing ${event.type}:`, error);
-    res.status(500).json({ error: 'Webhook processing failed' });
+    // Always return 200 to prevent Stripe retry loops (P0 #3)
+    res.status(200).json({ received: true, error: 'Processing failed, will retry internally' });
   }
 };
 
@@ -350,47 +548,63 @@ async function handleStripePaymentSuccess(paymentIntent) {
     return;
   }
 
-  // Update booking payment status
-  if (booking.payment.status !== 'paid') {
-    booking.status = 'confirmed';
-    booking.payment.status = 'paid';
-    booking.payment.paidAmount = paymentIntent.amount / 100;
-    booking.payment.paidAt = new Date();
-    booking.payment.stripeChargeId = paymentIntent.latest_charge;
+  // Atomic update prevents race condition (P0 #1)
+  const updatedStripe = await Booking.findOneAndUpdate(
+    { _id: bookingId, 'payment.status': { $ne: 'paid' } },
+    {
+      $set: {
+        status: 'confirmed',
+        'payment.status': 'paid',
+        'payment.paidAmount': paymentIntent.amount / 100,
+        'payment.paidAt': new Date(),
+        'payment.stripeChargeId': paymentIntent.latest_charge
+      }
+    },
+    { new: true }
+  ).populate('listing', 'title')
+   .populate('guest', 'firstName lastName email')
+   .populate('host', 'firstName lastName email');
 
-    await booking.save({ validateBeforeSave: false });
-
+  if (updatedStripe) {
     console.log(`[Stripe Webhook] Payment successful for booking ${bookingId}`);
 
-    // Create escrow for fund holding
+    // Create escrow - revert if fails (P0 #2)
     try {
-      const escrow = await escrowService.createEscrow(booking, {
+      const escrow = await escrowService.createEscrow(updatedStripe, {
         provider: 'stripe',
         transactionId: paymentIntent.id
       });
-      console.log(`[Stripe Webhook] Created escrow ${escrow._id} for booking ${booking._id}`);
+      console.log(`[Stripe Webhook] Created escrow ${escrow._id} for booking ${updatedStripe._id}`);
     } catch (escrowError) {
-      console.error('[Stripe Webhook] Failed to create escrow:', escrowError);
+      console.error('[Stripe Webhook] Escrow failed, reverting payment:', escrowError);
+      await Booking.findByIdAndUpdate(updatedStripe._id, {
+        $set: { 'payment.status': 'escrow_failed', 'payment.escrowError': escrowError.message }
+      });
+      return;
     }
 
-    // Notify guest
+    // Use actual currency from booking (P1 #18)
+    const currency = (updatedStripe.pricing.currency || 'EUR').toUpperCase();
+    const formattedAmount = currency === 'EUR'
+      ? `${updatedStripe.pricing.totalAmount.toFixed(2)} €`
+      : `${updatedStripe.pricing.totalAmount} ${currency}`;
+
     await Notification.createNotification({
-      recipient: booking.guest._id,
+      recipient: updatedStripe.guest._id,
       type: 'booking_payment_successful',
       title: 'Paiement confirmé!',
-      message: `Votre paiement de ${booking.pricing.totalAmount} EUR pour "${booking.listing?.title}" a été confirmé.`,
-      data: { bookingId: booking._id },
-      link: `/dashboard/bookings/${booking._id}`
+      message: `Votre paiement de ${formattedAmount} pour "${updatedStripe.listing?.title}" a été confirmé.`,
+      data: { bookingId: updatedStripe._id },
+      link: `/dashboard/bookings/${updatedStripe._id}`
     });
 
-    // Notify host
     await Notification.createNotification({
-      recipient: booking.host._id,
+      recipient: updatedStripe.host._id,
       type: 'booking_confirmed',
       title: 'Nouvelle réservation confirmée!',
-      message: `${booking.guest?.firstName} a réservé "${booking.listing?.title}" du ${new Date(booking.startDate).toLocaleDateString('fr-FR')} au ${new Date(booking.endDate).toLocaleDateString('fr-FR')}.`,
-      data: { bookingId: booking._id },
-      link: `/dashboard/host/bookings/${booking._id}`
+      message: `${updatedStripe.guest?.firstName} a réservé "${updatedStripe.listing?.title}" du ${new Date(updatedStripe.startDate).toLocaleDateString('fr-FR')} au ${new Date(updatedStripe.endDate).toLocaleDateString('fr-FR')}.`,
+      data: { bookingId: updatedStripe._id },
+      link: `/dashboard/host/bookings/${updatedStripe._id}`
     });
   }
 }
@@ -762,6 +976,7 @@ async function handleStripeAccountDeauthorized(account) {
 
 module.exports = {
   handleSlickPayWebhook,
+  handleChargilyWebhook,
   testWebhook,
   handleStripeWebhook
 };

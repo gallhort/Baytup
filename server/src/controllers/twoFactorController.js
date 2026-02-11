@@ -38,7 +38,7 @@ exports.get2FAStatus = async (req, res) => {
  */
 exports.setup2FA = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.id);
 
     // Si déjà activée, retourner erreur
     if (user.twoFactorEnabled) {
@@ -105,7 +105,7 @@ exports.verifySetup = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user._id).select('+twoFactorSecret');
+    const user = await User.findById(req.user.id).select('+twoFactorSecret');
 
     if (!user.twoFactorSecret) {
       return res.status(400).json({
@@ -184,7 +184,7 @@ exports.verify2FA = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user._id)
+    const user = await User.findById(req.user.id)
       .select('+twoFactorSecret +backupCodes');
 
     if (!user.twoFactorEnabled) {
@@ -303,7 +303,7 @@ exports.disable2FA = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user._id).select('+password');
+    const user = await User.findById(req.user.id).select('+password');
 
     // Vérifier password
     const isPasswordCorrect = await user.comparePassword(password);
@@ -352,7 +352,7 @@ exports.disable2FA = async (req, res) => {
  */
 exports.regenerateBackupCodes = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.id);
 
     if (!user.twoFactorEnabled) {
       return res.status(400).json({

@@ -22,7 +22,7 @@ const {
   mongoIdValidation,
   validate
 } = require('../utils/validation');
-const { uploadListingImage, handleUploadError } = require('../middleware/upload');
+const { uploadListingImage, handleUploadError, validateFileContent } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -83,7 +83,7 @@ router.get('/:id', mongoIdValidation, validate, optionalAuth, async (req, res, n
 router.use(protect); // All routes below this middleware are protected
 
 // Image upload route - must come before /:id route
-router.post('/upload-images', uploadListingImage.array('images', 10), handleUploadError, (req, res) => {
+router.post('/upload-images', uploadListingImage.array('images', 10), handleUploadError, validateFileContent, (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
@@ -133,7 +133,7 @@ router.delete('/:id', mongoIdValidation, validate, async (req, res) => {
       });
     }
 
-    if (listing.host.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (listing.host.toString() !== req.user.id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this listing'
@@ -161,7 +161,7 @@ router.delete('/:id', mongoIdValidation, validate, async (req, res) => {
     }
 
     // ✅ SOFT DELETE
-    await listing.softDelete(req.user._id);
+    await listing.softDelete(req.user.id);
 
     res.json({
       success: true,
@@ -196,7 +196,7 @@ router.post('/:id/restore', mongoIdValidation, validate, async (req, res) => {
       });
     }
 
-    if (listing.host.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (listing.host.toString() !== req.user.id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to restore this listing'
@@ -221,14 +221,16 @@ router.post('/:id/restore', mongoIdValidation, validate, async (req, res) => {
 
 router.post('/:id/favorite', mongoIdValidation, validate, toggleFavorite);
 
-// Test route
-router.get('/test/status', (req, res) => {
-  res.json({
-    status: 'success',
-    message: 'Listings routes working',
-    timestamp: new Date().toISOString()
+// Test route - dev only (P1 #31)
+if (process.env.NODE_ENV !== 'production') {
+  router.get('/test/status', (req, res) => {
+    res.json({
+      status: 'success',
+      message: 'Listings routes working',
+      timestamp: new Date().toISOString()
+    });
   });
-});
+}
 
 // Pause/Activate listing
 router.patch('/:id/status', mongoIdValidation, validate, async (req, res) => {

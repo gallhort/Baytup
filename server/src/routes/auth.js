@@ -39,13 +39,15 @@ router.get('/logout', protect, logout);
 router.put('/updatedetails', protect, updateDetails);
 router.put('/updatepassword', protect, updatePasswordValidation, validate, updatePassword);
 
-// Test route
-router.get('/test', (req, res) => {
-  res.json({
-    status: 'success',
-    message: 'Auth routes working',
-    timestamp: new Date().toISOString()
+// Test route - dev only (P1 #31)
+if (process.env.NODE_ENV !== 'production') {
+  router.get('/test', (req, res) => {
+    res.json({
+      status: 'success',
+      message: 'Auth routes working',
+      timestamp: new Date().toISOString()
+    });
   });
-});
+}
 
 module.exports = router;

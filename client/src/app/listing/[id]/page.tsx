@@ -118,6 +118,8 @@ export default function ListingDetailPage() {
     infants: 0
   });
   const [dateError, setDateError] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [showDesktopCalendar, setShowDesktopCalendar] = useState(false);
 
   // ✅ NEW: Initialize booking state from URL params (from search page)
   useEffect(() => {
@@ -607,31 +609,36 @@ export default function ListingDetailPage() {
       )}
 
       {/* Header */}
-      <div className="border-b border-gray-200 sticky top-0 bg-white z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="sticky top-0 bg-white z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => router.back()}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              onClick={() => {
+                const fromEditor = searchParams.get('from') === 'editor';
+                if (fromEditor && params.id) {
+                  router.push(`/dashboard/my-listings/edit/${params.id}`);
+                } else {
+                  router.back();
+                }
+              }}
+              className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Retour"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button
                 onClick={handleShare}
-                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 rounded-xl transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Partager"
               >
                 {copied ? <CheckIcon className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
-                <span className="font-semibold hidden sm:inline">{copied ? (t as any)?.header?.copied || 'Copied!' : (t as any)?.header?.share || 'Share'}</span>
               </button>
-              <div className="flex items-center gap-2">
-                <WishlistButton
-                  listingId={listing._id || listing.id || ''}
-                  size="md"
-                  showTooltip={false}
-                />
-                <span className="font-semibold hidden sm:inline">{(t as any)?.header?.save || 'Save'}</span>
-              </div>
+              <WishlistButton
+                listingId={listing._id || listing.id || ''}
+                size="md"
+                showTooltip={false}
+              />
             </div>
           </div>
         </div>
@@ -640,111 +647,136 @@ export default function ListingDetailPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Title Section */}
-        <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">{listing.title}</h1>
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-1">
-              <Star className="w-5 h-5 fill-current text-[#FF6B35]" />
-              <span className="font-semibold">{listing.stats?.averageRating?.toFixed(1) || (t as any)?.title?.new || 'New'}</span>
-              {listing.stats?.reviewCount && listing.stats.reviewCount > 0 && (
-                <span className="text-gray-600">({listing.stats.reviewCount} {(t as any)?.title?.reviews || 'reviews'})</span>
-              )}
-            </div>
-            <span className="text-gray-400">•</span>
-            <div className="flex items-center gap-1">
-              <MapPin className="w-4 h-4 text-gray-600" />
-              <span className="text-gray-700 font-medium">
-                {listing.address?.city}, {listing.address?.state}, {listing.address?.country}
-              </span>
-            </div>
-            {host?.hostInfo?.superhost && (
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">{listing.title}</h1>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-700">
+            {listing.stats?.reviewCount && listing.stats.reviewCount > 0 ? (
               <>
-                <span className="text-gray-400">•</span>
-                <div className="flex items-center gap-1 px-3 py-1 bg-[#FF6B35]/10 rounded-full">
-                  <Award className="w-4 h-4 text-[#FF6B35]" />
-                  <span className="text-[#FF6B35] font-semibold">{(t as any)?.title?.superhost || 'Superhost'}</span>
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 fill-current text-gray-900" />
+                  <span className="font-medium">{listing.stats?.averageRating?.toFixed(1)}</span>
                 </div>
+                <span>·</span>
+                <span className="underline">{listing.stats.reviewCount} {listing.stats.reviewCount > 1 ? 'commentaires' : 'commentaire'}</span>
+                <span>·</span>
+              </>
+            ) : (
+              <>
+                <span className="text-gray-500">Nouveau</span>
+                <span>·</span>
               </>
             )}
+            {host?.hostInfo?.superhost && (
+              <>
+                <div className="flex items-center gap-1">
+                  <Award className="w-4 h-4" />
+                  <span>Superhôte</span>
+                </div>
+                <span>·</span>
+              </>
+            )}
+            <span className="underline">
+              {listing.address?.city}, {listing.address?.country}
+            </span>
           </div>
         </div>
 
-        {/* Images Grid */}
+        {/* Images - Mobile Carousel / Desktop Grid */}
         <div className="mb-8 rounded-2xl overflow-hidden">
           {displayImages.length === 0 ? (
             <div className="aspect-[16/9] bg-gray-200 flex items-center justify-center">
               <Camera className="w-16 h-16 text-gray-400" />
             </div>
-          ) : displayImages.length === 1 ? (
-            <div className="relative aspect-[16/9] bg-gray-100">
-              <img
-                src={getImageFromListing(displayImages[0])}
-                alt={listing.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = getImageUrl('');
-                }}
-              />
-            </div>
           ) : (
-            <div className="grid grid-cols-4 gap-2 h-[500px]">
-              {/* Main large image */}
-              <div
-                className="col-span-2 row-span-2 relative group cursor-pointer"
-                onClick={() => {
-                  setCurrentImageIndex(0);
-                  setShowAllPhotos(true);
-                }}
-              >
-                <img
-                  src={getImageFromListing(displayImages[0])}
-                  alt={listing.title}
-                  className="w-full h-full object-cover group-hover:brightness-90 transition-all"
-                  onError={(e) => {
-                    e.currentTarget.src = getImageUrl('');
-                  }}
-                />
+            <>
+              {/* Mobile: Full-width carousel */}
+              <div className="lg:hidden relative">
+                <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                  <img
+                    src={getImageFromListing(displayImages[currentImageIndex])}
+                    alt={listing.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = getImageUrl('');
+                    }}
+                    onClick={() => setShowAllPhotos(true)}
+                  />
+                  {/* Image counter badge */}
+                  <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/60 backdrop-blur-sm rounded-full">
+                    <span className="text-white text-sm font-medium">
+                      {currentImageIndex + 1} / {displayImages.length}
+                    </span>
+                  </div>
+                  {/* Navigation arrows */}
+                  {displayImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-md"
+                      >
+                        <ChevronLeft className="w-6 h-6" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-md"
+                      >
+                        <ChevronRight className="w-6 h-6" />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
-              {/* Smaller images */}
-              {displayImages.slice(1, 5).map((img, index) => (
+              {/* Desktop: Grid layout */}
+              <div className="hidden lg:grid grid-cols-4 gap-2 h-[500px]">
+                {/* Main large image */}
                 <div
-                  key={index}
-                  className="relative group cursor-pointer"
+                  className="col-span-2 row-span-2 relative group cursor-pointer"
                   onClick={() => {
-                    setCurrentImageIndex(index + 1);
+                    setCurrentImageIndex(0);
                     setShowAllPhotos(true);
                   }}
                 >
                   <img
-                    src={getImageFromListing(img)}
-                    alt={`${listing.title} - Photo ${index + 2}`}
+                    src={getImageFromListing(displayImages[0])}
+                    alt={listing.title}
                     className="w-full h-full object-cover group-hover:brightness-90 transition-all"
                     onError={(e) => {
                       e.currentTarget.src = getImageUrl('');
                     }}
                   />
-                  {index === 3 && displayImages.length > 5 && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <button className="flex items-center gap-2 px-6 py-3 bg-white rounded-xl font-semibold hover:scale-105 transition-transform">
-                        <Maximize2 className="w-5 h-5" />
-                        {(t as any)?.imageGallery?.showAll?.replace('{count}', displayImages.length.toString())}
-                      </button>
-                    </div>
-                  )}
                 </div>
-              ))}
-            </div>
-          )}
 
-          {displayImages.length > 5 && (
-            <button
-              onClick={() => setShowAllPhotos(true)}
-              className="absolute bottom-6 right-6 flex items-center gap-2 px-6 py-3 bg-white rounded-xl font-semibold shadow-lg hover:scale-105 transition-transform"
-            >
-              <Camera className="w-5 h-5" />
-              {(t as any)?.imageGallery?.showAll?.replace('{count}', displayImages.length.toString())}
-            </button>
+                {/* Smaller images */}
+                {displayImages.slice(1, 5).map((img, index) => (
+                  <div
+                    key={index}
+                    className="relative group cursor-pointer"
+                    onClick={() => {
+                      setCurrentImageIndex(index + 1);
+                      setShowAllPhotos(true);
+                    }}
+                  >
+                    <img
+                      src={getImageFromListing(img)}
+                      alt={`${listing.title} - Photo ${index + 2}`}
+                      className="w-full h-full object-cover group-hover:brightness-90 transition-all"
+                      onError={(e) => {
+                        e.currentTarget.src = getImageUrl('');
+                      }}
+                    />
+                    {index === 3 && displayImages.length > 5 && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <button className="flex items-center gap-2 px-6 py-3 bg-white rounded-xl font-semibold hover:scale-105 transition-transform">
+                          <Maximize2 className="w-5 h-5" />
+                          {(t as any)?.imageGallery?.showAll?.replace('{count}', displayImages.length.toString()) || `Voir les ${displayImages.length} photos`}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 
@@ -754,89 +786,34 @@ export default function ListingDetailPage() {
           <div className="lg:col-span-2 space-y-8">
             {/* Host Info */}
             <div className="pb-8 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    {listing.category === 'stay' ? (t as any)?.host?.propertyHostedBy || 'Property hosted by' : (t as any)?.host?.vehicleHostedBy || 'Vehicle hosted by'} {host?.firstName} {host?.lastName}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg md:text-2xl font-semibold text-gray-900 mb-2">
+                    {listing.category === 'stay' ? (t as any)?.host?.propertyHostedBy || 'Logement entier hébergé par' : (t as any)?.host?.vehicleHostedBy || 'Véhicule proposé par'} {host?.firstName}
                   </h2>
                   {listing.category === 'stay' && listing.stayDetails && (
-                    <div className="flex items-center gap-4 text-gray-600">
-                      {listing.stayDetails.bedrooms && (
-                        <div className="flex items-center gap-1">
-                          <Bed className="w-4 h-4" />
-                          <span>{listing.stayDetails.bedrooms} {listing.stayDetails.bedrooms > 1 ? (t as any)?.host?.bedrooms || 'bedrooms' : (t as any)?.host?.bedroom || 'bedroom'}</span>
-                        </div>
-                      )}
-                      {listing.stayDetails.bathrooms && (
-                        <div className="flex items-center gap-1">
-                          <Bath className="w-4 h-4" />
-                          <span>{listing.stayDetails.bathrooms} {listing.stayDetails.bathrooms > 1 ? (t as any)?.host?.bathrooms || 'bathrooms' : (t as any)?.host?.bathroom || 'bathroom'}</span>
-                        </div>
-                      )}
-                      {listing.stayDetails.area && (
-                        <div className="flex items-center gap-1">
-                          <Home className="w-4 h-4" />
-                          <span>{listing.stayDetails.area}m²</span>
-                        </div>
-                      )}
+                    <div className="text-sm md:text-base text-gray-600">
+                      <span>
+                        {[
+                          listing.stayDetails.capacity && `${listing.stayDetails.capacity} voyageurs`,
+                          listing.stayDetails.bedrooms !== undefined && listing.stayDetails.bedrooms > 0 && `${listing.stayDetails.bedrooms} ${listing.stayDetails.bedrooms > 1 ? 'chambres' : 'chambre'}`,
+                          (listing.stayDetails as any).beds !== undefined && (listing.stayDetails as any).beds > 0 && `${(listing.stayDetails as any).beds} ${(listing.stayDetails as any).beds > 1 ? 'lits' : 'lit'}`,
+                          listing.stayDetails.bathrooms !== undefined && listing.stayDetails.bathrooms > 0 && `${listing.stayDetails.bathrooms} ${listing.stayDetails.bathrooms > 1 ? 'salles de bain' : 'salle de bain'}`
+                        ].filter(Boolean).join(' · ')}
+                      </span>
                     </div>
                   )}
                   {listing.category === 'vehicle' && listing.vehicleDetails && (
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      {listing.vehicleDetails.vehicleType && (
-                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
-                          <Car className="w-5 h-5 text-[#FF6B35]" />
-                          <div>
-                            <div className="text-xs text-gray-500">{(t as any)?.host?.type || 'Type'}</div>
-                            <div className="font-semibold">{getVehicleTypeLabel(listing.vehicleDetails.vehicleType)}</div>
-                          </div>
-                        </div>
-                      )}
-                      {listing.vehicleDetails.make && listing.vehicleDetails.model && (
-                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
-                          <Car className="w-5 h-5 text-[#FF6B35]" />
-                          <div>
-                            <div className="text-xs text-gray-500">{(t as any)?.host?.makeAndModel || 'Make & Model'}</div>
-                            <div className="font-semibold">{listing.vehicleDetails.make} {listing.vehicleDetails.model}</div>
-                          </div>
-                        </div>
-                      )}
-                      {listing.vehicleDetails.year && (
-                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
-                          <Calendar className="w-5 h-5 text-[#FF6B35]" />
-                          <div>
-                            <div className="text-xs text-gray-500">{(t as any)?.host?.year || 'Year'}</div>
-                            <div className="font-semibold">{listing.vehicleDetails.year}</div>
-                          </div>
-                        </div>
-                      )}
-                      {listing.vehicleDetails.seats && (
-                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
-                          <Users className="w-5 h-5 text-[#FF6B35]" />
-                          <div>
-                            <div className="text-xs text-gray-500">{(t as any)?.host?.seats || 'Seats'}</div>
-                            <div className="font-semibold">{listing.vehicleDetails.seats} {(t as any)?.host?.seatsValue || 'seats'}</div>
-                          </div>
-                        </div>
-                      )}
-                      {listing.vehicleDetails.transmission && (
-                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
-                          <Settings className="w-5 h-5 text-[#FF6B35]" />
-                          <div>
-                            <div className="text-xs text-gray-500">{(t as any)?.host?.transmission || 'Transmission'}</div>
-                            <div className="font-semibold">{getTransmissionLabel(listing.vehicleDetails.transmission)}</div>
-                          </div>
-                        </div>
-                      )}
-                      {listing.vehicleDetails.fuelType && (
-                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
-                          <Droplet className="w-5 h-5 text-[#FF6B35]" />
-                          <div>
-                            <div className="text-xs text-gray-500">{(t as any)?.host?.fuelType || 'Fuel Type'}</div>
-                            <div className="font-semibold">{getFuelTypeLabel(listing.vehicleDetails.fuelType)}</div>
-                          </div>
-                        </div>
-                      )}
+                    <div className="text-sm md:text-base text-gray-600 mt-1">
+                      <span>
+                        {[
+                          listing.vehicleDetails.make && listing.vehicleDetails.model && `${listing.vehicleDetails.make} ${listing.vehicleDetails.model}`,
+                          listing.vehicleDetails.year && `${listing.vehicleDetails.year}`,
+                          listing.vehicleDetails.seats && `${listing.vehicleDetails.seats} places`,
+                          listing.vehicleDetails.transmission && getTransmissionLabel(listing.vehicleDetails.transmission),
+                          listing.vehicleDetails.fuelType && getFuelTypeLabel(listing.vehicleDetails.fuelType)
+                        ].filter(Boolean).join(' · ')}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -861,113 +838,104 @@ export default function ListingDetailPage() {
                 </div>
               </div>
 
-              {host?.hostInfo && (
-                <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+              {host?.hostInfo && (host.hostInfo.responseRate || host.hostInfo.responseTime || host.stats?.totalReviews) && (
+                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600">
+                  {host.stats?.totalReviews && host.stats.totalReviews > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4" />
+                      <span>{host.stats.totalReviews} avis</span>
+                    </div>
+                  )}
                   {host.hostInfo.responseRate && (
-                    <div className="p-4 bg-gray-50 rounded-xl">
-                      <div className="text-2xl font-bold text-gray-900">{host.hostInfo.responseRate}%</div>
-                      <div className="text-sm text-gray-600">{(t as any)?.host?.responseRate || 'Response rate'}</div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="w-4 h-4" />
+                      <span>Taux de réponse : {host.hostInfo.responseRate}%</span>
                     </div>
                   )}
                   {host.hostInfo.responseTime && (
-                    <div className="p-4 bg-gray-50 rounded-xl">
-                      <div className="text-2xl font-bold text-gray-900">&lt;{host.hostInfo.responseTime}h</div>
-                      <div className="text-sm text-gray-600">{(t as any)?.host?.responseTime || 'Response time'}</div>
-                    </div>
-                  )}
-                  {host.hostInfo.hostSince && (
-                    <div className="p-4 bg-gray-50 rounded-xl">
-                      <div className="text-2xl font-bold text-gray-900">
-                        {new Date(host.hostInfo.hostSince).getFullYear()}
-                      </div>
-                      <div className="text-sm text-gray-600">{(t as any)?.host?.hostSince || 'Host since'}</div>
-                    </div>
-                  )}
-                  {host.stats?.totalReviews && (
-                    <div className="p-4 bg-gray-50 rounded-xl">
-                      <div className="text-2xl font-bold text-gray-900">{host.stats.totalReviews}</div>
-                      <div className="text-sm text-gray-600">{(t as any)?.host?.reviews || 'Reviews'}</div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      <span>Répond en moins de {host.hostInfo.responseTime}h</span>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Contact Host Button - ✅ NEW: Allow messaging before booking */}
+              {/* Contact Host Button */}
               {currentUser && host && (currentUser as any)._id !== host._id && (
                 <button
                   onClick={() => router.push(`/dashboard/messages?user=${host._id}&listing=${listing.id || (listing as any)._id}`)}
-                  className="mt-6 flex items-center justify-center gap-2 w-full py-3 px-4 border-2 border-gray-900 text-gray-900 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                  className="mt-4 text-gray-900 underline font-medium text-sm"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  {(t as any)?.host?.contactHost || 'Contacter l\'hôte'}
+                  Contacter l'hôte
                 </button>
               )}
               {!currentUser && (
                 <button
                   onClick={() => router.push(`/login?redirect=/listing/${params.id}`)}
-                  className="mt-6 flex items-center justify-center gap-2 w-full py-3 px-4 border-2 border-gray-300 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                  className="mt-4 text-gray-500 underline text-sm"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  {(t as any)?.host?.loginToContact || 'Connectez-vous pour contacter l\'hôte'}
+                  Connectez-vous pour contacter l'hôte
                 </button>
               )}
             </div>
 
             {/* Description */}
             <div className="pb-8 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                {listing.category === 'stay' ? (t as any)?.description?.aboutPlace || 'About this place' : (t as any)?.description?.aboutVehicle || 'About this vehicle'}
-              </h2>
-              <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                 {listing.description}
               </p>
+              {listing.description && listing.description.length > 200 && (
+                <button className="mt-3 text-gray-900 underline font-medium text-sm flex items-center gap-1">
+                  Afficher plus
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Amenities/Features */}
             <div className="pb-8 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                {listing.category === 'stay' ? (t as any)?.amenities?.title || 'Amenities' : (t as any)?.amenities?.featuresTitle || 'Features'}
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4 md:mb-6">
+                {listing.category === 'stay' ? (t as any)?.amenities?.title || 'Ce que propose ce logement' : (t as any)?.amenities?.featuresTitle || 'Équipements'}
               </h2>
 
               {listing.category === 'stay' && listing.stayDetails?.amenities ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {(showAllAmenities ? listing.stayDetails.amenities : listing.stayDetails.amenities.slice(0, 10)).map((amenity, index) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                  {(showAllAmenities ? listing.stayDetails.amenities : listing.stayDetails.amenities.slice(0, 6)).map((amenity, index) => {
                     const Icon = amenityIcons[amenity] || Check;
                     return (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                        <Icon className="w-6 h-6 text-[#FF6B35]" />
-                        <span className="font-medium text-gray-900">{getAmenityName(amenity)}</span>
+                      <div key={index} className="flex items-center gap-3 py-2">
+                        <Icon className="w-6 h-6 text-gray-700" />
+                        <span className="text-gray-700">{getAmenityName(amenity)}</span>
                       </div>
                     );
                   })}
                 </div>
               ) : listing.category === 'vehicle' && listing.vehicleDetails?.features ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {(showAllAmenities ? listing.vehicleDetails.features : listing.vehicleDetails.features.slice(0, 10)).map((feature, index) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                  {(showAllAmenities ? listing.vehicleDetails.features : listing.vehicleDetails.features.slice(0, 6)).map((feature, index) => {
                     const Icon = amenityIcons[feature] || Check;
                     return (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                        <Icon className="w-6 h-6 text-[#FF6B35]" />
-                        <span className="font-medium text-gray-900">{getAmenityName(feature)}</span>
+                      <div key={index} className="flex items-center gap-3 py-2">
+                        <Icon className="w-6 h-6 text-gray-700" />
+                        <span className="text-gray-700">{getAmenityName(feature)}</span>
                       </div>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-gray-500">{(t as any)?.amenities?.noAmenities || 'No amenities listed'}</p>
+                <p className="text-gray-500">{(t as any)?.amenities?.noAmenities || 'Aucun équipement listé'}</p>
               )}
 
-              {((listing.category === 'stay' && listing.stayDetails?.amenities && listing.stayDetails.amenities.length > 10) ||
-                (listing.category === 'vehicle' && listing.vehicleDetails?.features && listing.vehicleDetails.features.length > 10)) && (
+              {((listing.category === 'stay' && listing.stayDetails?.amenities && listing.stayDetails.amenities.length > 6) ||
+                (listing.category === 'vehicle' && listing.vehicleDetails?.features && listing.vehicleDetails.features.length > 6)) && (
                 <button
                   onClick={() => setShowAllAmenities(!showAllAmenities)}
-                  className="mt-6 px-6 py-3 border-2 border-gray-900 text-gray-900 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                  className="mt-4 md:mt-6 w-full md:w-auto px-6 py-3 border border-gray-900 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                 >
                   {showAllAmenities
-                    ? (t as any)?.amenities?.showLess || 'Show less'
-                    : listing.category === 'stay'
-                      ? (t as any)?.amenities?.showAll?.replace('{count}', listing.stayDetails?.amenities?.length.toString() || '0')
-                      : (t as any)?.amenities?.showAllFeatures?.replace('{count}', listing.vehicleDetails?.features?.length.toString() || '0')
+                    ? (t as any)?.amenities?.showLess || 'Afficher moins'
+                    : `Afficher les ${listing.category === 'stay' ? listing.stayDetails?.amenities?.length : listing.vehicleDetails?.features?.length} équipements`
                   }
                 </button>
               )}
@@ -976,73 +944,69 @@ export default function ListingDetailPage() {
             {/* House Rules */}
             {listing.rules && (
               <div className="pb-8 border-b border-gray-200">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">{(t as any)?.houseRules?.title || 'House Rules'}</h2>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    {listing.rules.smoking === 'allowed' ? (
-                      <>
-                        <Cigarette className="w-6 h-6 text-green-600" />
-                        <span className="text-gray-700">{(t as any)?.houseRules?.smokingAllowed || 'Smoking allowed'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Ban className="w-6 h-6 text-red-600" />
-                        <span className="text-gray-700">{(t as any)?.houseRules?.noSmoking || 'No smoking'}</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {listing.rules.pets === 'allowed' ? (
-                      <>
-                        <Dog className="w-6 h-6 text-green-600" />
-                        <span className="text-gray-700">{(t as any)?.houseRules?.petsAllowed || 'Pets allowed'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Ban className="w-6 h-6 text-red-600" />
-                        <span className="text-gray-700">{(t as any)?.houseRules?.noPets || 'No pets'}</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {listing.rules.parties === 'allowed' ? (
-                      <>
-                        <Music className="w-6 h-6 text-green-600" />
-                        <span className="text-gray-700">{(t as any)?.houseRules?.partiesAllowed || 'Parties allowed'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Ban className="w-6 h-6 text-red-600" />
-                        <span className="text-gray-700">{(t as any)?.houseRules?.noPartiesOrEvents || 'No parties or events'}</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {listing.rules.children === 'allowed' ? (
-                      <>
-                        <Baby className="w-6 h-6 text-green-600" />
-                        <span className="text-gray-700">{(t as any)?.houseRules?.childrenWelcome || 'Children welcome'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Ban className="w-6 h-6 text-red-600" />
-                        <span className="text-gray-700">{(t as any)?.houseRules?.notSuitableForChildren || 'Not suitable for children'}</span>
-                      </>
-                    )}
-                  </div>
-                  {listing.availability?.checkInFrom && (
-                    <div className="flex items-center gap-3">
-                      <Clock className="w-6 h-6 text-[#FF6B35]" />
-                      <span className="text-gray-700">
-                        {(t as any)?.houseRules?.checkIn || 'Check-in:'} {listing.availability.checkInFrom} - {listing.availability.checkInTo}
-                      </span>
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4 md:mb-6">{(t as any)?.houseRules?.title || 'À savoir'}</h2>
+
+                {/* Check-in/Check-out times */}
+                {(listing.availability?.checkInFrom || listing.availability?.checkOutBefore) && (
+                  <div className="mb-6 pb-6 border-b border-gray-100">
+                    <div className="grid grid-cols-2 gap-4">
+                      {listing.availability?.checkInFrom && (
+                        <div>
+                          <div className="text-sm text-gray-500 mb-1">Arrivée</div>
+                          <div className="font-medium text-gray-900">{listing.availability.checkInFrom} - {listing.availability.checkInTo || '22:00'}</div>
+                        </div>
+                      )}
+                      {listing.availability?.checkOutBefore && (
+                        <div>
+                          <div className="text-sm text-gray-500 mb-1">Départ</div>
+                          <div className="font-medium text-gray-900">Avant {listing.availability.checkOutBefore}</div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {listing.availability?.checkOutBefore && (
-                    <div className="flex items-center gap-3">
-                      <Clock className="w-6 h-6 text-[#FF6B35]" />
+                  </div>
+                )}
+
+                {/* Rules list */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 py-1">
+                    {listing.rules.smoking === 'allowed' ? (
+                      <Cigarette className="w-5 h-5 text-gray-700" />
+                    ) : (
+                      <Ban className="w-5 h-5 text-gray-700" />
+                    )}
+                    <span className="text-gray-700">
+                      {listing.rules.smoking === 'allowed' ? 'Vous pouvez fumer' : 'Interdiction de fumer'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 py-1">
+                    {listing.rules.pets === 'allowed' ? (
+                      <Dog className="w-5 h-5 text-gray-700" />
+                    ) : (
+                      <Ban className="w-5 h-5 text-gray-700" />
+                    )}
+                    <span className="text-gray-700">
+                      {listing.rules.pets === 'allowed' ? 'Animaux acceptés' : 'Animaux non autorisés'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 py-1">
+                    {listing.rules.parties === 'allowed' ? (
+                      <Music className="w-5 h-5 text-gray-700" />
+                    ) : (
+                      <Ban className="w-5 h-5 text-gray-700" />
+                    )}
+                    <span className="text-gray-700">
+                      {listing.rules.parties === 'allowed' ? 'Fêtes et événements autorisés' : 'Pas de fête ni d\'événement'}
+                    </span>
+                  </div>
+                  {listing.rules.children !== undefined && (
+                    <div className="flex items-center gap-3 py-1">
+                      {listing.rules.children === 'allowed' ? (
+                        <Baby className="w-5 h-5 text-gray-700" />
+                      ) : (
+                        <Ban className="w-5 h-5 text-gray-700" />
+                      )}
                       <span className="text-gray-700">
-                        {(t as any)?.houseRules?.checkOut || 'Check-out: Before'} {listing.availability.checkOutBefore}
+                        {listing.rules.children === 'allowed' ? 'Enfants bienvenus' : 'Non adapté aux enfants'}
                       </span>
                     </div>
                   )}
@@ -1050,67 +1014,129 @@ export default function ListingDetailPage() {
               </div>
             )}
 
+            {/* Cancellation Policy Section */}
+            {listing.cancellationPolicy && (
+              <div className="pb-8 border-b border-gray-200">
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4 md:mb-6">{(t as any)?.cancellation?.title || 'Conditions d\'annulation'}</h2>
+
+                {listing.cancellationPolicy === 'flexible' && (
+                  <div>
+                    <p className="text-gray-900 font-medium mb-2">
+                      Annulation gratuite avant l'arrivée
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      Remboursement intégral jusqu'à 24 heures avant l'arrivée.
+                    </p>
+                  </div>
+                )}
+                {listing.cancellationPolicy === 'moderate' && (
+                  <div>
+                    <p className="text-gray-900 font-medium mb-2">
+                      Annulation gratuite 5 jours avant l'arrivée
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      Remboursement intégral jusqu'à 5 jours avant l'arrivée. Après, remboursement de 50%.
+                    </p>
+                  </div>
+                )}
+                {listing.cancellationPolicy === 'strict' && (
+                  <div>
+                    <p className="text-gray-900 font-medium mb-2">
+                      Annulation stricte
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      Remboursement de 50% jusqu'à 1 semaine avant l'arrivée. Après, aucun remboursement.
+                    </p>
+                  </div>
+                )}
+                {listing.cancellationPolicy === 'strict_long_term' && (
+                  <div>
+                    <p className="text-gray-900 font-medium mb-2">
+                      Conditions strictes pour les longs séjours
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      Pour 28+ nuits: remboursement intégral si annulation dans les 48h et 28+ jours avant l'arrivée.
+                    </p>
+                  </div>
+                )}
+                {listing.cancellationPolicy === 'non_refundable' && (
+                  <div>
+                    <p className="text-gray-900 font-medium mb-2">
+                      Non remboursable
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      Cette réservation n'est pas remboursable.
+                    </p>
+                  </div>
+                )}
+
+                <button className="mt-4 text-gray-900 underline font-medium text-sm">
+                  En savoir plus
+                </button>
+              </div>
+            )}
+
             {/* Reviews Section */}
             {reviews.length > 0 && (
-              <div className="pb-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                    <Star className="w-7 h-7 fill-current text-[#FF6B35]" />
-                    {listing.stats?.averageRating?.toFixed(1)} • {listing.stats?.reviewCount} {(t as any)?.reviews?.title || 'reviews'}
+              <div className="pb-8 border-b border-gray-200">
+                <div className="flex items-center gap-2 mb-6">
+                  <Star className="w-5 h-5 fill-current text-gray-900" />
+                  <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+                    {listing.stats?.averageRating?.toFixed(1)} · {listing.stats?.reviewCount} {(listing.stats?.reviewCount || 0) > 1 ? 'commentaires' : 'commentaire'}
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  {(showAllReviews ? reviews : reviews.slice(0, 6)).map((review) => (
+                <div className="space-y-6 md:grid md:grid-cols-2 md:gap-8 md:space-y-0 mb-6">
+                  {(showAllReviews ? reviews : reviews.slice(0, 4)).map((review) => (
                     <div key={review.id} className="space-y-3">
                       <div className="flex items-center gap-3">
                         {typeof review.reviewer === 'object' && review.reviewer.avatar ? (
                           <img
                             src={getImageUrl(review.reviewer.avatar)}
-                            alt={`${review.reviewer.firstName} ${review.reviewer.lastName}`}
-                            className="w-12 h-12 rounded-full object-cover"
+                            alt={`${review.reviewer.firstName}`}
+                            className="w-10 h-10 rounded-full object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.src = '/uploads/users/default-avatar.png';
                             }}
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-[#FF6B35] to-[#F7931E] rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold">
+                          <div className="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center">
+                            <span className="text-white font-medium text-sm">
                               {typeof review.reviewer === 'object' && review.reviewer.firstName ? review.reviewer.firstName.charAt(0) : 'U'}
                             </span>
                           </div>
                         )}
                         <div>
-                          <div className="font-semibold text-gray-900">
-                            {typeof review.reviewer === 'object' ? `${review.reviewer.firstName} ${review.reviewer.lastName}` : (t as any)?.reviews?.user || 'User'}
+                          <div className="font-medium text-gray-900">
+                            {typeof review.reviewer === 'object' ? review.reviewer.firstName : 'Utilisateur'}
                           </div>
-                          <div className="text-sm text-gray-600">{review.age || (t as any)?.reviews?.recently || 'Recently'}</div>
+                          <div className="text-xs text-gray-500">{review.age || 'Récemment'}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-4 h-4 ${
-                              i < (review.rating?.overall || 0) ? 'fill-current text-[#FF6B35]' : 'text-gray-300'
+                            className={`w-3 h-3 ${
+                              i < (review.rating?.overall || 0) ? 'fill-current text-gray-900' : 'text-gray-300'
                             }`}
                           />
                         ))}
                       </div>
-                      <p className="text-gray-700 leading-relaxed line-clamp-4">{review.comment}</p>
+                      <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">{review.comment}</p>
                     </div>
                   ))}
                 </div>
 
-                {reviews.length > 6 && (
+                {reviews.length > 4 && (
                   <button
                     onClick={() => setShowAllReviews(!showAllReviews)}
-                    className="px-6 py-3 border-2 border-gray-900 text-gray-900 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                    className="w-full md:w-auto px-6 py-3 border border-gray-900 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                   >
                     {showAllReviews
-                      ? (t as any)?.reviews?.showLess || 'Show less'
-                      : (t as any)?.reviews?.showAll?.replace('{count}', reviews.length.toString())
+                      ? 'Afficher moins'
+                      : `Afficher les ${reviews.length} commentaires`
                     }
                   </button>
                 )}
@@ -1119,11 +1145,16 @@ export default function ListingDetailPage() {
 
             {/* Map Section */}
             <div className="pb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">{(t as any)?.location?.title || 'Location'}</h2>
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4 md:mb-6">{(t as any)?.location?.title || 'Où se situe le logement'}</h2>
+
+              {/* Location Summary */}
+              <p className="text-gray-700 mb-4">
+                {listing.address?.city}, {listing.address?.state}, {listing.address?.country}
+              </p>
 
               {/* Leaflet Map (100% FREE - OpenStreetMap) */}
               {listing.location?.coordinates && (
-                <div className="mb-6">
+                <div className="mb-4 rounded-xl overflow-hidden relative z-0 isolate">
                   <LeafletMap
                     coordinates={listing.location.coordinates}
                     title={listing.title}
@@ -1132,25 +1163,165 @@ export default function ListingDetailPage() {
                 </div>
               )}
 
-              {/* Address Information */}
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
-                <MapPin className="w-5 h-5 text-[#FF6B35] flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{(t as any)?.location?.exactLocation || 'Exact location provided after booking'}</h3>
-                  <p className="text-gray-700">
-                    {listing.address?.street && `${listing.address.street}, `}
-                    {listing.address?.city}, {listing.address?.state}, {listing.address?.country}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    {(t as any)?.location?.exactLocationDescription || "We'll share the precise address once your reservation is confirmed"}
-                  </p>
+              {/* Address Note */}
+              <p className="text-sm text-gray-500">
+                {(t as any)?.location?.exactAddressNote || "L'adresse exacte vous sera communiquée une fois la réservation confirmée."}
+              </p>
+            </div>
+
+            {/* Date Selection Calendar - Visible on mobile */}
+            <div className="lg:hidden pb-8 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Sélectionnez la date d'arrivée</h2>
+              <p className="text-sm text-gray-500 mb-4">Ajoutez vos dates de voyage pour connaître le prix exact</p>
+
+              {/* Inline Calendar */}
+              <div className="bg-white">
+                {/* Month Navigation */}
+                <div className="flex items-center justify-between mb-4">
+                  <button
+                    onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1))}
+                    disabled={calendarMonth.getMonth() === new Date().getMonth() && calendarMonth.getFullYear() === new Date().getFullYear()}
+                    className="p-2 hover:bg-gray-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <span className="font-medium text-gray-900">
+                    {['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'][calendarMonth.getMonth()]} {calendarMonth.getFullYear()}
+                  </span>
+                  <button
+                    onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1))}
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
                 </div>
+
+                {/* Days of week header */}
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
+                    <div key={idx} className="p-2 text-center text-xs font-medium text-gray-500">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Calendar days */}
+                <div className="grid grid-cols-7 gap-1">
+                  {(() => {
+                    const year = calendarMonth.getFullYear();
+                    const month = calendarMonth.getMonth();
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    const daysInMonth = lastDay.getDate();
+                    let startingDayOfWeek = firstDay.getDay() - 1;
+                    if (startingDayOfWeek < 0) startingDayOfWeek = 6;
+
+                    const days: (Date | null)[] = [];
+                    for (let i = 0; i < startingDayOfWeek; i++) {
+                      days.push(null);
+                    }
+                    for (let day = 1; day <= daysInMonth; day++) {
+                      days.push(new Date(year, month, day));
+                    }
+
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    const parseLocalDate = (dateStr: string): Date | null => {
+                      if (!dateStr) return null;
+                      const [y, m, d] = dateStr.split('T')[0].split('-').map(Number);
+                      return new Date(y, m - 1, d);
+                    };
+
+                    const selectedCheckInDate = checkIn ? parseLocalDate(checkIn) : null;
+                    const selectedCheckOutDate = checkOut ? parseLocalDate(checkOut) : null;
+
+                    return days.map((date, index) => {
+                      if (!date) {
+                        return <div key={index} className="p-2"></div>;
+                      }
+
+                      const isPast = date < today;
+                      const isCheckIn = selectedCheckInDate && date.getTime() === selectedCheckInDate.getTime();
+                      const isCheckOut = selectedCheckOutDate && date.getTime() === selectedCheckOutDate.getTime();
+                      const inRange = selectedCheckInDate && selectedCheckOutDate && date > selectedCheckInDate && date < selectedCheckOutDate;
+                      const isToday = date.getTime() === today.getTime();
+
+                      return (
+                        <button
+                          key={date.getTime()}
+                          onClick={() => {
+                            if (isPast) return;
+                            const formatDateLocal = (d: Date): string => {
+                              return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                            };
+                            if (!checkIn || (checkIn && checkOut)) {
+                              setCheckIn(formatDateLocal(date));
+                              setCheckOut('');
+                            } else {
+                              if (selectedCheckInDate && date > selectedCheckInDate) {
+                                setCheckOut(formatDateLocal(date));
+                              } else {
+                                setCheckIn(formatDateLocal(date));
+                                setCheckOut('');
+                              }
+                            }
+                          }}
+                          disabled={isPast}
+                          className={`
+                            p-2 text-sm font-medium rounded-full transition-all
+                            ${isPast ? 'text-gray-300 cursor-not-allowed' : 'text-gray-900 hover:bg-gray-100 cursor-pointer'}
+                            ${isCheckIn || isCheckOut ? 'bg-gray-900 text-white hover:bg-gray-800' : ''}
+                            ${inRange ? 'bg-gray-100' : ''}
+                            ${isToday && !isCheckIn && !isCheckOut ? 'ring-1 ring-gray-400' : ''}
+                          `}
+                        >
+                          {date.getDate()}
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+
+                {/* Clear dates button */}
+                {(checkIn || checkOut) && (
+                  <button
+                    onClick={() => {
+                      setCheckIn('');
+                      setCheckOut('');
+                    }}
+                    className="mt-4 text-sm font-medium text-gray-600 hover:text-gray-900 underline"
+                  >
+                    Effacer les dates
+                  </button>
+                )}
+
+                {/* Selected dates display */}
+                {checkIn && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-500">Arrivée: </span>
+                        <span className="font-medium">{new Date(checkIn + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                      </div>
+                      {checkOut && (
+                        <>
+                          <span className="text-gray-400">→</span>
+                          <div>
+                            <span className="text-gray-500">Départ: </span>
+                            <span className="font-medium">{new Date(checkOut + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Right Column - Booking Card */}
-          <div className="lg:col-span-1">
+          {/* Right Column - Booking Card (Desktop only) */}
+          <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
               <div className="border-2 border-gray-200 rounded-2xl p-6 shadow-xl">
                 {/* Price - ✅ FIX: Use user's selected currency */}
@@ -1209,27 +1380,184 @@ export default function ListingDetailPage() {
 
                 {/* Booking Form */}
                 <div className="space-y-4 mb-6">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-2">{(t as any)?.booking?.checkIn || 'CHECK-IN'}</label>
-                      <input
-                        type="date"
-                        value={checkIn}
-                        onChange={(e) => setCheckIn(e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent"
-                      />
+                  {/* Date Selection - Click to open calendar */}
+                  <div className="relative">
+                    <div
+                      onClick={() => setShowDesktopCalendar(!showDesktopCalendar)}
+                      className={`grid grid-cols-2 border-2 rounded-xl cursor-pointer transition-all ${showDesktopCalendar ? 'border-[#FF6B35] shadow-md' : 'border-gray-300 hover:border-gray-400'}`}
+                    >
+                      <div className="px-4 py-3 border-r border-gray-200">
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">ARRIVÉE</p>
+                        <p className={`text-sm mt-0.5 ${checkIn ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
+                          {checkIn
+                            ? new Date(checkIn + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+                            : 'Sélectionner'}
+                        </p>
+                      </div>
+                      <div className="px-4 py-3">
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">DÉPART</p>
+                        <p className={`text-sm mt-0.5 ${checkOut ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
+                          {checkOut
+                            ? new Date(checkOut + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+                            : 'Sélectionner'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-2">{(t as any)?.booking?.checkout || 'CHECKOUT'}</label>
-                      <input
-                        type="date"
-                        value={checkOut}
-                        onChange={(e) => setCheckOut(e.target.value)}
-                        min={checkIn || new Date().toISOString().split('T')[0]}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent"
-                      />
-                    </div>
+
+                    {/* Desktop Calendar Dropdown */}
+                    {showDesktopCalendar && (
+                      <>
+                      {/* Click-outside overlay */}
+                      <div className="fixed inset-0 z-40" onClick={() => setShowDesktopCalendar(false)} />
+                      <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl p-4">
+                        {/* Month Navigation */}
+                        <div className="flex items-center justify-between mb-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1));
+                            }}
+                            disabled={calendarMonth.getMonth() === new Date().getMonth() && calendarMonth.getFullYear() === new Date().getFullYear()}
+                            className="p-1.5 hover:bg-gray-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+                          <span className="font-semibold text-gray-900 text-sm">
+                            {['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'][calendarMonth.getMonth()]} {calendarMonth.getFullYear()}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1));
+                            }}
+                            className="p-1.5 hover:bg-gray-100 rounded-full"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Days of week header */}
+                        <div className="grid grid-cols-7 gap-1 mb-1">
+                          {['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'].map((day, idx) => (
+                            <div key={idx} className="p-1.5 text-center text-xs font-medium text-gray-500">
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Calendar days */}
+                        <div className="grid grid-cols-7 gap-1">
+                          {(() => {
+                            const year = calendarMonth.getFullYear();
+                            const month = calendarMonth.getMonth();
+                            const firstDay = new Date(year, month, 1);
+                            const lastDay = new Date(year, month + 1, 0);
+                            const daysInMonth = lastDay.getDate();
+                            let startingDayOfWeek = firstDay.getDay() - 1;
+                            if (startingDayOfWeek < 0) startingDayOfWeek = 6;
+
+                            const days: (Date | null)[] = [];
+                            for (let i = 0; i < startingDayOfWeek; i++) {
+                              days.push(null);
+                            }
+                            for (let day = 1; day <= daysInMonth; day++) {
+                              days.push(new Date(year, month, day));
+                            }
+
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+
+                            const parseLocalDate = (dateStr: string): Date | null => {
+                              if (!dateStr) return null;
+                              const [y, m, d] = dateStr.split('T')[0].split('-').map(Number);
+                              return new Date(y, m - 1, d);
+                            };
+
+                            const selectedCheckInDate = checkIn ? parseLocalDate(checkIn) : null;
+                            const selectedCheckOutDate = checkOut ? parseLocalDate(checkOut) : null;
+
+                            return days.map((date, index) => {
+                              if (!date) {
+                                return <div key={index} className="p-1.5"></div>;
+                              }
+
+                              const isPast = date < today;
+                              const isCheckIn = selectedCheckInDate && date.getTime() === selectedCheckInDate.getTime();
+                              const isCheckOut = selectedCheckOutDate && date.getTime() === selectedCheckOutDate.getTime();
+                              const inRange = selectedCheckInDate && selectedCheckOutDate && date > selectedCheckInDate && date < selectedCheckOutDate;
+                              const isToday = date.getTime() === today.getTime();
+
+                              return (
+                                <button
+                                  key={date.getTime()}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (isPast) return;
+                                    const formatDateLocal = (d: Date): string => {
+                                      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                                    };
+                                    if (!checkIn || (checkIn && checkOut)) {
+                                      setCheckIn(formatDateLocal(date));
+                                      setCheckOut('');
+                                    } else {
+                                      if (selectedCheckInDate && date > selectedCheckInDate) {
+                                        setCheckOut(formatDateLocal(date));
+                                        setShowDesktopCalendar(false);
+                                      } else {
+                                        setCheckIn(formatDateLocal(date));
+                                        setCheckOut('');
+                                      }
+                                    }
+                                  }}
+                                  disabled={isPast}
+                                  className={`
+                                    p-1.5 text-sm font-medium rounded-full transition-all
+                                    ${isPast ? 'text-gray-300 cursor-not-allowed' : 'text-gray-900 hover:bg-gray-100 cursor-pointer'}
+                                    ${isCheckIn ? 'bg-gray-900 text-white hover:bg-gray-800' : ''}
+                                    ${isCheckOut ? 'bg-gray-900 text-white hover:bg-gray-800' : ''}
+                                    ${inRange ? 'bg-gray-100' : ''}
+                                    ${isToday && !isCheckIn && !isCheckOut ? 'ring-1 ring-gray-400' : ''}
+                                  `}
+                                >
+                                  {date.getDate()}
+                                </button>
+                              );
+                            });
+                          })()}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                          <p className="text-xs text-gray-500">
+                            {!checkIn ? 'Sélectionnez la date d\'arrivée' : !checkOut ? 'Sélectionnez la date de départ' : `${Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24))} nuit(s)`}
+                          </p>
+                          <div className="flex gap-2">
+                            {(checkIn || checkOut) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCheckIn('');
+                                  setCheckOut('');
+                                }}
+                                className="text-xs font-medium text-gray-600 hover:text-gray-900 underline"
+                              >
+                                Effacer
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDesktopCalendar(false);
+                              }}
+                              className="text-xs font-medium text-[#FF6B35] hover:text-[#e55a2b]"
+                            >
+                              Fermer
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      </>
+                    )}
                   </div>
 
                   <div>
@@ -1412,6 +1740,59 @@ export default function ListingDetailPage() {
       </div>
     </div>
   </div>
+
+  {/* Mobile Sticky Bottom Bar */}
+  <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+    {/* Mobile Date Error Message */}
+    {dateError && (
+      <div className="px-4 py-2 bg-red-50 border-b border-red-100 flex items-center justify-center gap-2 animate-in slide-in-from-bottom-2 duration-200">
+        <AlertCircle className="w-4 h-4 text-red-500" />
+        <span className="text-sm text-red-700">Veuillez sélectionner les dates</span>
+      </div>
+    )}
+    <div className="px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
+      <div>
+        <div className="flex items-baseline gap-1">
+          <span className="text-base font-semibold text-gray-900">
+            {displayPrice(listing.pricing?.basePrice || 0)}
+          </span>
+          <span className="text-sm text-gray-600">
+            / {listing.category === 'stay' ? 'nuit' : 'jour'}
+          </span>
+        </div>
+        {listing.stats?.reviewCount && listing.stats.reviewCount > 0 ? (
+          <div className="flex items-center gap-1 text-xs text-gray-600">
+            <Star className="w-3 h-3 fill-current text-gray-900" />
+            <span className="font-medium">{listing.stats?.averageRating?.toFixed(1)}</span>
+            <span>· <span className="underline">{listing.stats.reviewCount} avis</span></span>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowBookingModal(true)}
+            className="text-xs text-gray-500 underline"
+          >
+            Choisir des dates
+          </button>
+        )}
+      </div>
+      <button
+        onClick={() => {
+          if (!checkIn || !checkOut) {
+            setDateError(true);
+            setTimeout(() => setDateError(false), 4000);
+            return;
+          }
+          setShowBookingModal(true);
+        }}
+        className="px-5 py-2.5 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white font-semibold rounded-lg text-sm"
+      >
+        Réserver
+      </button>
+    </div>
+  </div>
+
+  {/* Bottom padding for mobile to account for sticky bar */}
+  <div className="lg:hidden h-20" />
 </div>
 );
 }

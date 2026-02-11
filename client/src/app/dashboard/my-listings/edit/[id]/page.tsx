@@ -3,24 +3,66 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
-  FaSave, FaTimes, FaHome, FaCar, FaMapMarkerAlt, FaMoneyBillWave,
-  FaCalendar, FaImage, FaClipboardList, FaInfoCircle, FaPlus, FaTrash,
-  FaBed, FaCouch, FaRulerCombined, FaCogs, FaGasPump, FaUsers, FaStar,
-  FaSmoking, FaPaw, FaGlassCheers, FaChild, FaClock, FaDoorOpen, FaShieldAlt,
-  FaSpinner
+  HiOutlinePhotograph, HiOutlineDocumentText, HiOutlineHome,
+  HiOutlineLocationMarker, HiOutlineCurrencyDollar, HiOutlineCalendar,
+  HiOutlineClipboardList, HiOutlineEye, HiOutlineX, HiOutlineCheck,
+  HiOutlinePlus, HiOutlineTrash, HiOutlineStar, HiOutlineSparkles,
+  HiOutlineTrendingUp, HiOutlineChevronLeft, HiOutlineChevronRight,
+  HiOutlineLightningBolt, HiOutlineClock,
+  HiOutlineShieldCheck, HiOutlineUsers, HiOutlineBan
+} from 'react-icons/hi';
+import {
+  FaSpinner, FaBed, FaWifi, FaParking, FaSwimmingPool,
+  FaDumbbell, FaTree, FaSnowflake, FaFire, FaUtensils, FaTv,
+  FaWater, FaMountain, FaBath, FaDoorOpen, FaCouch
 } from 'react-icons/fa';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import CityAutocomplete from '@/components/listing/CityAutocomplete';
-import LeafletLocationPicker from '@/components/listing/LeafletLocationPicker';
-import { useTranslation } from '@/hooks/useTranslation';
-import PriceInput from '@/components/common/PriceInput';
+import dynamic from 'next/dynamic';
+import { useHeaderHeight } from '@/hooks/useHeaderHeight';
+
+// Dynamically import LeafletLocationPicker to avoid SSR issues
+const LeafletLocationPicker = dynamic(
+  () => import('@/components/listing/LeafletLocationPicker'),
+  { ssr: false, loading: () => <div className="h-64 bg-gray-100 rounded-xl animate-pulse" /> }
+);
+
+// Section type for navigation
+type EditorSection =
+  | 'photos'
+  | 'title'
+  | 'type'
+  | 'guests'
+  | 'bedrooms'
+  | 'beds'
+  | 'bathrooms'
+  | 'amenities'
+  | 'location'
+  | 'pricing'
+  | 'calendar'
+  | 'availability'
+  | 'cancellation'
+  | 'rules'
+  | 'status';
+
+// Bed type definition
+interface BedConfig {
+  type: 'single' | 'double' | 'queen' | 'king' | 'sofa_bed' | 'bunk';
+  count: number;
+}
+
+// Bathroom type definition
+interface BathroomConfig {
+  type: 'private' | 'shared' | 'en_suite';
+  count: number;
+}
 
 interface ListingForm {
   title: string;
   description: string;
-  category: 'stay' | 'vehicle' | '';
+  category: 'stay' | '';
   subcategory: string;
   address: {
     street: string;
@@ -36,21 +78,10 @@ interface ListingForm {
   stayDetails: {
     stayType: string;
     bedrooms: number;
-    bathrooms: number;
-    area: number;
-    floor: number;
-    furnished: string;
+    beds: BedConfig[];
+    bathrooms: BathroomConfig[];
+    capacity: number;
     amenities: string[];
-  };
-  vehicleDetails: {
-    vehicleType: string;
-    make: string;
-    model: string;
-    year: number;
-    transmission: string;
-    fuelType: string;
-    seats: number;
-    features: string[];
   };
   pricing: {
     basePrice: number;
@@ -70,6 +101,7 @@ interface ListingForm {
     checkInTo: string;
     checkOutBefore: string;
   };
+  cancellationPolicy: string;
   rules: {
     smoking: string;
     pets: string;
@@ -83,23 +115,55 @@ interface ListingForm {
     isPrimary: boolean;
   }>;
   status: string;
+  pricingRules: Array<any>;
+  customPricing: Array<any>;
+  discounts: {
+    weeklyDiscount: number;
+    monthlyDiscount: number;
+    newListingPromo: {
+      enabled: boolean;
+      discountPercent: number;
+      maxBookings: number;
+    };
+  };
 }
+
+// Bed types configuration
+const bedTypes = [
+  { id: 'single', label: 'Lit simple', icon: '🛏️', description: '90-100 cm de large' },
+  { id: 'double', label: 'Lit double', icon: '🛏️', description: '140 cm de large' },
+  { id: 'queen', label: 'Lit Queen', icon: '🛏️', description: '160 cm de large' },
+  { id: 'king', label: 'Lit King', icon: '🛏️', description: '180+ cm de large' },
+  { id: 'sofa_bed', label: 'Canapé-lit', icon: '🛋️', description: 'Convertible' },
+  { id: 'bunk', label: 'Lits superposés', icon: '🛏️', description: '2 couchages' },
+];
+
+// Bathroom types configuration
+const bathroomTypes = [
+  { id: 'private', label: 'Salle de bain privée', description: 'Réservée aux voyageurs' },
+  { id: 'en_suite', label: 'Salle de bain attenante', description: 'Dans une chambre' },
+  { id: 'shared', label: 'Salle de bain commune', description: 'Partagée avec d\'autres' },
+];
 
 export default function EditListingPage() {
   const router = useRouter();
   const params = useParams();
   const listingId = params.id as string;
-  const t = useTranslation('listing-form');
+  const headerHeight = useHeaderHeight();
 
   const [loading, setLoading] = useState(true);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [activeSection, setActiveSection] = useState<EditorSection>('photos');
+  const [showContent, setShowContent] = useState(false); // Mobile: show content area
+  const [activeTab, setActiveTab] = useState<'logement' | 'arrivee'>('logement');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [originalData, setOriginalData] = useState<ListingForm | null>(null);
 
   const [formData, setFormData] = useState<ListingForm>({
     title: '',
     description: '',
-    category: '',
+    category: 'stay',
     subcategory: '',
     address: {
       street: '',
@@ -109,29 +173,18 @@ export default function EditListingPage() {
       country: 'Algeria'
     },
     location: {
-      coordinates: [0, 0]
+      coordinates: [3.0588, 36.7538] // Default Algiers
     },
     stayDetails: {
       stayType: '',
-      bedrooms: 0,
-      bathrooms: 0,
-      area: 0,
-      floor: 0,
-      furnished: '',
+      bedrooms: 1,
+      beds: [{ type: 'double', count: 1 }],
+      bathrooms: [{ type: 'private', count: 1 }],
+      capacity: 2,
       amenities: []
     },
-    vehicleDetails: {
-      vehicleType: '',
-      make: '',
-      model: '',
-      year: new Date().getFullYear(),
-      transmission: '',
-      fuelType: '',
-      seats: 0,
-      features: []
-    },
     pricing: {
-      basePrice: 0,
+      basePrice: 5000,
       currency: 'DZD',
       pricingType: 'per_night',
       cleaningFee: 0,
@@ -148,6 +201,7 @@ export default function EditListingPage() {
       checkInTo: '21:00',
       checkOutBefore: '11:00'
     },
+    cancellationPolicy: 'moderate',
     rules: {
       smoking: 'not_allowed',
       pets: 'not_allowed',
@@ -156,15 +210,141 @@ export default function EditListingPage() {
       additionalRules: []
     },
     images: [],
-    status: 'draft'
+    status: 'draft',
+    pricingRules: [],
+    customPricing: [],
+    discounts: {
+      weeklyDiscount: 0,
+      monthlyDiscount: 0,
+      newListingPromo: {
+        enabled: false,
+        discountPercent: 0,
+        maxBookings: 0
+      }
+    }
   });
 
   const [newRule, setNewRule] = useState('');
 
-  const stayTypes = ['apartment', 'house', 'villa', 'studio', 'room', 'riad', 'guesthouse', 'hotel_room'];
-  const vehicleTypes = ['car', 'motorcycle', 'truck', 'van', 'suv', 'bus', 'bicycle', 'scooter', 'boat'];
-  const amenitiesList = ['wifi', 'parking', 'pool', 'gym', 'garden', 'terrace', 'elevator', 'security', 'ac', 'heating', 'kitchen', 'balcony', 'tv', 'washer', 'beach_access', 'mountain_view'];
-  const featuresList = ['gps', 'bluetooth', 'ac', 'sunroof', 'backup_camera', 'cruise_control', 'heated_seats', 'wifi_hotspot', 'child_seat', 'ski_rack', 'bike_rack'];
+  const stayTypes = [
+    { id: 'apartment', label: 'Appartement' },
+    { id: 'house', label: 'Maison' },
+    { id: 'villa', label: 'Villa' },
+    { id: 'studio', label: 'Studio' },
+    { id: 'room', label: 'Chambre' },
+    { id: 'riad', label: 'Riad' },
+    { id: 'guesthouse', label: 'Maison d\'hôtes' },
+    { id: 'hotel_room', label: 'Chambre d\'hôtel' },
+  ];
+
+  const amenitiesConfig = [
+    { id: 'wifi', label: 'Wi-Fi', icon: <FaWifi className="w-5 h-5" /> },
+    { id: 'parking', label: 'Parking', icon: <FaParking className="w-5 h-5" /> },
+    { id: 'pool', label: 'Piscine', icon: <FaSwimmingPool className="w-5 h-5" /> },
+    { id: 'gym', label: 'Salle de sport', icon: <FaDumbbell className="w-5 h-5" /> },
+    { id: 'garden', label: 'Jardin', icon: <FaTree className="w-5 h-5" /> },
+    { id: 'terrace', label: 'Terrasse', icon: <HiOutlineSparkles className="w-5 h-5" /> },
+    { id: 'ac', label: 'Climatisation', icon: <FaSnowflake className="w-5 h-5" /> },
+    { id: 'heating', label: 'Chauffage', icon: <FaFire className="w-5 h-5" /> },
+    { id: 'kitchen', label: 'Cuisine équipée', icon: <FaUtensils className="w-5 h-5" /> },
+    { id: 'tv', label: 'TV', icon: <FaTv className="w-5 h-5" /> },
+    { id: 'washer', label: 'Lave-linge', icon: <HiOutlineSparkles className="w-5 h-5" /> },
+    { id: 'beach_access', label: 'Accès plage', icon: <FaWater className="w-5 h-5" /> },
+    { id: 'mountain_view', label: 'Vue montagne', icon: <FaMountain className="w-5 h-5" /> },
+    { id: 'security', label: 'Sécurité 24h', icon: <HiOutlineShieldCheck className="w-5 h-5" /> },
+  ];
+
+  const cancellationPolicies = [
+    { id: 'flexible', label: 'Flexible', description: 'Remboursement intégral jusqu\'à 24h avant l\'arrivée' },
+    { id: 'moderate', label: 'Modérée', description: 'Remboursement intégral jusqu\'à 5 jours avant l\'arrivée' },
+    { id: 'strict', label: 'Stricte', description: 'Remboursement de 50% jusqu\'à 1 semaine avant l\'arrivée' },
+    { id: 'non_refundable', label: 'Non remboursable', description: 'Aucun remboursement après réservation' },
+  ];
+
+  // Calculate total beds count
+  const getTotalBeds = () => {
+    return formData.stayDetails.beds.reduce((sum, bed) => {
+      if (bed.type === 'bunk') return sum + (bed.count * 2);
+      return sum + bed.count;
+    }, 0);
+  };
+
+  // Calculate total bathrooms count
+  const getTotalBathrooms = () => {
+    return formData.stayDetails.bathrooms.reduce((sum, bath) => sum + bath.count, 0);
+  };
+
+  // Get summary text for each section
+  const getSectionSummary = (sectionId: EditorSection): string => {
+    switch (sectionId) {
+      case 'photos':
+        return formData.images.length > 0 ? `${formData.images.length} photo${formData.images.length > 1 ? 's' : ''}` : 'Ajouter des photos';
+      case 'title':
+        return formData.title || 'Ajouter un titre';
+      case 'type':
+        const type = stayTypes.find(t => t.id === formData.subcategory);
+        return type?.label || 'Sélectionner';
+      case 'guests':
+        return `${formData.stayDetails.capacity} voyageur${formData.stayDetails.capacity > 1 ? 's' : ''}`;
+      case 'bedrooms':
+        return `${formData.stayDetails.bedrooms} chambre${formData.stayDetails.bedrooms > 1 ? 's' : ''}`;
+      case 'beds':
+        const totalBeds = getTotalBeds();
+        return `${totalBeds} lit${totalBeds > 1 ? 's' : ''}`;
+      case 'bathrooms':
+        const totalBaths = getTotalBathrooms();
+        return `${totalBaths} salle${totalBaths > 1 ? 's' : ''} de bain`;
+      case 'amenities':
+        const count = formData.stayDetails.amenities.length;
+        return count > 0 ? `${count} équipement${count > 1 ? 's' : ''}` : 'Ajouter';
+      case 'location':
+        return formData.address.city || 'Ajouter une adresse';
+      case 'pricing':
+        return formData.pricing.basePrice > 0
+          ? `${formData.pricing.basePrice.toLocaleString()} ${formData.pricing.currency}`
+          : 'Définir le prix';
+      case 'calendar':
+        const customCount = formData.customPricing?.length || 0;
+        return customCount > 0 ? `${customCount} période${customCount > 1 ? 's' : ''} personnalisée${customCount > 1 ? 's' : ''}` : 'Gérer le calendrier';
+      case 'availability':
+        return formData.availability.instantBook ? 'Réservation instantanée' : 'Sur demande';
+      case 'cancellation':
+        const policy = cancellationPolicies.find(p => p.id === formData.cancellationPolicy);
+        return policy?.label || 'Modérée';
+      case 'rules':
+        return 'Règlement intérieur';
+      case 'status':
+        return formData.status === 'active' ? 'Publiée' : formData.status === 'draft' ? 'Brouillon' : 'Inactive';
+      default:
+        return '';
+    }
+  };
+
+  // Section items for sidebar
+  const sectionItems = [
+    { id: 'photos' as EditorSection, label: 'Photos', icon: <HiOutlinePhotograph className="w-5 h-5" /> },
+    { id: 'title' as EditorSection, label: 'Titre et description', icon: <HiOutlineDocumentText className="w-5 h-5" /> },
+    { id: 'type' as EditorSection, label: 'Type de logement', icon: <HiOutlineHome className="w-5 h-5" /> },
+    { id: 'guests' as EditorSection, label: 'Voyageurs', icon: <HiOutlineUsers className="w-5 h-5" /> },
+    { id: 'bedrooms' as EditorSection, label: 'Chambres', icon: <FaDoorOpen className="w-5 h-5" /> },
+    { id: 'beds' as EditorSection, label: 'Lits', icon: <FaBed className="w-5 h-5" /> },
+    { id: 'bathrooms' as EditorSection, label: 'Salles de bain', icon: <FaBath className="w-5 h-5" /> },
+    { id: 'amenities' as EditorSection, label: 'Équipements', icon: <HiOutlineSparkles className="w-5 h-5" /> },
+    { id: 'location' as EditorSection, label: 'Localisation', icon: <HiOutlineLocationMarker className="w-5 h-5" /> },
+    { id: 'pricing' as EditorSection, label: 'Tarification', icon: <HiOutlineCurrencyDollar className="w-5 h-5" /> },
+    { id: 'calendar' as EditorSection, label: 'Calendrier & Prix', icon: <HiOutlineTrendingUp className="w-5 h-5" /> },
+    { id: 'availability' as EditorSection, label: 'Disponibilités', icon: <HiOutlineCalendar className="w-5 h-5" /> },
+    { id: 'cancellation' as EditorSection, label: 'Annulation', icon: <HiOutlineBan className="w-5 h-5" /> },
+    { id: 'rules' as EditorSection, label: 'Règlement', icon: <HiOutlineClipboardList className="w-5 h-5" /> },
+    { id: 'status' as EditorSection, label: 'Publication', icon: <HiOutlineEye className="w-5 h-5" /> },
+  ];
+
+  // Track changes
+  useEffect(() => {
+    if (originalData) {
+      setHasChanges(JSON.stringify(formData) !== JSON.stringify(originalData));
+    }
+  }, [formData, originalData]);
 
   useEffect(() => {
     fetchListing();
@@ -175,21 +355,36 @@ export default function EditListingPage() {
       const token = localStorage.getItem('token');
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/listings/${listingId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const listing = response.data.data.listing;
 
-      // Map the listing data to form structure
-      setFormData({
+      // Convert old beds format to new format
+      let bedsConfig: BedConfig[] = [{ type: 'double', count: 1 }];
+      if (listing.stayDetails?.beds) {
+        if (Array.isArray(listing.stayDetails.beds)) {
+          bedsConfig = listing.stayDetails.beds;
+        } else if (typeof listing.stayDetails.beds === 'number') {
+          bedsConfig = [{ type: 'double', count: listing.stayDetails.beds }];
+        }
+      }
+
+      // Convert old bathrooms format to new format
+      let bathroomsConfig: BathroomConfig[] = [{ type: 'private', count: 1 }];
+      if (listing.stayDetails?.bathrooms) {
+        if (Array.isArray(listing.stayDetails.bathrooms)) {
+          bathroomsConfig = listing.stayDetails.bathrooms;
+        } else if (typeof listing.stayDetails.bathrooms === 'number') {
+          bathroomsConfig = [{ type: 'private', count: listing.stayDetails.bathrooms }];
+        }
+      }
+
+      const mappedData: ListingForm = {
         title: listing.title || '',
         description: listing.description || '',
-        category: listing.category || '',
-        subcategory: listing.subcategory || '',
+        category: 'stay',
+        subcategory: listing.subcategory || listing.stayDetails?.stayType || '',
         address: {
           street: listing.address?.street || '',
           city: listing.address?.city || '',
@@ -198,29 +393,19 @@ export default function EditListingPage() {
           country: listing.address?.country || 'Algeria'
         },
         location: {
-          coordinates: listing.location?.coordinates || [0, 0]
+          type: 'Point',
+          coordinates: listing.location?.coordinates || [3.0588, 36.7538]
         },
         stayDetails: {
-          stayType: listing.stayDetails?.stayType || '',
-          bedrooms: listing.stayDetails?.bedrooms || 0,
-          bathrooms: listing.stayDetails?.bathrooms || 0,
-          area: listing.stayDetails?.area || 0,
-          floor: listing.stayDetails?.floor || 0,
-          furnished: listing.stayDetails?.furnished || '',
+          stayType: listing.stayDetails?.stayType || listing.subcategory || '',
+          bedrooms: listing.stayDetails?.bedrooms || 1,
+          beds: bedsConfig,
+          bathrooms: bathroomsConfig,
+          capacity: listing.stayDetails?.capacity || 2,
           amenities: listing.stayDetails?.amenities || []
         },
-        vehicleDetails: {
-          vehicleType: listing.vehicleDetails?.vehicleType || '',
-          make: listing.vehicleDetails?.make || '',
-          model: listing.vehicleDetails?.model || '',
-          year: listing.vehicleDetails?.year || new Date().getFullYear(),
-          transmission: listing.vehicleDetails?.transmission || '',
-          fuelType: listing.vehicleDetails?.fuelType || '',
-          seats: listing.vehicleDetails?.seats || 0,
-          features: listing.vehicleDetails?.features || []
-        },
         pricing: {
-          basePrice: listing.pricing?.basePrice || 0,
+          basePrice: listing.pricing?.basePrice || 5000,
           currency: listing.pricing?.currency || 'DZD',
           pricingType: listing.pricing?.pricingType || 'per_night',
           cleaningFee: listing.pricing?.cleaningFee || 0,
@@ -237,6 +422,7 @@ export default function EditListingPage() {
           checkInTo: listing.availability?.checkInTo || '21:00',
           checkOutBefore: listing.availability?.checkOutBefore || '11:00'
         },
+        cancellationPolicy: listing.cancellationPolicy || 'moderate',
         rules: {
           smoking: listing.rules?.smoking || 'not_allowed',
           pets: listing.rules?.pets || 'not_allowed',
@@ -245,13 +431,30 @@ export default function EditListingPage() {
           additionalRules: listing.rules?.additionalRules || []
         },
         images: listing.images || [],
-        status: listing.status || 'draft'
-      });
+        status: listing.status || 'draft',
+        pricingRules: listing.pricingRules || [],
+        customPricing: (listing.customPricing || []).map((cp: any) => ({
+          ...cp,
+          startDate: cp.startDate ? new Date(cp.startDate).toISOString().split('T')[0] : '',
+          endDate: cp.endDate ? new Date(cp.endDate).toISOString().split('T')[0] : ''
+        })),
+        discounts: {
+          weeklyDiscount: listing.discounts?.weeklyDiscount || 0,
+          monthlyDiscount: listing.discounts?.monthlyDiscount || 0,
+          newListingPromo: {
+            enabled: listing.discounts?.newListingPromo?.enabled || false,
+            discountPercent: listing.discounts?.newListingPromo?.discountPercent || 0,
+            maxBookings: listing.discounts?.newListingPromo?.maxBookings || 0
+          }
+        }
+      };
 
+      setFormData(mappedData);
+      setOriginalData(mappedData);
       setLoading(false);
     } catch (error: any) {
       console.error('Error fetching listing:', error);
-      toast.error(error.response?.data?.message || (t as any).messages.listingLoadError);
+      toast.error('Erreur lors du chargement de l\'annonce');
       router.push('/dashboard/my-listings');
     }
   };
@@ -289,9 +492,9 @@ export default function EditListingPage() {
         images: [...prev.images, ...uploadedImages]
       }));
 
-      toast.success(`${files.length} ${(t as any).messages.imageUploadSuccess}`);
+      toast.success(`${files.length} image(s) ajoutée(s)`);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || (t as any).messages.imageUploadError);
+      toast.error(error.response?.data?.message || 'Erreur lors du téléchargement');
     } finally {
       setUploading(false);
     }
@@ -326,18 +529,6 @@ export default function EditListingPage() {
     }));
   };
 
-  const toggleFeature = (feature: string) => {
-    setFormData(prev => ({
-      ...prev,
-      vehicleDetails: {
-        ...prev.vehicleDetails,
-        features: prev.vehicleDetails.features.includes(feature)
-          ? prev.vehicleDetails.features.filter(f => f !== feature)
-          : [...prev.vehicleDetails.features, feature]
-      }
-    }));
-  };
-
   const addAdditionalRule = () => {
     if (newRule.trim()) {
       setFormData(prev => ({
@@ -361,206 +552,6 @@ export default function EditListingPage() {
     }));
   };
 
-  const handleSubmit = async (status: string) => {
-    // Validation
-    if (!formData.title || !formData.description || !formData.category) {
-      toast.error((t as any).validation.requiredFields);
-      return;
-    }
-
-    if (!formData.address.street || !formData.address.city || !formData.address.state) {
-      toast.error((t as any).validation.completeAddress);
-      return;
-    }
-
-    if (formData.pricing.basePrice <= 0) {
-      toast.error((t as any).validation.validBasePrice);
-      return;
-    }
-
-    if (formData.images.length === 0) {
-      toast.error((t as any).validation.atLeastOneImage);
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      const token = localStorage.getItem('token');
-
-      // Build payload based on category - only include relevant details
-      const payload: any = {
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        subcategory: formData.subcategory,
-        address: formData.address,
-        location: formData.location,
-        pricing: formData.pricing,
-        availability: formData.availability,
-        rules: formData.rules,
-        images: formData.images,
-        status
-      };
-
-      // Add category-specific details - only send the relevant one
-      if (formData.category === 'stay') {
-        // Clean stayDetails - remove empty string values
-        const cleanStayDetails: any = {
-          amenities: formData.stayDetails.amenities
-        };
-
-        // Only include fields with valid values
-        if (formData.stayDetails.stayType) cleanStayDetails.stayType = formData.stayDetails.stayType;
-        if (formData.stayDetails.bedrooms) cleanStayDetails.bedrooms = formData.stayDetails.bedrooms;
-        if (formData.stayDetails.bathrooms) cleanStayDetails.bathrooms = formData.stayDetails.bathrooms;
-        if (formData.stayDetails.area) cleanStayDetails.area = formData.stayDetails.area;
-        if (formData.stayDetails.floor !== undefined) cleanStayDetails.floor = formData.stayDetails.floor;
-        if (formData.stayDetails.furnished) cleanStayDetails.furnished = formData.stayDetails.furnished;
-
-        payload.stayDetails = cleanStayDetails;
-      } else if (formData.category === 'vehicle') {
-        // Clean vehicleDetails - remove empty string values
-        const cleanVehicleDetails: any = {
-          features: formData.vehicleDetails.features
-        };
-
-        // Only include fields with valid values
-        if (formData.vehicleDetails.vehicleType) cleanVehicleDetails.vehicleType = formData.vehicleDetails.vehicleType;
-        if (formData.vehicleDetails.make) cleanVehicleDetails.make = formData.vehicleDetails.make;
-        if (formData.vehicleDetails.model) cleanVehicleDetails.model = formData.vehicleDetails.model;
-        if (formData.vehicleDetails.year) cleanVehicleDetails.year = formData.vehicleDetails.year;
-        if (formData.vehicleDetails.transmission) cleanVehicleDetails.transmission = formData.vehicleDetails.transmission;
-        if (formData.vehicleDetails.fuelType) cleanVehicleDetails.fuelType = formData.vehicleDetails.fuelType;
-        if (formData.vehicleDetails.seats) cleanVehicleDetails.seats = formData.vehicleDetails.seats;
-
-        payload.vehicleDetails = cleanVehicleDetails;
-      }
-
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/listings/${listingId}`,
-        payload,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      toast.success((t as any).messages.listingUpdatedSuccess);
-      router.push('/dashboard/my-listings');
-    } catch (error: any) {
-      console.error('Update listing error:', error);
-      toast.error(error.response?.data?.message || (t as any).messages.listingUpdateError);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const renderStep1 = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <FaInfoCircle className="mr-2 text-[#FF6B35]" />
-          {(t as any).basicInfo.sectionTitle}
-        </h3>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).basicInfo.category} <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, category: 'stay', subcategory: '', pricing: { ...prev.pricing, pricingType: 'per_night' } }))}
-                className={`p-4 border-2 rounded-lg transition-all ${formData.category === 'stay' ? 'border-[#FF6B35] bg-orange-50' : 'border-gray-200 hover:border-[#FF6B35]'}`}
-              >
-                <FaHome className={`text-3xl mx-auto mb-2 ${formData.category === 'stay' ? 'text-[#FF6B35]' : 'text-gray-400'}`} />
-                <p className="font-semibold">{(t as any).basicInfo.stayCategory}</p>
-                <p className="text-xs text-gray-500">{(t as any).basicInfo.stayCategoryDesc}</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, category: 'vehicle', subcategory: '', pricing: { ...prev.pricing, pricingType: 'per_day' } }))}
-                className={`p-4 border-2 rounded-lg transition-all ${formData.category === 'vehicle' ? 'border-[#FF6B35] bg-orange-50' : 'border-gray-200 hover:border-[#FF6B35]'}`}
-              >
-                <FaCar className={`text-3xl mx-auto mb-2 ${formData.category === 'vehicle' ? 'text-[#FF6B35]' : 'text-gray-400'}`} />
-                <p className="font-semibold">{(t as any).basicInfo.vehicleCategory}</p>
-                <p className="text-xs text-gray-500">{(t as any).basicInfo.vehicleCategoryDesc}</p>
-              </button>
-            </div>
-          </div>
-
-          {formData.category && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {formData.category === 'stay' ? (t as any).basicInfo.propertyType : (t as any).basicInfo.vehicleType} <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.subcategory}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData(prev => ({
-                      ...prev,
-                      subcategory: value,
-                      // Sync the type with subcategory
-                      stayDetails: formData.category === 'stay' ? { ...prev.stayDetails, stayType: value } : prev.stayDetails,
-                      vehicleDetails: formData.category === 'vehicle' ? { ...prev.vehicleDetails, vehicleType: value } : prev.vehicleDetails
-                    }));
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-                  required
-                >
-                  <option value="">{(t as any).basicInfo.selectType}</option>
-                  {(formData.category === 'stay' ? stayTypes : vehicleTypes).map(type => (
-                    <option key={type} value={type}>
-                      {formData.category === 'stay' ? (t as any).options.stayTypes[type] : (t as any).options.vehicleTypes[type]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {(t as any).basicInfo.title} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder={(t as any).basicInfo.titlePlaceholder}
-                  maxLength={100}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">{formData.title.length}/100 {(t as any).basicInfo.titleCounter}</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {(t as any).basicInfo.description} <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder={(t as any).basicInfo.descriptionPlaceholder}
-                  rows={6}
-                  maxLength={2000}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">{formData.description.length}/2000 {(t as any).basicInfo.descriptionCounter}</p>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
   const handlePlaceSelected = (place: {
     address: {
       street: string;
@@ -580,957 +571,1419 @@ export default function EditListingPage() {
         coordinates: place.coordinates
       }
     }));
-    toast.success((t as any).location.locationUpdated);
+    toast.success('Localisation mise à jour');
   };
 
-  const handleMapLocationChange = (location: { lat: number; lng: number; address?: string }) => {
-    setFormData(prev => ({
-      ...prev,
-      location: {
-        type: 'Point',
-        coordinates: [location.lng, location.lat]
+  // Update bed count
+  const updateBedCount = (bedType: string, delta: number) => {
+    setFormData(prev => {
+      const beds = [...prev.stayDetails.beds];
+      const existingIndex = beds.findIndex(b => b.type === bedType);
+
+      if (existingIndex >= 0) {
+        const newCount = beds[existingIndex].count + delta;
+        if (newCount <= 0) {
+          beds.splice(existingIndex, 1);
+        } else {
+          beds[existingIndex].count = newCount;
+        }
+      } else if (delta > 0) {
+        beds.push({ type: bedType as any, count: 1 });
       }
-    }));
+
+      return {
+        ...prev,
+        stayDetails: { ...prev.stayDetails, beds }
+      };
+    });
   };
 
-  const renderStep2 = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-        <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-          <FaMapMarkerAlt className="mr-2 text-[#FF6B35]" />
-          {(t as any).location.sectionTitle}
-        </h3>
+  // Get bed count for a type
+  const getBedCount = (bedType: string): number => {
+    const bed = formData.stayDetails.beds.find(b => b.type === bedType);
+    return bed?.count || 0;
+  };
 
-        {/* Google Maps Autocomplete */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            {(t as any).location.searchLocation} <span className="text-red-500">*</span>
-          </label>
-          <CityAutocomplete
-            onPlaceSelected={handlePlaceSelected}
-            placeholder={(t as any).location.searchPlaceholder}
-            defaultValue={formData.address.city || ''}
-          />
-        </div>
+  // Update bathroom count
+  const updateBathroomCount = (bathType: string, delta: number) => {
+    setFormData(prev => {
+      const bathrooms = [...prev.stayDetails.bathrooms];
+      const existingIndex = bathrooms.findIndex(b => b.type === bathType);
 
-        {/* Manual Address Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).location.streetAddress} <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.address.street}
-              onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, street: e.target.value } }))}
-              placeholder={(t as any).location.streetPlaceholder}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              required
-            />
-          </div>
+      if (existingIndex >= 0) {
+        const newCount = bathrooms[existingIndex].count + delta;
+        if (newCount <= 0) {
+          bathrooms.splice(existingIndex, 1);
+        } else {
+          bathrooms[existingIndex].count = newCount;
+        }
+      } else if (delta > 0) {
+        bathrooms.push({ type: bathType as any, count: 1 });
+      }
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).location.city} <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.address.city}
-              onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, city: e.target.value } }))}
-              placeholder={(t as any).location.cityPlaceholder}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              required
-            />
-          </div>
+      return {
+        ...prev,
+        stayDetails: { ...prev.stayDetails, bathrooms }
+      };
+    });
+  };
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).location.state} <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.address.state}
-              onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, state: e.target.value } }))}
-              placeholder={(t as any).location.statePlaceholder}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              required
-            />
-          </div>
+  // Get bathroom count for a type
+  const getBathroomCount = (bathType: string): number => {
+    const bath = formData.stayDetails.bathrooms.find(b => b.type === bathType);
+    return bath?.count || 0;
+  };
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).location.postalCode}
-            </label>
-            <input
-              type="text"
-              value={formData.address.postalCode}
-              onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, postalCode: e.target.value } }))}
-              placeholder={(t as any).location.postalCodePlaceholder}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            />
-          </div>
+  const handleSave = async (newStatus?: string) => {
+    // Validation
+    if (!formData.title || !formData.description) {
+      toast.error('Veuillez remplir le titre et la description');
+      setActiveSection('title');
+      return;
+    }
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).location.country} <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.address.country}
-              onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, country: e.target.value } }))}
-              placeholder={(t as any).location.countryPlaceholder}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              required
-            />
-          </div>
-        </div>
+    if (!formData.subcategory) {
+      toast.error('Veuillez sélectionner le type de logement');
+      setActiveSection('type');
+      return;
+    }
 
-        {/* Coordinates Display (Read-only) */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).location.latitude} <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.location.coordinates[1] || ''}
-              readOnly
-              placeholder={(t as any).location.latitudePlaceholder}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600"
-            />
-          </div>
+    if (!formData.address.city || !formData.address.state) {
+      toast.error('Veuillez compléter l\'adresse (ville et wilaya)');
+      setActiveSection('location');
+      return;
+    }
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).location.longitude} <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.location.coordinates[0] || ''}
-              readOnly
-              placeholder={(t as any).location.longitudePlaceholder}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600"
-            />
-          </div>
-        </div>
+    if (formData.pricing.basePrice <= 0) {
+      toast.error('Veuillez définir un prix de base valide');
+      setActiveSection('pricing');
+      return;
+    }
 
-        {/* Leaflet Location Picker */}
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            {(t as any).location.pinLocation} <span className="text-red-500">*</span>
-          </label>
-          <LeafletLocationPicker
-            center={{
-              lat: formData.location.coordinates[1] || 36.7538,
-              lng: formData.location.coordinates[0] || 3.0588
-            }}
-            onLocationChange={handleMapLocationChange}
-            zoom={15}
-          />
-        </div>
-      </div>
-    </div>
-  );
+    if (formData.images.length === 0) {
+      toast.error('Veuillez ajouter au moins une photo');
+      setActiveSection('photos');
+      return;
+    }
 
-  // Step 3, 4, 5, 6 are identical to Create page - for brevity, I'll include them similarly
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      {formData.category === 'stay' ? (
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <FaHome className="mr-2 text-[#FF6B35]" />
-            {(t as any).stayDetails.sectionTitle}
-          </h3>
+    setSaving(true);
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FaBed className="inline mr-2" />
-                {(t as any).stayDetails.bedrooms}
-              </label>
-              <input
-                type="number"
-                value={formData.stayDetails.bedrooms}
-                onChange={(e) => setFormData(prev => ({ ...prev, stayDetails: { ...prev.stayDetails, bedrooms: parseInt(e.target.value) || 0 } }))}
-                min="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              />
-            </div>
+    try {
+      const token = localStorage.getItem('token');
+      const statusToSave = newStatus || formData.status;
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {(t as any).stayDetails.bathrooms}
-              </label>
-              <input
-                type="number"
-                value={formData.stayDetails.bathrooms}
-                onChange={(e) => setFormData(prev => ({ ...prev, stayDetails: { ...prev.stayDetails, bathrooms: parseInt(e.target.value) || 0 } }))}
-                min="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              />
-            </div>
+      // Convert beds and bathrooms arrays to backend format
+      const totalBeds = getTotalBeds();
+      const totalBathrooms = getTotalBathrooms();
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FaRulerCombined className="inline mr-2" />
-                {(t as any).stayDetails.area}
-              </label>
-              <input
-                type="number"
-                value={formData.stayDetails.area}
-                onChange={(e) => setFormData(prev => ({ ...prev, stayDetails: { ...prev.stayDetails, area: parseInt(e.target.value) || 0 } }))}
-                min="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              />
-            </div>
+      const payload: any = {
+        title: formData.title,
+        description: formData.description,
+        category: 'stay',
+        subcategory: formData.subcategory,
+        address: formData.address,
+        location: formData.location,
+        stayDetails: {
+          stayType: formData.subcategory,
+          bedrooms: formData.stayDetails.bedrooms,
+          beds: totalBeds, // Send total count for backward compatibility
+          bedsDetails: formData.stayDetails.beds, // Send detailed config
+          bathrooms: totalBathrooms, // Send total count for backward compatibility
+          bathroomsDetails: formData.stayDetails.bathrooms, // Send detailed config
+          capacity: formData.stayDetails.capacity,
+          amenities: formData.stayDetails.amenities
+        },
+        pricing: formData.pricing,
+        availability: formData.availability,
+        cancellationPolicy: formData.cancellationPolicy,
+        rules: formData.rules,
+        images: formData.images,
+        status: statusToSave,
+        pricingRules: formData.pricingRules,
+        customPricing: formData.customPricing,
+        discounts: formData.discounts
+      };
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {(t as any).stayDetails.floor}
-              </label>
-              <input
-                type="number"
-                value={formData.stayDetails.floor}
-                onChange={(e) => setFormData(prev => ({ ...prev, stayDetails: { ...prev.stayDetails, floor: parseInt(e.target.value) || 0 } }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              />
-            </div>
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/listings/${listingId}`,
+        payload,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FaCouch className="inline mr-2" />
-                {(t as any).stayDetails.furnished}
-              </label>
-              <select
-                value={formData.stayDetails.furnished}
-                onChange={(e) => setFormData(prev => ({ ...prev, stayDetails: { ...prev.stayDetails, furnished: e.target.value } }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              >
-                <option value="">{(t as any).stayDetails.furnishedSelect}</option>
-                <option value="furnished">{(t as any).stayDetails.furnishedOption}</option>
-                <option value="semi-furnished">{(t as any).stayDetails.semiFurnishedOption}</option>
-                <option value="unfurnished">{(t as any).stayDetails.unfurnishedOption}</option>
-              </select>
-            </div>
-          </div>
+      setOriginalData(formData);
+      setHasChanges(false);
+      toast.success('Annonce mise à jour avec succès');
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              {(t as any).stayDetails.amenities}
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {amenitiesList.map(amenity => (
-                <button
-                  key={amenity}
-                  type="button"
-                  onClick={() => toggleAmenity(amenity)}
-                  className={`p-3 border-2 rounded-lg text-sm font-medium transition-all ${
-                    formData.stayDetails.amenities.includes(amenity)
-                      ? 'border-[#FF6B35] bg-orange-50 text-[#FF6B35]'
-                      : 'border-gray-200 text-gray-700 hover:border-[#FF6B35]'
-                  }`}
-                >
-                  {(t as any).options.amenities[amenity]}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : formData.category === 'vehicle' ? (
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <FaCar className="mr-2 text-[#FF6B35]" />
-            {(t as any).vehicleDetails.sectionTitle}
-          </h3>
+      if (newStatus) {
+        router.push('/dashboard/my-listings');
+      }
+    } catch (error: any) {
+      console.error('Update listing error:', error);
+      toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour');
+    } finally {
+      setSaving(false);
+    }
+  };
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {(t as any).vehicleDetails.make}
-              </label>
-              <input
-                type="text"
-                value={formData.vehicleDetails.make}
-                onChange={(e) => setFormData(prev => ({ ...prev, vehicleDetails: { ...prev.vehicleDetails, make: e.target.value } }))}
-                placeholder={(t as any).vehicleDetails.makePlaceholder}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {(t as any).vehicleDetails.model}
-              </label>
-              <input
-                type="text"
-                value={formData.vehicleDetails.model}
-                onChange={(e) => setFormData(prev => ({ ...prev, vehicleDetails: { ...prev.vehicleDetails, model: e.target.value } }))}
-                placeholder={(t as any).vehicleDetails.modelPlaceholder}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {(t as any).vehicleDetails.year}
-              </label>
-              <input
-                type="number"
-                value={formData.vehicleDetails.year}
-                onChange={(e) => setFormData(prev => ({ ...prev, vehicleDetails: { ...prev.vehicleDetails, year: parseInt(e.target.value) || new Date().getFullYear() } }))}
-                min="1900"
-                max={new Date().getFullYear() + 1}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FaUsers className="inline mr-2" />
-                {(t as any).vehicleDetails.seats}
-              </label>
-              <input
-                type="number"
-                value={formData.vehicleDetails.seats}
-                onChange={(e) => setFormData(prev => ({ ...prev, vehicleDetails: { ...prev.vehicleDetails, seats: parseInt(e.target.value) || 0 } }))}
-                min="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FaCogs className="inline mr-2" />
-                {(t as any).vehicleDetails.transmission}
-              </label>
-              <select
-                value={formData.vehicleDetails.transmission}
-                onChange={(e) => setFormData(prev => ({ ...prev, vehicleDetails: { ...prev.vehicleDetails, transmission: e.target.value } }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              >
-                <option value="">{(t as any).vehicleDetails.transmissionSelect}</option>
-                <option value="manual">{(t as any).vehicleDetails.transmissionManual}</option>
-                <option value="automatic">{(t as any).vehicleDetails.transmissionAutomatic}</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FaGasPump className="inline mr-2" />
-                {(t as any).vehicleDetails.fuelType}
-              </label>
-              <select
-                value={formData.vehicleDetails.fuelType}
-                onChange={(e) => setFormData(prev => ({ ...prev, vehicleDetails: { ...prev.vehicleDetails, fuelType: e.target.value } }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              >
-                <option value="">{(t as any).vehicleDetails.fuelTypeSelect}</option>
-                <option value="gasoline">{(t as any).vehicleDetails.fuelGasoline}</option>
-                <option value="diesel">{(t as any).vehicleDetails.fuelDiesel}</option>
-                <option value="electric">{(t as any).vehicleDetails.fuelElectric}</option>
-                <option value="hybrid">{(t as any).vehicleDetails.fuelHybrid}</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              {(t as any).vehicleDetails.features}
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {featuresList.map(feature => (
-                <button
-                  key={feature}
-                  type="button"
-                  onClick={() => toggleFeature(feature)}
-                  className={`p-3 border-2 rounded-lg text-sm font-medium transition-all ${
-                    formData.vehicleDetails.features.includes(feature)
-                      ? 'border-[#FF6B35] bg-orange-50 text-[#FF6B35]'
-                      : 'border-gray-200 text-gray-700 hover:border-[#FF6B35]'
-                  }`}
-                >
-                  {(t as any).options.features[feature]}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-
-  const renderStep4 = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <FaMoneyBillWave className="mr-2 text-[#FF6B35]" />
-          {(t as any).pricing.sectionTitle}
-        </h3>
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* ✅ BASE PRICE */}
-          <div className="md:col-span-2">
-            <PriceInput
-              value={formData.pricing.basePrice}
-              onChange={(value) => setFormData(prev => ({ 
-                ...prev, 
-                pricing: { ...prev.pricing, basePrice: value } 
-              }))}
-              currency={formData.pricing.currency}
-              label={(t as any).pricing.basePrice}
-              required
-              min={0}
-            />
-          </div>
-
-          {/* PRICING TYPE - inchangé */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).pricing.pricingType}
-            </label>
-            <select
-              value={formData.pricing.pricingType}
-              onChange={(e) => setFormData(prev => ({ ...prev, pricing: { ...prev.pricing, pricingType: e.target.value } }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            >
-              <option value="per_night">{(t as any).pricing.perNight}</option>
-              <option value="per_day">{(t as any).pricing.perDay}</option>
-              <option value="per_week">{(t as any).pricing.perWeek}</option>
-              <option value="per_month">{(t as any).pricing.perMonth}</option>
-              <option value="per_hour">{(t as any).pricing.perHour}</option>
-            </select>
-          </div>
-
-          {/* ✅ CLEANING FEE */}
-          <div>
-            <PriceInput
-              value={formData.pricing.cleaningFee}
-              onChange={(value) => setFormData(prev => ({ 
-                ...prev, 
-                pricing: { ...prev.pricing, cleaningFee: value } 
-              }))}
-              currency={formData.pricing.currency}
-              label={(t as any).pricing.cleaningFee}
-              min={0}
-            />
-          </div>
-
-          {/* ✅ SERVICE FEE */}
-          <div>
-            <PriceInput
-              value={formData.pricing.serviceFee}
-              onChange={(value) => setFormData(prev => ({ 
-                ...prev, 
-                pricing: { ...prev.pricing, serviceFee: value } 
-              }))}
-              currency={formData.pricing.currency}
-              label={(t as any).pricing.serviceFee}
-              min={0}
-            />
-          </div>
-
-          {/* ✅ SECURITY DEPOSIT */}
-          <div>
-            <PriceInput
-              value={formData.pricing.securityDeposit}
-              onChange={(value) => setFormData(prev => ({ 
-                ...prev, 
-                pricing: { ...prev.pricing, securityDeposit: value } 
-              }))}
-              currency={formData.pricing.currency}
-              label={(t as any).pricing.securityDeposit}
-              min={0}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <FaCalendar className="mr-2 text-[#FF6B35]" />
-          {(t as any).availability.sectionTitle}
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-3">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={formData.availability.instantBook}
-                onChange={(e) => setFormData(prev => ({ ...prev, availability: { ...prev.availability, instantBook: e.target.checked } }))}
-                className="w-5 h-5 text-[#FF6B35] border-gray-300 rounded focus:ring-[#FF6B35]"
-              />
-              <span className="text-sm font-medium text-gray-700">{(t as any).availability.instantBook}</span>
-            </label>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).availability.minStay}
-            </label>
-            <input
-              type="number"
-              value={formData.availability.minStay}
-              onChange={(e) => setFormData(prev => ({ ...prev, availability: { ...prev.availability, minStay: parseInt(e.target.value) || 1 } }))}
-              min="1"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).availability.maxStay}
-            </label>
-            <input
-              type="number"
-              value={formData.availability.maxStay}
-              onChange={(e) => setFormData(prev => ({ ...prev, availability: { ...prev.availability, maxStay: parseInt(e.target.value) || 365 } }))}
-              min="1"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FaClock className="inline mr-2" />
-              {(t as any).availability.advanceNotice}
-            </label>
-            <input
-              type="number"
-              value={formData.availability.advanceNotice}
-              onChange={(e) => setFormData(prev => ({ ...prev, availability: { ...prev.availability, advanceNotice: parseInt(e.target.value) || 0 } }))}
-              min="0"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).availability.preparationTime}
-            </label>
-            <input
-              type="number"
-              value={formData.availability.preparationTime}
-              onChange={(e) => setFormData(prev => ({ ...prev, availability: { ...prev.availability, preparationTime: parseInt(e.target.value) || 0 } }))}
-              min="0"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FaDoorOpen className="inline mr-2" />
-              {(t as any).availability.checkInFrom}
-            </label>
-            <input
-              type="time"
-              value={formData.availability.checkInFrom}
-              onChange={(e) => setFormData(prev => ({ ...prev, availability: { ...prev.availability, checkInFrom: e.target.value } }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).availability.checkInTo}
-            </label>
-            <input
-              type="time"
-              value={formData.availability.checkInTo}
-              onChange={(e) => setFormData(prev => ({ ...prev, availability: { ...prev.availability, checkInTo: e.target.value } }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).availability.checkOutBefore}
-            </label>
-            <input
-              type="time"
-              value={formData.availability.checkOutBefore}
-              onChange={(e) => setFormData(prev => ({ ...prev, availability: { ...prev.availability, checkOutBefore: e.target.value } }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStep5 = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <FaClipboardList className="mr-2 text-[#FF6B35]" />
-          {(t as any).rules.sectionTitle}
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FaSmoking className="inline mr-2" /> {(t as any).rules.smoking}
-            </label>
-            <select
-              value={formData.rules.smoking}
-              onChange={(e) => setFormData(prev => ({ ...prev, rules: { ...prev.rules, smoking: e.target.value } }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            >
-              <option value="allowed">{(t as any).rules.smokingAllowed}</option>
-              <option value="not_allowed">{(t as any).rules.smokingNotAllowed}</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FaPaw className="inline mr-2" /> {(t as any).rules.pets}
-            </label>
-            <select
-              value={formData.rules.pets}
-              onChange={(e) => setFormData(prev => ({ ...prev, rules: { ...prev.rules, pets: e.target.value } }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            >
-              <option value="allowed">{(t as any).rules.petsAllowed}</option>
-              <option value="not_allowed">{(t as any).rules.petsNotAllowed}</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FaGlassCheers className="inline mr-2" /> {(t as any).rules.parties}
-            </label>
-            <select
-              value={formData.rules.parties}
-              onChange={(e) => setFormData(prev => ({ ...prev, rules: { ...prev.rules, parties: e.target.value } }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            >
-              <option value="allowed">{(t as any).rules.partiesAllowed}</option>
-              <option value="not_allowed">{(t as any).rules.partiesNotAllowed}</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FaChild className="inline mr-2" /> {(t as any).rules.children}
-            </label>
-            <select
-              value={formData.rules.children}
-              onChange={(e) => setFormData(prev => ({ ...prev, rules: { ...prev.rules, children: e.target.value } }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-            >
-              <option value="allowed">{(t as any).rules.childrenAllowed}</option>
-              <option value="not_allowed">{(t as any).rules.childrenNotAllowed}</option>
-            </select>
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {(t as any).rules.additionalRules}
-            </label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={newRule}
-                onChange={(e) => setNewRule(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAdditionalRule())}
-                placeholder={(t as any).rules.additionalRulesPlaceholder}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35]"
-              />
-              <button
-                type="button"
-                onClick={addAdditionalRule}
-                className="px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors"
-              >
-                <FaPlus />
-              </button>
-            </div>
-            <div className="space-y-2">
-              {formData.rules.additionalRules.map((rule, index) => (
-                <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                  <span className="flex-1 text-sm">{rule}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeAdditionalRule(index)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <FaTrash />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStep6 = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-gray-900 flex items-center">
-            <FaImage className="mr-2 text-[#FF6B35]" />
-            {(t as any).images.sectionTitle} <span className="text-red-500 ml-1">*</span>
-          </h3>
-          {formData.images.length > 0 && (
-            <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-              {formData.images.length} {formData.images.length === 1 ? (t as any).images.imageNumber : (t as any).images.imagesNumber} {(t as any).images.uploadedText}
-            </span>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          {/* Upload Area */}
-          <div className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
-            uploading ? 'border-[#FF6B35] bg-orange-50' : 'border-gray-300 hover:border-[#FF6B35] hover:bg-gray-50'
-          }`}>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-              id="image-upload"
-              disabled={uploading}
-            />
-            <label
-              htmlFor="image-upload"
-              className={`cursor-pointer ${uploading ? 'cursor-not-allowed' : ''}`}
-            >
-              {uploading ? (
-                <FaSpinner className="text-4xl text-[#FF6B35] mx-auto mb-4 animate-spin" />
-              ) : (
-                <FaImage className="text-4xl text-gray-400 mx-auto mb-4" />
-              )}
-              <p className="text-gray-600 mb-2 font-medium">
-                {uploading ? (t as any).images.uploadingText : (t as any).images.uploadArea}
-              </p>
-              <p className="text-sm text-gray-500">
-                {(t as any).images.uploadFormats}
-              </p>
-              {formData.images.length > 0 && (
-                <p className="text-xs text-[#FF6B35] mt-2">
-                  {(t as any).images.addMoreImages}
-                </p>
-              )}
-            </label>
-          </div>
-
-          {/* Image Preview Grid */}
-          {formData.images.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  {(t as any).images.primaryImageTip}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {formData.images.map((image, index) => (
-                  <div key={index} className="relative group bg-white rounded-lg border-2 border-gray-200 overflow-hidden hover:border-[#FF6B35] transition-all">
-                    {/* Image Container with Loading State */}
-                    <div className="relative w-full h-40 bg-gray-100">
-                      <img
-                        src={`${process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000'}${image.url}`}
-                        alt={image.caption || `Listing image ${index + 1}`}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                        onError={(e) => {
-                          // Fallback for broken images
-                          console.error('Image failed to load:', `${process.env.NEXT_PUBLIC_SOCKET_URL}${image.url}`);
-                          e.currentTarget.src = '/placeholder.jpg';
-                          e.currentTarget.onerror = null;
-                        }}
-                        loading="lazy"
-                      />
-
-                      {/* Overlay on Hover */}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200" />
-                    </div>
-
-                    {/* Primary Badge */}
-                    {image.isPrimary && (
-                      <div className="absolute top-2 left-2 bg-gradient-to-r from-[#FF6B35] to-orange-600 text-white px-2.5 py-1 rounded-full text-xs font-bold flex items-center shadow-lg z-10">
-                        <FaStar className="mr-1" size={10} /> {(t as any).images.primaryBadge}
-                      </div>
-                    )}
-
-                    {/* Image Number */}
-                    <div className="absolute top-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs font-medium">
-                      #{index + 1}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                      {!image.isPrimary && (
-                        <button
-                          type="button"
-                          onClick={() => handleSetPrimaryImage(index)}
-                          className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-lg transform hover:scale-110 transition-all"
-                          title={(t as any).images.setPrimary}
-                        >
-                          <FaStar size={12} />
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(index)}
-                        className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-lg transform hover:scale-110 transition-all"
-                        title={(t as any).images.removeImage}
-                      >
-                        <FaTrash size={12} />
-                      </button>
-                    </div>
-
-                    {/* Caption Input */}
-                    <div className="p-2 bg-white">
-                      <input
-                        type="text"
-                        value={image.caption || ''}
-                        onChange={(e) => {
-                          const newImages = [...formData.images];
-                          newImages[index].caption = e.target.value;
-                          setFormData(prev => ({ ...prev, images: newImages }));
-                        }}
-                        placeholder={(t as any).images.captionPlaceholder}
-                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-[#FF6B35] focus:border-[#FF6B35] outline-none"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* No Images Message */}
-          {formData.images.length === 0 && !uploading && (
-            <div className="text-center py-8">
-              <FaImage className="text-6xl text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">{(t as any).images.noImagesYet}</p>
-              <p className="text-gray-400 text-xs mt-1">{(t as any).images.uploadAtLeastOne}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const steps = [
-    { number: 1, title: (t as any).steps.basicInfo, icon: FaInfoCircle },
-    { number: 2, title: (t as any).steps.location, icon: FaMapMarkerAlt },
-    { number: 3, title: (t as any).steps.details, icon: formData.category === 'stay' ? FaHome : FaCar },
-    { number: 4, title: (t as any).steps.pricing, icon: FaMoneyBillWave },
-    { number: 5, title: (t as any).steps.rules, icon: FaClipboardList },
-    { number: 6, title: (t as any).steps.images, icon: FaImage }
-  ];
-
+  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <FaSpinner className="text-6xl text-[#FF6B35] animate-spin mx-auto mb-4" />
-          <p className="text-xl text-gray-600">{(t as any).header.loading}</p>
+          <FaSpinner className="animate-spin text-4xl text-[#FF6B35] mx-auto mb-4" />
+          <p className="text-gray-500">Chargement de l'annonce...</p>
         </div>
       </div>
     );
   }
 
-  return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-5xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/dashboard/my-listings"
-            className="inline-flex items-center text-[#FF6B35] hover:text-[#ff8255] mb-4"
-          >
-            <FaTimes className="mr-2" />
-            {(t as any).header.backButton}
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">{(t as any).header.editTitle}</h1>
-          <p className="text-gray-600 mt-2">{(t as any).header.editSubtitle}</p>
-        </div>
+  // Small counter component for beds/bathrooms
+  const SmallCounter = ({ value, onChange, min = 0 }: { value: number; onChange: (v: number) => void; min?: number }) => (
+    <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={() => onChange(Math.max(min, value - 1))}
+        disabled={value <= min}
+        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        −
+      </button>
+      <span className="text-lg font-medium w-8 text-center">{value}</span>
+      <button
+        type="button"
+        onClick={() => onChange(value + 1)}
+        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-900"
+      >
+        +
+      </button>
+    </div>
+  );
 
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.number} className="flex-1">
-                <div className="flex items-center">
-                  <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                      currentStep >= step.number
-                        ? 'border-[#FF6B35] bg-[#FF6B35] text-white'
-                        : 'border-gray-300 text-gray-400'
-                    }`}
-                  >
-                    <step.icon />
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`flex-1 h-1 mx-2 ${currentStep > step.number ? 'bg-[#FF6B35]' : 'bg-gray-300'}`} />
-                  )}
-                </div>
-                <p className={`text-xs mt-2 ${currentStep >= step.number ? 'text-[#FF6B35] font-semibold' : 'text-gray-500'}`}>
-                  {step.title}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+  // Large counter component (Airbnb style)
+  const LargeCounter = ({ value, onChange, min = 0, max = 50 }: { value: number; onChange: (v: number) => void; min?: number; max?: number }) => (
+    <div className="flex items-center justify-center gap-6">
+      <button
+        type="button"
+        onClick={() => onChange(Math.max(min, value - 1))}
+        disabled={value <= min}
+        className="w-11 h-11 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-900 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        <span className="text-xl leading-none">−</span>
+      </button>
+      <span className="text-5xl font-light text-gray-900 w-20 text-center tabular-nums">{value}</span>
+      <button
+        type="button"
+        onClick={() => onChange(Math.min(max, value + 1))}
+        disabled={value >= max}
+        className="w-11 h-11 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-900 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        <span className="text-xl leading-none">+</span>
+      </button>
+    </div>
+  );
 
-        {/* Form Content */}
-        <form onSubmit={(e) => e.preventDefault()}>
-          {currentStep === 1 && renderStep1()}
-          {currentStep === 2 && renderStep2()}
-          {currentStep === 3 && renderStep3()}
-          {currentStep === 4 && renderStep4()}
-          {currentStep === 5 && renderStep5()}
-          {currentStep === 6 && renderStep6()}
+  // Render section content (right panel)
+  const renderSectionContent = () => {
+    switch (activeSection) {
+      case 'photos':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Photos de votre logement</h2>
+            <p className="text-gray-500 mb-6">Des photos de qualité attirent plus de voyageurs</p>
 
-          {/* Navigation Buttons */}
-          <div className="mt-8 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-              disabled={currentStep === 1}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            <label
+              htmlFor="image-upload"
+              className={`block border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                uploading ? 'border-gray-200 bg-gray-50' : 'border-gray-300 hover:border-[#FF6B35] hover:bg-orange-50/30'
+              }`}
             >
-              {(t as any).buttons.previous}
-            </button>
-
-            <div className="flex gap-3">
-              {currentStep < 6 ? (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(prev => Math.min(6, prev + 1))}
-                  className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors"
-                >
-                  {(t as any).buttons.next}
-                </button>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                className="hidden"
+                id="image-upload"
+                disabled={uploading}
+              />
+              {uploading ? (
+                <FaSpinner className="animate-spin text-3xl text-[#FF6B35] mx-auto" />
               ) : (
                 <>
-                  <button
-                    type="button"
-                    onClick={() => handleSubmit('draft')}
-                    disabled={saving}
-                    className="px-6 py-3 border border-[#FF6B35] text-[#FF6B35] rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50"
-                  >
-                    <FaSave className="inline mr-2" />
-                    {(t as any).buttons.saveAsDraft}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSubmit('active')}
-                    disabled={saving}
-                    className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#ff8255] transition-colors disabled:opacity-50"
-                  >
-                    <FaSave className="inline mr-2" />
-                    {saving ? (t as any).buttons.updating : (t as any).buttons.updateListing}
-                  </button>
+                  <HiOutlinePlus className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                  <p className="font-medium text-gray-700">Ajouter des photos</p>
+                  <p className="text-sm text-gray-500">Glissez-déposez ou cliquez</p>
                 </>
+              )}
+            </label>
+
+            {formData.images.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                {formData.images.map((image, index) => (
+                  <div key={index} className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100">
+                    <img src={image.url} alt="" className="w-full h-full object-cover" />
+                    {image.isPrimary && (
+                      <div className="absolute top-2 left-2 bg-[#FF6B35] text-white px-2 py-1 rounded text-xs font-medium">
+                        Principale
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                      {!image.isPrimary && (
+                        <button
+                          onClick={() => handleSetPrimaryImage(index)}
+                          className="p-2 bg-white rounded-full text-[#FF6B35] hover:scale-110 transition-transform"
+                        >
+                          <HiOutlineStar className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleRemoveImage(index)}
+                        className="p-2 bg-white rounded-full text-red-500 hover:scale-110 transition-transform"
+                      >
+                        <HiOutlineTrash className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+
+      case 'title':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Donnez un titre à votre annonce</h2>
+            <p className="text-gray-500 mb-6">Un titre accrocheur attire l'attention des voyageurs</p>
+
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="Ex: Magnifique appartement avec vue sur mer"
+              maxLength={100}
+              className="w-full px-4 py-3 text-lg border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0 transition-colors"
+            />
+            <div className="text-right mt-2 text-sm text-gray-400">{formData.title.length}/100</div>
+
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Décrivez votre logement en détail..."
+                rows={5}
+                maxLength={2000}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0 resize-none transition-colors"
+              />
+              <div className="text-right mt-2 text-sm text-gray-400">{formData.description.length}/2000</div>
+            </div>
+          </div>
+        );
+
+      case 'type':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Quel type de logement proposez-vous ?</h2>
+            <p className="text-gray-500 mb-6">Sélectionnez le type qui correspond le mieux</p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {stayTypes.map(type => (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => setFormData(prev => ({
+                    ...prev,
+                    subcategory: type.id,
+                    stayDetails: { ...prev.stayDetails, stayType: type.id }
+                  }))}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
+                    formData.subcategory === type.id
+                      ? 'border-[#FF6B35] bg-orange-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <p className={`font-medium ${formData.subcategory === type.id ? 'text-[#FF6B35]' : 'text-gray-900'}`}>
+                    {type.label}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'guests':
+        return (
+          <div className="text-center">
+            <div className="mb-6">
+              <HiOutlineUsers className="w-16 h-16 mx-auto text-[#FF6B35] opacity-60" />
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              Combien de voyageurs pouvez-vous accueillir ?
+            </h2>
+            <p className="text-gray-500 mb-8">
+              Assurez-vous que chaque voyageur dispose d'un couchage
+            </p>
+            <LargeCounter
+              value={formData.stayDetails.capacity}
+              onChange={(v) => setFormData(prev => ({ ...prev, stayDetails: { ...prev.stayDetails, capacity: v } }))}
+              min={1}
+              max={50}
+            />
+          </div>
+        );
+
+      case 'bedrooms':
+        return (
+          <div className="text-center">
+            <div className="mb-6">
+              <FaDoorOpen className="w-16 h-16 mx-auto text-[#FF6B35] opacity-60" />
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              Combien de chambres ?
+            </h2>
+            <p className="text-gray-500 mb-8">
+              Comptez uniquement les chambres avec un lit
+            </p>
+            <LargeCounter
+              value={formData.stayDetails.bedrooms}
+              onChange={(v) => setFormData(prev => ({ ...prev, stayDetails: { ...prev.stayDetails, bedrooms: v } }))}
+              min={0}
+              max={50}
+            />
+          </div>
+        );
+
+      case 'beds':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Quels types de lits proposez-vous ?</h2>
+            <p className="text-gray-500 mb-6">Indiquez tous les couchages disponibles</p>
+
+            <div className="space-y-4">
+              {bedTypes.map(bed => (
+                <div key={bed.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{bed.icon}</span>
+                    <div>
+                      <p className="font-medium text-gray-900">{bed.label}</p>
+                      <p className="text-sm text-gray-500">{bed.description}</p>
+                    </div>
+                  </div>
+                  <SmallCounter
+                    value={getBedCount(bed.id)}
+                    onChange={(v) => updateBedCount(bed.id, v - getBedCount(bed.id))}
+                    min={0}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 p-4 bg-orange-50 rounded-xl">
+              <p className="text-sm text-orange-800">
+                <strong>Total:</strong> {getTotalBeds()} couchage{getTotalBeds() > 1 ? 's' : ''}
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'bathrooms':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Quelles salles de bain proposez-vous ?</h2>
+            <p className="text-gray-500 mb-6">Précisez le type de chaque salle de bain</p>
+
+            <div className="space-y-4">
+              {bathroomTypes.map(bath => (
+                <div key={bath.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <FaBath className="w-6 h-6 text-[#FF6B35]" />
+                    <div>
+                      <p className="font-medium text-gray-900">{bath.label}</p>
+                      <p className="text-sm text-gray-500">{bath.description}</p>
+                    </div>
+                  </div>
+                  <SmallCounter
+                    value={getBathroomCount(bath.id)}
+                    onChange={(v) => updateBathroomCount(bath.id, v - getBathroomCount(bath.id))}
+                    min={0}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 p-4 bg-orange-50 rounded-xl">
+              <p className="text-sm text-orange-800">
+                <strong>Total:</strong> {getTotalBathrooms()} salle{getTotalBathrooms() > 1 ? 's' : ''} de bain
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'amenities':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Quels équipements proposez-vous ?</h2>
+            <p className="text-gray-500 mb-6">Sélectionnez tous les équipements disponibles</p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {amenitiesConfig.map((item) => {
+                const isSelected = formData.stayDetails.amenities.includes(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => toggleAmenity(item.id)}
+                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                      isSelected
+                        ? 'border-[#FF6B35] bg-orange-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className={isSelected ? 'text-[#FF6B35]' : 'text-gray-400'}>
+                      {item.icon}
+                    </div>
+                    <span className={`font-medium ${isSelected ? 'text-[#FF6B35]' : 'text-gray-700'}`}>
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+
+      case 'location':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Où se situe votre logement ?</h2>
+            <p className="text-gray-500 mb-6">Votre adresse n'est communiquée aux voyageurs qu'après la réservation</p>
+
+            <div className="space-y-4">
+              <CityAutocomplete onPlaceSelected={handlePlaceSelected} />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Ville *</label>
+                  <input
+                    type="text"
+                    value={formData.address.city}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, city: e.target.value } }))}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Wilaya *</label>
+                  <input
+                    type="text"
+                    value={formData.address.state}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, state: e.target.value } }))}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+                <input
+                  type="text"
+                  value={formData.address.street}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, street: e.target.value } }))}
+                  placeholder="Numéro et nom de rue"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                />
+              </div>
+
+              {formData.location.coordinates[0] !== 0 && formData.location.coordinates[1] !== 0 && (
+                <div className="h-64 rounded-xl overflow-hidden border-2 border-gray-200">
+                  <LeafletLocationPicker
+                    center={{
+                      lat: formData.location.coordinates[1],
+                      lng: formData.location.coordinates[0]
+                    }}
+                    onLocationChange={(loc) => setFormData(prev => ({
+                      ...prev,
+                      location: { type: 'Point', coordinates: [loc.lng, loc.lat] }
+                    }))}
+                  />
+                </div>
               )}
             </div>
           </div>
-        </form>
+        );
+
+      case 'pricing':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Définissez votre prix</h2>
+            <p className="text-gray-500 mb-6">Vous pouvez le modifier à tout moment</p>
+
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <button
+                  onClick={() => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, basePrice: Math.max(0, prev.pricing.basePrice - 500) }
+                  }))}
+                  className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-900"
+                >
+                  −
+                </button>
+                <div className="text-center">
+                  <div className="text-5xl font-light text-gray-900">
+                    {formData.pricing.basePrice.toLocaleString()}
+                  </div>
+                  <div className="text-lg text-gray-500">{formData.pricing.currency} / nuit</div>
+                </div>
+                <button
+                  onClick={() => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, basePrice: prev.pricing.basePrice + 500 }
+                  }))}
+                  className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-gray-900"
+                >
+                  +
+                </button>
+              </div>
+
+              <input
+                type="number"
+                value={formData.pricing.basePrice || ''}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  pricing: { ...prev.pricing, basePrice: parseInt(e.target.value) || 0 }
+                }))}
+                className="w-40 px-4 py-2 text-center text-xl border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                placeholder="0"
+              />
+
+              <div className="mt-4 flex justify-center gap-3">
+                {['DZD', 'EUR'].map(currency => (
+                  <button
+                    key={currency}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, pricing: { ...prev.pricing, currency } }))}
+                    className={`px-5 py-2 rounded-full border-2 font-medium transition-all ${
+                      formData.pricing.currency === currency
+                        ? 'border-[#FF6B35] bg-orange-50 text-[#FF6B35]'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    {currency}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Frais supplémentaires */}
+            <div className="border-t pt-6 space-y-4">
+              <h3 className="font-semibold text-gray-900">Frais supplémentaires</h3>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">Frais de ménage</p>
+                  <p className="text-sm text-gray-500">Facturé une seule fois</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={formData.pricing.cleaningFee || ''}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      pricing: { ...prev.pricing, cleaningFee: parseInt(e.target.value) || 0 }
+                    }))}
+                    className="w-24 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0 text-right"
+                    placeholder="0"
+                  />
+                  <span className="text-gray-500">{formData.pricing.currency}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Réductions */}
+            <div className="border-t pt-6 mt-6 space-y-4">
+              <h3 className="font-semibold text-gray-900">Réductions</h3>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">Réduction semaine</p>
+                  <p className="text-sm text-gray-500">Pour 7 nuits ou plus</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={formData.discounts.weeklyDiscount || ''}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      discounts: { ...prev.discounts, weeklyDiscount: parseInt(e.target.value) || 0 }
+                    }))}
+                    className="w-20 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0 text-right"
+                    placeholder="0"
+                    min={0}
+                    max={100}
+                  />
+                  <span className="text-gray-500">%</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">Réduction mois</p>
+                  <p className="text-sm text-gray-500">Pour 28 nuits ou plus</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={formData.discounts.monthlyDiscount || ''}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      discounts: { ...prev.discounts, monthlyDiscount: parseInt(e.target.value) || 0 }
+                    }))}
+                    className="w-20 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0 text-right"
+                    placeholder="0"
+                    min={0}
+                    max={100}
+                  />
+                  <span className="text-gray-500">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'calendar':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Calendrier et tarification dynamique</h2>
+            <p className="text-gray-500 mb-6">Ajustez vos prix pour des périodes spécifiques (haute saison, événements, week-ends...)</p>
+
+            {/* Prix personnalisés par période */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900">Périodes personnalisées</h3>
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({
+                    ...prev,
+                    customPricing: [...(prev.customPricing || []), {
+                      startDate: '',
+                      endDate: '',
+                      price: prev.pricing.basePrice,
+                      label: ''
+                    }]
+                  }))}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2d] transition-colors"
+                >
+                  <HiOutlinePlus className="w-4 h-4" />
+                  Ajouter une période
+                </button>
+              </div>
+
+              {formData.customPricing && formData.customPricing.length > 0 ? (
+                <div className="space-y-4">
+                  {formData.customPricing.map((period: any, index: number) => (
+                    <div key={index} className="p-4 bg-gray-50 rounded-xl space-y-4">
+                      <div className="flex items-center justify-between">
+                        <input
+                          type="text"
+                          value={period.label || ''}
+                          onChange={(e) => {
+                            const newPricing = [...formData.customPricing];
+                            newPricing[index] = { ...newPricing[index], label: e.target.value };
+                            setFormData(prev => ({ ...prev, customPricing: newPricing }));
+                          }}
+                          placeholder="Nom de la période (ex: Haute saison été)"
+                          className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newPricing = formData.customPricing.filter((_: any, i: number) => i !== index);
+                            setFormData(prev => ({ ...prev, customPricing: newPricing }));
+                          }}
+                          className="ml-3 p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                        >
+                          <HiOutlineTrash className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Date de début</label>
+                          <input
+                            type="date"
+                            value={period.startDate || ''}
+                            onChange={(e) => {
+                              const newPricing = [...formData.customPricing];
+                              newPricing[index] = { ...newPricing[index], startDate: e.target.value };
+                              setFormData(prev => ({ ...prev, customPricing: newPricing }));
+                            }}
+                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Date de fin</label>
+                          <input
+                            type="date"
+                            value={period.endDate || ''}
+                            onChange={(e) => {
+                              const newPricing = [...formData.customPricing];
+                              newPricing[index] = { ...newPricing[index], endDate: e.target.value };
+                              setFormData(prev => ({ ...prev, customPricing: newPricing }));
+                            }}
+                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Prix par nuit</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={period.price || ''}
+                            onChange={(e) => {
+                              const newPricing = [...formData.customPricing];
+                              newPricing[index] = { ...newPricing[index], price: parseInt(e.target.value) || 0 };
+                              setFormData(prev => ({ ...prev, customPricing: newPricing }));
+                            }}
+                            className="w-32 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0 text-right"
+                            placeholder="0"
+                          />
+                          <span className="text-gray-500">{formData.pricing.currency}</span>
+                          {period.price && formData.pricing.basePrice > 0 && (
+                            <span className={`text-sm ${period.price > formData.pricing.basePrice ? 'text-green-600' : 'text-red-600'}`}>
+                              {period.price > formData.pricing.basePrice ? '+' : ''}{Math.round(((period.price - formData.pricing.basePrice) / formData.pricing.basePrice) * 100)}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-xl">
+                  <HiOutlineCalendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">Aucune période personnalisée</p>
+                  <p className="text-sm text-gray-400">Ajoutez des périodes pour augmenter vos prix en haute saison</p>
+                </div>
+              )}
+
+              {/* Blocked dates section */}
+              <div className="mt-8 pt-6 border-t">
+                <h3 className="font-semibold text-gray-900 mb-4">Dates bloquées</h3>
+                <p className="text-sm text-gray-500 mb-4">Bloquez des dates où votre logement n'est pas disponible</p>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Du</label>
+                    <input
+                      type="date"
+                      id="blockStartDate"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Au</label>
+                    <input
+                      type="date"
+                      id="blockEndDate"
+                      className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0"
+                    />
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  id="blockReason"
+                  placeholder="Raison (optionnel)"
+                  className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF6B35] focus:ring-0 mb-3"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const startDate = (document.getElementById('blockStartDate') as HTMLInputElement)?.value;
+                    const endDate = (document.getElementById('blockEndDate') as HTMLInputElement)?.value;
+                    const reason = (document.getElementById('blockReason') as HTMLInputElement)?.value;
+
+                    if (startDate && endDate) {
+                      // This would normally call an API to block dates
+                      toast.success(`Dates bloquées du ${startDate} au ${endDate}`);
+                      // Clear inputs
+                      (document.getElementById('blockStartDate') as HTMLInputElement).value = '';
+                      (document.getElementById('blockEndDate') as HTMLInputElement).value = '';
+                      (document.getElementById('blockReason') as HTMLInputElement).value = '';
+                    } else {
+                      toast.error('Veuillez sélectionner les dates de début et de fin');
+                    }
+                  }}
+                  className="w-full px-4 py-2 border-2 border-[#FF6B35] text-[#FF6B35] rounded-lg hover:bg-orange-50 transition-colors"
+                >
+                  Bloquer cette période
+                </button>
+              </div>
+
+              {/* Tips */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-xl">
+                <div className="flex gap-3">
+                  <HiOutlineTrendingUp className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">Conseils pour la tarification dynamique</p>
+                    <ul className="list-disc list-inside space-y-1 text-blue-700">
+                      <li>Augmentez vos prix de 20-40% pendant les vacances scolaires</li>
+                      <li>Les week-ends et jours fériés peuvent être majorés de 15-25%</li>
+                      <li>Réduisez légèrement vos prix en basse saison pour attirer plus de réservations</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'availability':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Disponibilités</h2>
+            <p className="text-gray-500 mb-6">Définissez les conditions de réservation</p>
+
+            <div className="space-y-6">
+              {/* Instant Book */}
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <HiOutlineLightningBolt className="w-6 h-6 text-[#FF6B35]" />
+                    <div>
+                      <p className="font-medium text-gray-900">Réservation instantanée</p>
+                      <p className="text-sm text-gray-500">Les voyageurs peuvent réserver sans votre approbation</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      availability: { ...prev.availability, instantBook: !prev.availability.instantBook }
+                    }))}
+                    className={`relative w-12 h-7 rounded-full transition-colors ${
+                      formData.availability.instantBook ? 'bg-[#FF6B35]' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform shadow ${
+                      formData.availability.instantBook ? 'left-6' : 'left-1'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Délai de réservation */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Délai de réservation minimum
+                </label>
+                <p className="text-sm text-gray-500 mb-3">Combien de jours à l'avance les voyageurs doivent-ils réserver ?</p>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={formData.availability.advanceNotice}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      availability: { ...prev.availability, advanceNotice: parseInt(e.target.value) }
+                    }))}
+                    className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                  >
+                    <option value={0}>Jour même (0 jour)</option>
+                    <option value={1}>1 jour avant</option>
+                    <option value={2}>2 jours avant</option>
+                    <option value={3}>3 jours avant</option>
+                    <option value={7}>1 semaine avant</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Durée du séjour */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Séjour minimum (nuits)</label>
+                  <input
+                    type="number"
+                    value={formData.availability.minStay}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      availability: { ...prev.availability, minStay: parseInt(e.target.value) || 1 }
+                    }))}
+                    min={1}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Séjour maximum (nuits)</label>
+                  <input
+                    type="number"
+                    value={formData.availability.maxStay}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      availability: { ...prev.availability, maxStay: parseInt(e.target.value) || 365 }
+                    }))}
+                    min={1}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                  />
+                </div>
+              </div>
+
+              {/* Horaires */}
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Arrivée à partir de</label>
+                  <input
+                    type="time"
+                    value={formData.availability.checkInFrom}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      availability: { ...prev.availability, checkInFrom: e.target.value }
+                    }))}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Arrivée jusqu'à</label>
+                  <input
+                    type="time"
+                    value={formData.availability.checkInTo}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      availability: { ...prev.availability, checkInTo: e.target.value }
+                    }))}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Départ avant</label>
+                  <input
+                    type="time"
+                    value={formData.availability.checkOutBefore}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      availability: { ...prev.availability, checkOutBefore: e.target.value }
+                    }))}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'cancellation':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Conditions d'annulation</h2>
+            <p className="text-gray-500 mb-6">Choisissez la politique qui vous convient</p>
+
+            <div className="space-y-3">
+              {cancellationPolicies.map(policy => (
+                <button
+                  key={policy.id}
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, cancellationPolicy: policy.id }))}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    formData.cancellationPolicy === policy.id
+                      ? 'border-[#FF6B35] bg-orange-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-gray-900">{policy.label}</p>
+                      <p className="text-sm text-gray-500 mt-1">{policy.description}</p>
+                    </div>
+                    {formData.cancellationPolicy === policy.id && (
+                      <HiOutlineCheck className="w-5 h-5 text-[#FF6B35]" />
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'rules':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Règlement intérieur</h2>
+            <p className="text-gray-500 mb-6">Définissez ce qui est autorisé dans votre logement</p>
+
+            <div className="space-y-3">
+              {[
+                { key: 'smoking', label: 'Fumeur', icon: '🚬' },
+                { key: 'pets', label: 'Animaux', icon: '🐾' },
+                { key: 'parties', label: 'Fêtes/événements', icon: '🎉' },
+                { key: 'children', label: 'Enfants', icon: '👶' },
+              ].map(rule => (
+                <div key={rule.key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{rule.icon}</span>
+                    <span className="font-medium text-gray-900">{rule.label}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({
+                        ...prev,
+                        rules: { ...prev.rules, [rule.key]: 'allowed' }
+                      }))}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                        (formData.rules as any)[rule.key] === 'allowed'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      }`}
+                    >
+                      Autorisé
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({
+                        ...prev,
+                        rules: { ...prev.rules, [rule.key]: 'not_allowed' }
+                      }))}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                        (formData.rules as any)[rule.key] === 'not_allowed'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      }`}
+                    >
+                      Interdit
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Règles supplémentaires</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newRule}
+                    onChange={(e) => setNewRule(e.target.value)}
+                    placeholder="Ex: Pas de bruit après 22h"
+                    className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF6B35] focus:ring-0"
+                    onKeyPress={(e) => e.key === 'Enter' && addAdditionalRule()}
+                  />
+                  <button
+                    type="button"
+                    onClick={addAdditionalRule}
+                    className="px-4 py-3 bg-[#FF6B35] text-white rounded-xl hover:bg-[#e55a2d] transition-colors"
+                  >
+                    <HiOutlinePlus className="w-5 h-5" />
+                  </button>
+                </div>
+                {formData.rules.additionalRules.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {formData.rules.additionalRules.map((rule, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span>{rule}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeAdditionalRule(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <HiOutlineX className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'status':
+        return (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Publication</h2>
+            <p className="text-gray-500 mb-6">Choisissez le statut de votre annonce</p>
+
+            <div className="space-y-3">
+              {[
+                { id: 'active', label: 'Publiée', description: 'Visible par tous les voyageurs', color: 'green' },
+                { id: 'draft', label: 'Brouillon', description: 'Non visible, en cours de création', color: 'gray' },
+                { id: 'inactive', label: 'Inactive', description: 'Masquée temporairement', color: 'yellow' },
+              ].map(status => (
+                <button
+                  key={status.id}
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, status: status.id }))}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    formData.status === status.id
+                      ? 'border-[#FF6B35] bg-orange-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${
+                        status.color === 'green' ? 'bg-green-500' :
+                        status.color === 'yellow' ? 'bg-yellow-500' : 'bg-gray-400'
+                      }`} />
+                      <div>
+                        <p className="font-semibold text-gray-900">{status.label}</p>
+                        <p className="text-sm text-gray-500">{status.description}</p>
+                      </div>
+                    </div>
+                    {formData.status === status.id && (
+                      <HiOutlineCheck className="w-5 h-5 text-[#FF6B35]" />
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // Get section display value (like Airbnb shows the actual value)
+  const getSectionValue = (sectionId: EditorSection): string => {
+    switch (sectionId) {
+      case 'title':
+        return formData.title || 'Ajouter un titre';
+      case 'type':
+        const type = stayTypes.find(t => t.id === formData.subcategory);
+        return type ? `Logement entier · ${type.label}` : 'Choisir';
+      case 'pricing':
+        return formData.pricing.basePrice > 0
+          ? `${formData.pricing.basePrice.toLocaleString()} ${formData.pricing.currency} par nuit`
+          : 'Définir le prix';
+      case 'location':
+        return formData.address.city || 'Ajouter';
+      case 'availability':
+        return formData.availability.instantBook ? 'Réservation instantanée' : 'Sur demande';
+      case 'cancellation':
+        const policy = cancellationPolicies.find(p => p.id === formData.cancellationPolicy);
+        return policy?.label || 'Modérée';
+      case 'rules':
+        return 'Voir les règles';
+      case 'status':
+        return formData.status === 'active' ? 'Publiée' : 'Brouillon';
+      default:
+        return getSectionSummary(sectionId);
+    }
+  };
+
+  // Handle section selection (shows content on mobile)
+  const handleSectionClick = (section: EditorSection) => {
+    setActiveSection(section);
+    setShowContent(true); // On mobile, show the content area
+  };
+
+  return (
+    <div
+      className="fixed left-0 right-0 bottom-0 bg-white z-40"
+      style={{ top: '80px' }}
+    >
+      {/* Main Container - Full height flex */}
+      <div className="h-full flex min-h-0">
+        {/* LEFT SIDEBAR - Hidden on mobile when viewing content */}
+        <div className={`${showContent ? 'hidden' : 'flex'} lg:flex w-full lg:w-[380px] flex-shrink-0 border-r border-gray-200 h-full flex-col relative min-h-0`}>
+          {/* Header - Fixed */}
+          <div className="flex-shrink-0 p-4 lg:p-6 pb-4">
+            <div className="flex items-center justify-center mb-4 lg:mb-6 relative">
+              <Link
+                href="/dashboard/my-listings"
+                className="absolute left-0 w-9 h-9 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+              >
+                <HiOutlineChevronLeft className="w-4 h-4 text-gray-700" />
+              </Link>
+              <h1 className="text-base lg:text-lg font-semibold text-gray-900">
+                Modifier l'annonce
+              </h1>
+            </div>
+
+            {/* Toggle Tabs - Airbnb style segmented control */}
+            <div className="flex items-center gap-2">
+              <div className="flex bg-gray-100 rounded-full p-1">
+                <button
+                  onClick={() => setActiveTab('logement')}
+                  className={`px-3 lg:px-5 py-1.5 text-sm font-medium rounded-full transition-all ${
+                    activeTab === 'logement'
+                      ? 'bg-white shadow-sm text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Mon logement
+                </button>
+                <button
+                  onClick={() => setActiveTab('arrivee')}
+                  className={`px-3 lg:px-5 py-1.5 text-sm font-medium rounded-full transition-all ${
+                    activeTab === 'arrivee'
+                      ? 'bg-white shadow-sm text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Guide d'arrivée
+                </button>
+              </div>
+              <button
+                onClick={() => toast.success('Suggestions IA bientôt disponibles')}
+                className="w-9 h-9 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-colors"
+              >
+                <HiOutlineSparkles className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+          </div>
+
+          {/* Scrollable Cards - Takes remaining space */}
+          <div className="flex-1 overflow-y-auto px-4 lg:px-6 pb-20 min-h-0">
+            {activeTab === 'logement' ? (
+            <div className="space-y-3">
+              {/* Photo Card - Special first card like Airbnb */}
+              <button
+                onClick={() => handleSectionClick('photos')}
+                className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
+                  activeSection === 'photos'
+                    ? 'border-gray-900'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <p className="text-xs text-gray-500 mb-1 font-medium">Visite photo</p>
+                <p className="text-xs text-gray-600 mb-3">
+                  {formData.stayDetails.bedrooms} chambre{formData.stayDetails.bedrooms > 1 ? 's' : ''} · {getTotalBeds()} lit{getTotalBeds() > 1 ? 's' : ''} · {getTotalBathrooms()} salle{getTotalBathrooms() > 1 ? 's' : ''} de bain
+                </p>
+                {/* Photo collage preview */}
+                <div className="relative h-28 rounded-xl overflow-hidden bg-gray-100">
+                  {formData.images && formData.images.length > 0 ? (
+                    <div className="flex h-full gap-1">
+                      <div className="flex-1 relative">
+                        {formData.images[0]?.url && (
+                          <img src={formData.images[0].url} alt="" className="w-full h-full object-cover" />
+                        )}
+                      </div>
+                      {formData.images.length > 1 && (
+                        <div className="w-1/3 flex flex-col gap-1">
+                          {formData.images.slice(1, 3).map((img, i) => (
+                            <div key={i} className="flex-1 relative">
+                              {img?.url && (
+                                <img src={img.url} alt="" className="w-full h-full object-cover" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <HiOutlinePhotograph className="w-8 h-8 text-gray-300" />
+                    </div>
+                  )}
+                  {formData.images && formData.images.length > 0 && (
+                    <span className="absolute top-2 right-2 px-2.5 py-0.5 bg-white rounded-full text-xs font-medium shadow-sm">
+                      {formData.images.length} photo{formData.images.length > 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+              </button>
+
+              {/* Other section cards - Airbnb style with label + value */}
+              {sectionItems.filter(item => item.id !== 'photos').map(item => {
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSectionClick(item.id)}
+                    className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
+                      isActive
+                        ? 'border-gray-900'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <p className="text-xs text-gray-500 mb-1 font-medium">{item.label}</p>
+                    <p className="text-sm text-gray-900">{getSectionValue(item.id)}</p>
+                  </button>
+                );
+              })}
+            </div>
+            ) : (
+              /* Guide d'arrivée Tab Content */
+              <div className="space-y-4">
+                <div className="text-center py-12">
+                  <HiOutlineClipboardList className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Guide d'arrivée</h3>
+                  <p className="text-gray-500 text-sm max-w-xs mx-auto">
+                    Créez un guide pour aider vos voyageurs à accéder à votre logement.
+                  </p>
+                  <button
+                    onClick={() => toast.success('Fonctionnalité bientôt disponible')}
+                    className="mt-6 px-6 py-2.5 bg-[#FF6B35] text-white text-sm font-medium rounded-full hover:bg-[#e55a2d] transition-colors"
+                  >
+                    Créer le guide
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Preview Button - Sticky at bottom of sidebar */}
+          <div className="absolute bottom-4 left-4 lg:left-6 z-10">
+            <Link
+              href={`/listing/${listingId}?from=editor`}
+              target="_blank"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors shadow-lg"
+            >
+              <HiOutlineEye className="w-4 h-4" />
+              Aperçu
+            </Link>
+          </div>
+        </div>
+
+        {/* Vertical Scroll Indicator - Desktop only */}
+        <div className="hidden lg:block w-px bg-gray-200 relative flex-shrink-0">
+          <button className="absolute top-4 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border border-gray-300 bg-white flex items-center justify-center hover:shadow-md transition-all z-10">
+            <HiOutlineChevronLeft className="w-3 h-3 text-gray-500 rotate-90" />
+          </button>
+          <button className="absolute bottom-4 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border border-gray-300 bg-white flex items-center justify-center hover:shadow-md transition-all z-10">
+            <HiOutlineChevronRight className="w-3 h-3 text-gray-500 rotate-90" />
+          </button>
+        </div>
+
+        {/* RIGHT CONTENT AREA - Full screen on mobile with back button */}
+        <div className={`${showContent ? 'flex' : 'hidden'} lg:flex flex-1 h-full flex-col min-h-0`}>
+          {/* Mobile Back Button */}
+          <div className="lg:hidden flex-shrink-0 p-4 border-b border-gray-200">
+            <button
+              onClick={() => setShowContent(false)}
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
+            >
+              <HiOutlineChevronLeft className="w-5 h-5" />
+              <span className="font-medium">Retour</span>
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-4 lg:p-8 max-w-4xl mx-auto">
+              {renderSectionContent()}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Floating Save Button */}
+      {hasChanges && (
+        <button
+          onClick={() => handleSave()}
+          disabled={saving}
+          className="fixed bottom-4 right-4 lg:bottom-6 lg:right-6 px-5 lg:px-6 py-2.5 lg:py-3 bg-[#FF6B35] text-white text-sm font-semibold rounded-full shadow-lg hover:bg-[#e55a2d] disabled:opacity-50 flex items-center gap-2 transition-colors z-50"
+        >
+          {saving && <FaSpinner className="animate-spin w-4 h-4" />}
+          Enregistrer
+        </button>
+      )}
+    </div>
   );
 }

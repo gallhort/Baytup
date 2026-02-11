@@ -70,13 +70,17 @@ db.once('open', async function() {
       const createdAt = new Date(startDate);
       createdAt.setDate(startDate.getDate() - 2);
 
-      // Prix
+      // Prix - Baytup Fee Structure: 8% guest + 3% host = 11% total
       const basePrice = vehicle.pricing?.basePrice || 5000;
+      const subtotal = basePrice * days;
       const cleaningFee = Math.floor(basePrice * 0.1);
-      const serviceFee = Math.floor(basePrice * 0.1);
-      const totalAmount = (basePrice * days) + cleaningFee + serviceFee;
-      const platformFee = Math.floor(totalAmount * 0.1);
-      const hostEarnings = totalAmount - platformFee;
+      const baseAmount = subtotal + cleaningFee;
+      const guestServiceFee = Math.round(baseAmount * 0.08); // 8% guest service fee
+      const hostCommission = Math.round(baseAmount * 0.03); // 3% host commission
+      const serviceFee = guestServiceFee; // Legacy field
+      const totalAmount = subtotal + cleaningFee + guestServiceFee;
+      const platformFee = guestServiceFee + hostCommission; // 11% total
+      const hostEarnings = baseAmount - hostCommission;
 
       const status = Math.random() > 0.5 ? 'completed' : 'active';
 
@@ -94,13 +98,17 @@ db.once('open', async function() {
         },
         pricing: {
           basePrice: basePrice,
+          nights: days,
+          subtotal: subtotal,
           cleaningFee: cleaningFee,
+          guestServiceFee: guestServiceFee,
+          hostCommission: hostCommission,
           serviceFee: serviceFee,
+          taxes: 0,
           totalAmount: totalAmount,
-          platformFee: platformFee,
-          hostEarnings: hostEarnings,
-          currency: 'DZD',
-          nights: days
+          hostPayout: hostEarnings,
+          platformRevenue: platformFee,
+          currency: 'DZD'
         },
         payment: {
           status: 'paid',

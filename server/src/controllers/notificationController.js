@@ -9,7 +9,7 @@ exports.getNotifications = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const filter = { recipient: req.user._id };
+    const filter = { recipient: req.user.id };
 
     // Filter by read status
     if (req.query.isRead !== undefined) {
@@ -28,7 +28,7 @@ exports.getNotifications = async (req, res, next) => {
         .skip(skip)
         .limit(limit),
       Notification.countDocuments(filter),
-      Notification.getUnreadCount(req.user._id)
+      Notification.getUnreadCount(req.user.id)
     ]);
 
     res.status(200).json({
@@ -60,7 +60,7 @@ exports.getNotifications = async (req, res, next) => {
 // @access  Private
 exports.getUnreadCount = async (req, res, next) => {
   try {
-    const unreadCount = await Notification.getUnreadCount(req.user._id);
+    const unreadCount = await Notification.getUnreadCount(req.user.id);
 
     res.status(200).json({
       status: 'success',
@@ -85,7 +85,7 @@ exports.markAsRead = async (req, res, next) => {
   try {
     const notification = await Notification.findOne({
       _id: req.params.id,
-      recipient: req.user._id
+      recipient: req.user.id
     });
 
     if (!notification) {
@@ -118,7 +118,7 @@ exports.markAsRead = async (req, res, next) => {
 // @access  Private
 exports.markAllAsRead = async (req, res, next) => {
   try {
-    await Notification.markAllAsRead(req.user._id);
+    await Notification.markAllAsRead(req.user.id);
 
     res.status(200).json({
       status: 'success',
@@ -141,7 +141,7 @@ exports.deleteNotification = async (req, res, next) => {
   try {
     const notification = await Notification.findOneAndDelete({
       _id: req.params.id,
-      recipient: req.user._id
+      recipient: req.user.id
     });
 
     if (!notification) {
@@ -171,7 +171,7 @@ exports.deleteNotification = async (req, res, next) => {
 exports.clearReadNotifications = async (req, res, next) => {
   try {
     await Notification.deleteMany({
-      recipient: req.user._id,
+      recipient: req.user.id,
       isRead: true
     });
 

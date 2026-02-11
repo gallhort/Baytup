@@ -54,13 +54,15 @@ router.post('/', sendMessageValidation, validate, sendMessage);
 router.put('/:id', mongoIdValidation, validate, updateMessage);
 router.delete('/:id', mongoIdValidation, validate, deleteMessage);
 
-// Test route
-router.get('/test', (req, res) => {
-  res.json({
-    status: 'success',
-    message: 'Messages API is working',
-    timestamp: new Date().toISOString()
+// Test route - dev only (P1 #31)
+if (process.env.NODE_ENV !== 'production') {
+  router.get('/test', (req, res) => {
+    res.json({
+      status: 'success',
+      message: 'Messages API is working',
+      timestamp: new Date().toISOString()
+    });
   });
-});
+}
 
 module.exports = router;

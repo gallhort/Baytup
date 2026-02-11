@@ -6,6 +6,7 @@ const Notification = require('../models/Notification');
 const User = require('../models/User');
 const Review = require('../models/Review');
 const Payout = require('../models/Payout');
+const { HOST_COMMISSION_RATE } = require('../config/fees');
 const Escrow = require('../models/Escrow');
 const CashVoucher = require('../models/CashVoucher');
 const escrowService = require('./escrowService');
@@ -523,7 +524,7 @@ const autoGeneratePayouts = async () => {
         // Baytup Fee Structure: 8% guest service fee + 3% host commission = 11% total
         // Host receives: subtotal + cleaningFee - 3% commission
         const baseAmount = booking.pricing.subtotal + (booking.pricing.cleaningFee || 0);
-        const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * 0.03);
+        const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * HOST_COMMISSION_RATE);
         const hostEarnings = baseAmount - hostCommission;
         const platformFee = (booking.pricing.guestServiceFee || booking.pricing.serviceFee || 0) + hostCommission;
 

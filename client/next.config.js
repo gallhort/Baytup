@@ -5,6 +5,9 @@ const withBundleAnalyzer = process.env.ANALYZE === 'true'
   ? require('@next/bundle-analyzer')({ enabled: true })
   : (config) => config;
 
+const isProd = process.env.NODE_ENV === 'production';
+const BACKEND_URL = isProd ? 'https://baytup.fr' : 'http://localhost:5000';
+
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
@@ -14,11 +17,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**',
       },
-      {
+      ...(!isProd ? [{
         protocol: 'http',
         hostname: 'localhost',
         port: '5000',
-      },
+      }] : []),
       {
         protocol: 'https',
         hostname: 'baytup.fr',
@@ -48,7 +51,7 @@ const nextConfig = {
     return [
       {
         source: '/uploads/:path*',
-        destination: 'http://localhost:5000/uploads/:path*',
+        destination: `${BACKEND_URL}/uploads/:path*`,
       },
     ]
   },

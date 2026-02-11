@@ -503,6 +503,9 @@ class StripeService {
           platform: 'baytup'
         },
         transfer_group: bookingId ? `booking_${bookingId}` : undefined
+      }, {
+        // Idempotency key prevents double transfers on retry (P0 #4)
+        idempotencyKey: `transfer_${bookingId || escrowId || Date.now()}_${amountInCents}`
       });
 
       console.log(`[StripeConnect] Created transfer: ${transfer.id} - ${amount} ${currency} to ${destinationAccountId}`);

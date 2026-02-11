@@ -313,7 +313,7 @@ ReviewSchema.statics.getListingStats = async function(listingId) {
   const stats = await this.aggregate([
     {
       $match: {
-        listing: mongoose.Types.ObjectId(listingId),
+        listing: new mongoose.Types.ObjectId(listingId),
         status: 'published',
         type: 'guest_to_host'
       }
@@ -352,7 +352,7 @@ ReviewSchema.statics.getUserStats = async function(userId, type = 'host') {
   const stats = await this.aggregate([
     {
       $match: {
-        reviewee: mongoose.Types.ObjectId(userId),
+        reviewee: new mongoose.Types.ObjectId(userId),
         status: 'published',
         type: reviewType
       }

@@ -19,8 +19,8 @@ exports.getBookingEscrow = catchAsync(async (req, res, next) => {
   }
 
   // Check if user is guest or host of the booking
-  const isGuest = booking.guest.toString() === req.user._id.toString();
-  const isHost = booking.host.toString() === req.user._id.toString();
+  const isGuest = booking.guest.toString() === req.user.id.toString();
+  const isHost = booking.host.toString() === req.user.id.toString();
   const isAdmin = req.user.role === 'admin';
 
   if (!isGuest && !isHost && !isAdmin) {
@@ -148,13 +148,13 @@ exports.manualRelease = catchAsync(async (req, res, next) => {
   // Add admin note to history before release
   if (notes) {
     escrow.addHistory('released', {
-      performedBy: req.user._id,
+      performedBy: req.user.id,
       note: `Manual release by admin. Notes: ${notes}`
     });
     await escrow.save();
   }
 
-  const updatedEscrow = await escrowService.releaseFunds(escrow, 'manual', req.user._id);
+  const updatedEscrow = await escrowService.releaseFunds(escrow, 'manual', req.user.id);
 
   res.status(200).json({
     status: 'success',
@@ -191,7 +191,7 @@ exports.freezeEscrow = catchAsync(async (req, res, next) => {
   escrow.status = 'frozen';
   escrow.frozenAt = new Date();
   escrow.addHistory('frozen', {
-    performedBy: req.user._id,
+    performedBy: req.user.id,
     note: `Manually frozen by admin. Reason: ${reason}`
   });
 
@@ -242,7 +242,7 @@ exports.resolveDispute = catchAsync(async (req, res, next) => {
   const updatedEscrow = await escrowService.resolveDispute(escrow, {
     hostPortion,
     guestPortion,
-    resolvedBy: req.user._id,
+    resolvedBy: req.user.id,
     notes
   });
 
@@ -280,7 +280,7 @@ exports.requestRefund = catchAsync(async (req, res, next) => {
   }
 
   // Verify user is the payer (guest)
-  if (escrow.payer.toString() !== req.user._id.toString()) {
+  if (escrow.payer.toString() !== req.user.id.toString()) {
     return next(new AppError('Only the guest can request a refund', 403));
   }
 
@@ -292,7 +292,7 @@ exports.requestRefund = catchAsync(async (req, res, next) => {
   const Dispute = require('../models/Dispute');
   const dispute = await Dispute.create({
     booking: escrow.booking._id,
-    reportedBy: req.user._id,
+    reportedBy: req.user.id,
     reason: reason,
     description: description,
     status: 'open',

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Banknote,
   Clock,
@@ -92,7 +92,16 @@ export default function CashVoucherDisplay({
     return { hours, minutes, total: remaining };
   };
 
-  const timeRemaining = getTimeRemaining();
+  // Live countdown timer (P1 #28)
+  const [timeRemaining, setTimeRemaining] = useState(getTimeRemaining());
+  useEffect(() => {
+    if (voucher.status !== 'pending') return;
+    const interval = setInterval(() => {
+      setTimeRemaining(getTimeRemaining());
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, [voucher.expiresAt, voucher.status]);
+
   const isUrgent = timeRemaining && timeRemaining.hours < 6;
 
   const getStatusBadge = () => {

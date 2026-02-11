@@ -239,14 +239,30 @@ class SlickPayService {
    */
   verifyWebhookSignature(payload, signature) {
     const crypto = require('crypto');
-    const secret = process.env.SLICK_PAY_WEBHOOK_SECRET || 'baytup-webhook-secret';
+    const secret = process.env.SLICK_PAY_WEBHOOK_SECRET;
+
+    // Reject if no secret configured in production (P1 #19)
+    if (!secret) {
+      console.error('[SlickPay] SLICK_PAY_WEBHOOK_SECRET not configured');
+      return false;
+    }
+
+    if (!signature) return false;
 
     const expectedSignature = crypto
       .createHmac('sha256', secret)
       .update(JSON.stringify(payload))
       .digest('hex');
 
-    return expectedSignature === signature;
+    // Timing-safe comparison to prevent timing attacks (P1 #19)
+    try {
+      return crypto.timingSafeEqual(
+        Buffer.from(expectedSignature, 'hex'),
+        Buffer.from(signature, 'hex')
+      );
+    } catch {
+      return false;
+    }
   }
 
   /**

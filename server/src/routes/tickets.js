@@ -21,17 +21,17 @@ const emailToTicketService = require('../services/emailToTicketService');
 // @access  Public (webhook)
 router.post('/webhook/email', async (req, res) => {
   try {
-    // Optional: Validate webhook signature here
-    // Example for Mailgun:
-    // const isValid = emailToTicketService.validateMailgunSignature(
-    //   req.body.timestamp,
-    //   req.body.token,
-    //   req.body.signature,
-    //   process.env.MAILGUN_SIGNING_KEY
-    // );
-    // if (!isValid) {
-    //   return res.status(403).json({ success: false, error: 'Invalid signature' });
-    // }
+    // Validate webhook secret (P0 #11)
+    const webhookSecret = process.env.EMAIL_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const providedSecret = req.headers['x-webhook-secret'] || req.query.secret;
+      if (providedSecret !== webhookSecret) {
+        return res.status(403).json({ success: false, error: 'Invalid webhook secret' });
+      }
+    } else if (process.env.NODE_ENV === 'production') {
+      console.error('[Tickets Webhook] EMAIL_WEBHOOK_SECRET not configured - rejecting in production');
+      return res.status(403).json({ success: false, error: 'Webhook not configured' });
+    }
 
     const result = await emailToTicketService.processIncomingEmail(req.body);
 

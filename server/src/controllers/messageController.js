@@ -27,8 +27,8 @@ const getConversations = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
   const conversations = await Conversation.find(query)
     .populate('participants.user', 'firstName lastName avatar role')
-    .populate('listing', 'title category images address')
-    .populate('booking', 'startDate endDate status')
+    .populate('listing', 'title category images address host')
+    .populate('booking', 'startDate endDate status host guest')
     .populate('lastMessage.sender', 'firstName lastName avatar')
     .sort('-lastMessage.sentAt -updatedAt')
     .skip(skip)
@@ -93,7 +93,7 @@ const getConversation = catchAsync(async (req, res, next) => {
   // Get conversation
   const conversation = await Conversation.findById(conversationId)
     .populate('participants.user', 'firstName lastName avatar role')
-    .populate('listing', 'title category images address pricing')
+    .populate('listing', 'title category images address pricing host')
     .populate('booking', 'startDate endDate status pricing');
 
   if (!conversation) {
@@ -314,9 +314,10 @@ const sendMessage = catchAsync(async (req, res, next) => {
   }
 
   // Emit socket event for real-time messaging
-  if (req.io) {
+  const io = req.io || global.io;
+  if (io) {
     recipientIds.forEach(recipientId => {
-      req.io.to(`user_${recipientId}`).emit('new_message', {
+      io.to(`user-${recipientId}`).emit('new_message', {
         conversationId,
         message: message.toObject()
       });
@@ -397,14 +398,15 @@ const updateMessage = catchAsync(async (req, res, next) => {
   await message.populate('sender', 'firstName lastName avatar role');
 
   // Emit socket event
-  if (req.io) {
+  const ioUpdate = req.io || global.io;
+  if (ioUpdate) {
     const conversation = await Conversation.findById(message.conversation);
     const recipientIds = conversation.participants
       .filter(p => p.user.toString() !== userId)
       .map(p => p.user.toString());
 
     recipientIds.forEach(recipientId => {
-      req.io.to(`user_${recipientId}`).emit('message_updated', {
+      ioUpdate.to(`user-${recipientId}`).emit('message_updated', {
         conversationId: message.conversation,
         message: message.toObject()
       });
@@ -448,14 +450,15 @@ const deleteMessage = catchAsync(async (req, res, next) => {
   });
 
   // Emit socket event
-  if (req.io) {
+  const ioDelete = req.io || global.io;
+  if (ioDelete) {
     const conversation = await Conversation.findById(conversationId);
     const recipientIds = conversation.participants
       .filter(p => p.user.toString() !== userId)
       .map(p => p.user.toString());
 
     recipientIds.forEach(recipientId => {
-      req.io.to(`user_${recipientId}`).emit('message_deleted', {
+      ioDelete.to(`user-${recipientId}`).emit('message_deleted', {
         conversationId,
         messageId
       });
@@ -750,7 +753,7 @@ const getAllConversationsAdmin = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
   const conversations = await Conversation.find(query)
     .populate('participants.user', 'firstName lastName avatar email role')
-    .populate('listing', 'title category images address')
+    .populate('listing', 'title category images address host')
     .populate('booking', 'startDate endDate status')
     .populate('lastMessage.sender', 'firstName lastName avatar')
     .sort(sort)
@@ -813,7 +816,7 @@ const getConversationAdmin = catchAsync(async (req, res, next) => {
   // Get conversation
   const conversation = await Conversation.findById(conversationId)
     .populate('participants.user', 'firstName lastName avatar email phone role')
-    .populate('listing', 'title category images address pricing')
+    .populate('listing', 'title category images address pricing host')
     .populate('booking', 'startDate endDate status pricing');
 
   if (!conversation) {

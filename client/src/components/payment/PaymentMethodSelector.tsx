@@ -23,18 +23,19 @@ export default function PaymentMethodSelector({
   const isEUR = currency === 'EUR' || currency === 'eur';
   const isDZD = currency === 'DZD' || currency === 'dzd';
 
-  // Cash option is only available for DZD
-  const cashAvailable = isDZD;
+  // Cash option is DISABLED - Nord Express integration was mock only
+  // TODO: Re-enable when a real cash payment partner is integrated
+  const cashAvailable = false; // Previously: isDZD
 
   const paymentOptions = [
     {
       id: 'card' as PaymentMethod,
       name: isEUR
         ? ((t as any)?.card?.nameStripe || 'Bank card (Stripe)')
-        : ((t as any)?.card?.nameSlickpay || 'Bank card (SlickPay)'),
+        : ((t as any)?.card?.nameSlickPay || 'Carte bancaire (SlickPay)'),
       description: isEUR
         ? ((t as any)?.card?.descriptionStripe || 'Secure payment by Visa, Mastercard')
-        : ((t as any)?.card?.descriptionSlickpay || 'Secure payment by CIB/Edahabia card'),
+        : ((t as any)?.card?.descriptionSlickPay || 'Paiement sécurisé par carte CIB/Edahabia'),
       icon: CreditCard,
       benefits: [
         (t as any)?.card?.benefit1 || 'Instant payment',

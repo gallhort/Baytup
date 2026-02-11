@@ -50,12 +50,15 @@ interface Conversation {
       city: string;
       country: string;
     };
+    host?: string;
   };
   booking?: {
     _id: string;
     startDate: string;
     endDate: string;
     status: string;
+    host?: string;
+    guest?: string;
     confirmationCode?: string;
     guests?: {
       adults: number;
@@ -126,6 +129,7 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'active' | 'archived'>('active');
+  const [filterRole, setFilterRole] = useState<'all' | 'host' | 'guest'>('all');
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [conversationToArchive, setConversationToArchive] = useState<Conversation | null>(null);
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
@@ -677,8 +681,30 @@ export default function MessagesPage() {
     )?.user;
   };
 
-  // ✅ FIX BQ-33: Search by full name and partial name
+  // Determine if current user is host or guest in a conversation
+  const getUserRole = (conv: Conversation): 'host' | 'guest' | null => {
+    // 1. Check via listing owner
+    if (conv.listing?.host) {
+      return String(conv.listing.host) === String(currentUserId) ? 'host' : 'guest';
+    }
+    // 2. Fallback: check via booking host/guest
+    if (conv.booking?.host) {
+      return String(conv.booking.host) === String(currentUserId) ? 'host' : 'guest';
+    }
+    if (conv.booking?.guest) {
+      return String(conv.booking.guest) === String(currentUserId) ? 'guest' : 'host';
+    }
+    return null;
+  };
+
+  // ✅ FIX BQ-33: Search by full name and partial name + role filter
   const filteredConversations = conversations.filter(conv => {
+    // Role filter
+    if (filterRole !== 'all') {
+      const role = getUserRole(conv);
+      if (role !== filterRole) return false;
+    }
+
     if (!searchQuery) return true;
     const otherUser = getOtherParticipant(conv);
     if (!otherUser) return false;
@@ -804,6 +830,40 @@ export default function MessagesPage() {
                     {(t as any)?.conversations?.filters?.archived || 'Archived'}
                   </button>
                 </div>
+
+                {/* Role Filter Tabs */}
+                <div className="flex gap-1.5 mt-2">
+                  <button
+                    onClick={() => setFilterRole('all')}
+                    className={`flex-1 py-1.5 px-3 rounded-lg font-medium text-xs transition-colors ${
+                      filterRole === 'all'
+                        ? 'bg-gray-800 text-white'
+                        : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    Toutes
+                  </button>
+                  <button
+                    onClick={() => setFilterRole('host')}
+                    className={`flex-1 py-1.5 px-3 rounded-lg font-medium text-xs transition-colors ${
+                      filterRole === 'host'
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-gray-50 text-gray-500 hover:bg-emerald-50'
+                    }`}
+                  >
+                    En tant qu'hôte
+                  </button>
+                  <button
+                    onClick={() => setFilterRole('guest')}
+                    className={`flex-1 py-1.5 px-3 rounded-lg font-medium text-xs transition-colors ${
+                      filterRole === 'guest'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-50 text-gray-500 hover:bg-blue-50'
+                    }`}
+                  >
+                    En tant que voyageur
+                  </button>
+                </div>
               </div>
 
               {/* Conversations List */}
@@ -865,11 +925,23 @@ export default function MessagesPage() {
                           {/* Content */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1">
-                              <h3 className="text-sm font-semibold text-gray-900 truncate">
-                                {otherUser.firstName} {otherUser.lastName}
-                              </h3>
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <h3 className="text-sm font-semibold text-gray-900 truncate">
+                                  {otherUser.firstName} {otherUser.lastName}
+                                </h3>
+                                {getUserRole(conversation) === 'host' && (
+                                  <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-100 text-emerald-700 rounded">
+                                    Hôte
+                                  </span>
+                                )}
+                                {getUserRole(conversation) === 'guest' && (
+                                  <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-semibold bg-blue-100 text-blue-700 rounded">
+                                    Voyageur
+                                  </span>
+                                )}
+                              </div>
                               {conversation.lastMessage && (
-                                <span className="text-xs text-gray-500 ml-2">
+                                <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
                                   {formatMessageTime(conversation.lastMessage.sentAt || conversation.lastMessage.createdAt || conversation.updatedAt)}
                                 </span>
                               )}
@@ -933,10 +1005,22 @@ export default function MessagesPage() {
                           />
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-gray-900">
-                            {getOtherParticipant(selectedConversation)?.firstName}{' '}
-                            {getOtherParticipant(selectedConversation)?.lastName}
-                          </h3>
+                          <div className="flex items-center gap-1.5">
+                            <h3 className="text-sm font-semibold text-gray-900">
+                              {getOtherParticipant(selectedConversation)?.firstName}{' '}
+                              {getOtherParticipant(selectedConversation)?.lastName}
+                            </h3>
+                            {getUserRole(selectedConversation) === 'host' && (
+                              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-100 text-emerald-700 rounded">
+                                Hôte
+                              </span>
+                            )}
+                            {getUserRole(selectedConversation) === 'guest' && (
+                              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-100 text-blue-700 rounded">
+                                Voyageur
+                              </span>
+                            )}
+                          </div>
                           {selectedConversation.listing && (
                             <p className="text-xs text-gray-500">
                               {selectedConversation.listing.title}

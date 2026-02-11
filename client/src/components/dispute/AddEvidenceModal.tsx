@@ -59,8 +59,8 @@ export default function AddEvidenceModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" aria-hidden="true">
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label="Ajouter des preuves">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-t-xl sticky top-0 z-10">
           <div className="flex items-center justify-between">

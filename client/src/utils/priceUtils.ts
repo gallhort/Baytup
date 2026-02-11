@@ -26,10 +26,16 @@ export function formatPrice(
     maximumFractionDigits?: number;
   } = {}
 ): string {
+  // Determine default fraction digits based on currency
+  // EUR/USD/GBP: always show 2 decimal places (14.40€ not 14.4€)
+  // DZD: no decimals by default (whole numbers)
+  const isDecimalCurrency = ['EUR', 'USD', 'GBP'].includes(currency.toUpperCase());
+  const defaultMinFractionDigits = isDecimalCurrency ? 2 : 0;
+
   const {
     showCurrency = true,
     locale = 'fr-FR',
-    minimumFractionDigits = 0,
+    minimumFractionDigits = defaultMinFractionDigits,
     maximumFractionDigits = 2,
   } = options;
 

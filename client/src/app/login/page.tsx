@@ -63,7 +63,7 @@ export default function LoginPage() {
         toast.success(t.success.loginSuccess);
 
         // ✅ FIX BQ-53: Wait for state to update before redirecting
-        await new Promise(resolve => setTimeout(resolve, 150));
+        await new Promise(resolve => requestAnimationFrame(resolve));
 
         // Redirect to intended page or home
         const redirect = searchParams.get('redirect') || '/';
@@ -129,7 +129,7 @@ export default function LoginPage() {
         toast.success(t.success.googleLoginSuccess);
 
         // ✅ FIX BQ-53: Wait for state to update before redirecting
-        await new Promise(resolve => setTimeout(resolve, 150));
+        await new Promise(resolve => requestAnimationFrame(resolve));
 
         // Redirect to intended page or home
         const redirect = searchParams.get('redirect') || '/';

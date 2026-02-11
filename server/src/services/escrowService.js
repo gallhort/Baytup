@@ -5,6 +5,7 @@ const Dispute = require('../models/Dispute');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 const refundCalculator = require('./refundCalculator');
+const { GUEST_SERVICE_FEE_RATE, HOST_COMMISSION_RATE } = require('../config/fees');
 
 class EscrowService {
   /**
@@ -25,8 +26,8 @@ class EscrowService {
     const baseAmount = subtotal + cleaningFee;
 
     // Use new fields if available, calculate fallback for legacy bookings
-    const guestServiceFee = booking.pricing.guestServiceFee || booking.pricing.serviceFee || Math.round(baseAmount * 0.08);
-    const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * 0.03);
+    const guestServiceFee = booking.pricing.guestServiceFee || booking.pricing.serviceFee || Math.round(baseAmount * GUEST_SERVICE_FEE_RATE);
+    const hostCommission = booking.pricing.hostCommission || Math.round(baseAmount * HOST_COMMISSION_RATE);
     const serviceFee = guestServiceFee; // Legacy alias
     const taxes = booking.pricing.taxes || 0;
 

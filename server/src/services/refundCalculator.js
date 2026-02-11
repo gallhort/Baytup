@@ -19,6 +19,8 @@
  * - Platform keeps: guestServiceFee (8% of original) + hostCommission (3% of kept portion)
  */
 
+const { HOST_COMMISSION_RATE } = require('../config/fees');
+
 // Grace period configuration
 const GRACE_PERIOD = {
   hoursAfterBooking: 48,    // Cancel within 48h of booking
@@ -70,7 +72,8 @@ class RefundCalculator {
       subtotalRefundPercent = this.getPolicyRefundPercent(
         cancellationPolicy,
         checkInDate,
-        cancellationDate
+        cancellationDate,
+        booking
       );
     } else {
       // During stay = refund unused nights only
@@ -104,9 +107,10 @@ class RefundCalculator {
     const cleaningFeeRefund = isBeforeCheckIn ? cleaningFee : 0;
 
     // Guest Service Fee:
+    // - Host cancellation: FULL refund (not the guest's fault)
     // - In grace period: FULL refund (Baytup absorbs Stripe fees)
     // - Otherwise: NEVER refunded (Baytup keeps 8%)
-    const guestServiceFeeRefund = isInGracePeriod ? guestServiceFee : 0;
+    const guestServiceFeeRefund = (reason === 'host_cancellation' || isInGracePeriod) ? guestServiceFee : 0;
 
     // Taxes: proportional to what's being refunded
     const refundableBase = subtotal + cleaningFee; // Base for tax calculation
@@ -120,7 +124,7 @@ class RefundCalculator {
     // What host would have received (before refund and after 3% commission)
     // Host keeps: subtotal + cleaningFee - refunds - 3% commission on kept portion
     const hostKeptBase = (subtotal - subtotalRefund) + (cleaningFee - cleaningFeeRefund);
-    const hostCommissionOnKept = Math.round(hostKeptBase * 0.03);
+    const hostCommissionOnKept = Math.round(hostKeptBase * HOST_COMMISSION_RATE);
 
     // What host loses (portion refunded to guest)
     const hostLoss = subtotalRefund + cleaningFeeRefund;
@@ -200,19 +204,21 @@ class RefundCalculator {
         guestServiceFee,
         guestServiceFeeRefund,
         isInGracePeriod,
-        reason
+        reason,
+        currency: pricing.currency || 'DZD'
       })
     };
   }
 
   /**
    * Get refund percentage based on cancellation policy
-   * @param {String} policy - 'flexible', 'moderate', 'strict', 'super_strict'
+   * @param {String} policy - 'flexible', 'moderate', 'strict', 'strict_long_term', 'non_refundable', 'super_strict'
    * @param {Date} checkInDate - Check-in date
    * @param {Date} cancellationDate - When cancellation was made
+   * @param {Object} booking - The booking document (for long-term policy check)
    * @returns {Number} Refund percentage (0-100)
    */
-  getPolicyRefundPercent(policy, checkInDate, cancellationDate) {
+  getPolicyRefundPercent(policy, checkInDate, cancellationDate, booking = null) {
     const hoursUntilCheckIn = (checkInDate - cancellationDate) / (1000 * 60 * 60);
     const daysUntilCheckIn = hoursUntilCheckIn / 24;
 
@@ -233,6 +239,30 @@ class RefundCalculator {
         // 0% if cancelled < 7 days before check-in
         if (daysUntilCheckIn >= 14) return 100;
         if (daysUntilCheckIn >= 7) return 50;
+        return 0;
+
+      case 'strict_long_term':
+        // For reservations of 28+ nights:
+        // Full refund if within 48h of booking AND 28+ days before check-in
+        // Otherwise: 50% if 30+ days before, 0% if < 30 days
+        if (booking && booking.pricing?.nights >= 28) {
+          const bookingCreatedAt = booking.createdAt ? new Date(booking.createdAt) : null;
+          if (bookingCreatedAt) {
+            const hoursSinceBooking = (cancellationDate - bookingCreatedAt) / (1000 * 60 * 60);
+            // 48h grace period with 28 days advance
+            if (hoursSinceBooking <= 48 && daysUntilCheckIn >= 28) return 100;
+          }
+          // After grace period: 50% if 30+ days, 0% otherwise
+          if (daysUntilCheckIn >= 30) return 50;
+          return 0;
+        }
+        // If not a long stay (< 28 nights), treat as strict policy
+        if (daysUntilCheckIn >= 14) return 100;
+        if (daysUntilCheckIn >= 7) return 50;
+        return 0;
+
+      case 'non_refundable':
+        // No refund at all (except in case of host cancellation or dispute)
         return 0;
 
       case 'super_strict':
@@ -280,14 +310,22 @@ class RefundCalculator {
       guestServiceFee,
       guestServiceFeeRefund,
       isInGracePeriod,
-      reason
+      reason,
+      currency = 'DZD'
     } = data;
+
+    const formatAmount = (amount) => {
+      if (currency === 'EUR' || currency === 'eur') {
+        return `€${amount.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
+      }
+      return `${amount.toLocaleString('fr-FR')} DZD`;
+    };
 
     let parts = [];
 
     // Grace period message
     if (isInGracePeriod) {
-      parts.push('✨ Période de grâce 48h: remboursement intégral');
+      parts.push('Période de grâce 48h: remboursement intégral');
     } else if (reason === 'host_cancellation') {
       parts.push('Annulation par l\'hôte: remboursement intégral');
     } else if (subtotalRefundPercent === 100) {
@@ -305,10 +343,10 @@ class RefundCalculator {
     }
 
     // Service fee message
-    if (isInGracePeriod && guestServiceFeeRefund > 0) {
-      parts.push(`frais de service (8%) remboursés (${guestServiceFeeRefund}€)`);
+    if (guestServiceFeeRefund > 0) {
+      parts.push(`frais de service (8%) remboursés (${formatAmount(guestServiceFeeRefund)})`);
     } else {
-      parts.push(`frais de service (8%) non remboursés (${guestServiceFee}€ conservés par Baytup)`);
+      parts.push(`frais de service (8%) non remboursés (${formatAmount(guestServiceFee)} conservés par Baytup)`);
     }
 
     return parts.join('. ') + '.';
@@ -367,14 +405,14 @@ class RefundCalculator {
    * @returns {Object} { canRefund: boolean, reason: string }
    */
   canRefund(booking) {
+    // Check if already refunded (P1 #17 - check before paid status)
+    if (['refunded', 'partially_refunded'].includes(booking.payment?.status)) {
+      return { canRefund: false, reason: 'Le remboursement a déjà été effectué' };
+    }
+
     // Check payment status
     if (booking.payment?.status !== 'paid') {
       return { canRefund: false, reason: 'Le paiement n\'a pas été effectué' };
-    }
-
-    // Check if already refunded
-    if (booking.payment?.status === 'refunded') {
-      return { canRefund: false, reason: 'Le remboursement a déjà été effectué' };
     }
 
     // Check booking status

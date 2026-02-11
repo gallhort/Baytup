@@ -21,7 +21,16 @@ const ListingSchema = new mongoose.Schema({
   },
   subcategory: {
     type: String,
-    required: [true, 'Subcategory is required']
+    required: [true, 'Subcategory is required'],
+    enum: {
+      values: [
+        // Stay subcategories
+        'apartment', 'house', 'villa', 'studio', 'room', 'riad', 'guesthouse', 'hotel_room',
+        // Vehicle subcategories
+        'car', 'motorcycle', 'truck', 'van', 'suv', 'bus', 'bicycle', 'scooter', 'boat'
+      ],
+      message: '{VALUE} is not a valid subcategory'
+    }
   },
 
   // Host Information
@@ -80,12 +89,13 @@ const ListingSchema = new mongoose.Schema({
       enum: ['apartment', 'house', 'villa', 'studio', 'room', 'riad', 'guesthouse', 'hotel_room']
     },
     bedrooms: Number,
+    beds: Number,
     bathrooms: Number,
     area: Number,
     floor: Number,
     furnished: {
       type: String,
-      enum: ['furnished', 'semi-furnished', 'unfurnished']
+      enum: ['furnished', 'semi_furnished', 'unfurnished']
     },
     capacity: {
       type: Number,
@@ -179,6 +189,149 @@ const ListingSchema = new mongoose.Schema({
     }
   },
 
+  /**
+   * Dynamic Pricing - Predefined Rules
+   * Priority: customPricing > pricingRules > basePrice
+   */
+  pricingRules: [{
+    // Rule type
+    type: {
+      type: String,
+      enum: [
+        'weekend',        // Friday-Saturday nights
+        'weekday',        // Monday-Thursday nights
+        'haute_saison',   // High season (defined by dates)
+        'basse_saison',   // Low season
+        'long_sejour',    // Long stay discount (7+ nights)
+        'very_long_sejour', // Very long stay (30+ nights)
+        'last_minute',    // Last minute booking (within X days)
+        'early_bird',     // Early booking discount
+        'event',          // Special event pricing
+        'custom'          // Custom rule
+      ],
+      required: true
+    },
+    name: {
+      type: String,
+      maxLength: 50
+    },
+    // Adjustment type
+    adjustmentType: {
+      type: String,
+      enum: ['percentage', 'fixed', 'absolute'],
+      default: 'percentage'
+    },
+    // Adjustment value
+    // For percentage: positive = increase, negative = discount (e.g., 20 = +20%, -15 = -15%)
+    // For fixed: amount to add/subtract from base price
+    // For absolute: the exact price per night
+    adjustmentValue: {
+      type: Number,
+      required: true
+    },
+    // Minimum nights for this rule to apply (for long_sejour)
+    minNights: {
+      type: Number,
+      default: 1
+    },
+    // Date range for seasonal rules
+    seasonDates: {
+      startMonth: { type: Number, min: 1, max: 12 },
+      startDay: { type: Number, min: 1, max: 31 },
+      endMonth: { type: Number, min: 1, max: 12 },
+      endDay: { type: Number, min: 1, max: 31 }
+    },
+    // Days before check-in for last_minute/early_bird
+    daysBeforeCheckIn: {
+      min: Number,
+      max: Number
+    },
+    // Active status
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+    // Priority (higher = applied first in case of conflicts)
+    priority: {
+      type: Number,
+      default: 0
+    }
+  }],
+
+  /**
+   * Custom Pricing - Calendar-based (like Airbnb)
+   * Specific dates with custom prices
+   */
+  customPricing: [{
+    // Start and end date for this custom price
+    startDate: {
+      type: Date,
+      required: true
+    },
+    endDate: {
+      type: Date,
+      required: true
+    },
+    // Price per night for this period
+    pricePerNight: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    // Optional reason/label for this custom price
+    reason: {
+      type: String,
+      maxLength: 100
+    },
+    // Minimum nights for this period
+    minNights: {
+      type: Number,
+      default: 1
+    },
+    // Whether this is a blocked period (price is 0, not bookable)
+    isBlocked: {
+      type: Boolean,
+      default: false
+    }
+  }],
+
+  /**
+   * Discount Rules - Automatic discounts
+   */
+  discounts: {
+    // Weekly discount (for 7+ nights)
+    weeklyDiscount: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0
+    },
+    // Monthly discount (for 28+ nights)
+    monthlyDiscount: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0
+    },
+    // New listing promotion (active for first X bookings)
+    newListingPromo: {
+      enabled: {
+        type: Boolean,
+        default: false
+      },
+      discountPercent: {
+        type: Number,
+        min: 0,
+        max: 50,
+        default: 10
+      },
+      maxBookings: {
+        type: Number,
+        default: 3
+      }
+    }
+  },
+
   // Availability
   availability: {
     instantBook: {
@@ -213,6 +366,19 @@ const ListingSchema = new mongoose.Schema({
       type: String,
       default: '11:00'
     }
+  },
+
+  // Cancellation Policy
+  cancellationPolicy: {
+    type: String,
+    enum: [
+      'flexible',        // Remboursement intégral jusqu'à 24h avant l'arrivée
+      'moderate',        // Remboursement intégral jusqu'à 5 jours avant l'arrivée
+      'strict',          // Remboursement de 50% jusqu'à 1 semaine avant l'arrivée
+      'strict_long_term', // Strict pour séjours longs (30+ jours)
+      'non_refundable'   // Non remboursable
+    ],
+    default: 'moderate'
   },
 
   // House Rules
@@ -392,6 +558,7 @@ ListingSchema.index({ status: 1 });
 ListingSchema.index({ featured: -1, createdAt: -1 });
 ListingSchema.index({ 'stats.averageRating': -1 });
 ListingSchema.index({ host: 1 });
+ListingSchema.index({ 'customPricing.startDate': 1, 'customPricing.endDate': 1 });
 
 // Virtual for primary image
 ListingSchema.virtual('primaryImage').get(function() {
@@ -437,6 +604,148 @@ ListingSchema.methods.restore = function() {
   this.deletedAt = null;
   this.deletedBy = null;
   return this.save();
+};
+
+/**
+ * Get price for a specific date
+ * Priority: customPricing > pricingRules > basePrice
+ * @param {Date} date - The date to get price for
+ * @returns {Number} Price for that date
+ */
+ListingSchema.methods.getPriceForDate = function(date) {
+  const targetDate = new Date(date);
+  targetDate.setHours(0, 0, 0, 0);
+
+  // 1. Check customPricing first (highest priority)
+  const customPrice = this.customPricing?.find(cp => {
+    const start = new Date(cp.startDate);
+    const end = new Date(cp.endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    return targetDate >= start && targetDate <= end && !cp.isBlocked;
+  });
+
+  if (customPrice) {
+    return customPrice.pricePerNight;
+  }
+
+  // 2. Check pricingRules
+  const basePrice = this.pricing.basePrice;
+  let finalPrice = basePrice;
+
+  // Sort rules by priority (higher first)
+  const activeRules = (this.pricingRules || [])
+    .filter(rule => rule.isActive)
+    .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+  for (const rule of activeRules) {
+    if (this._ruleApplies(rule, targetDate)) {
+      finalPrice = this._applyRule(rule, basePrice);
+      break; // Only apply highest priority matching rule
+    }
+  }
+
+  return Math.round(finalPrice);
+};
+
+/**
+ * Check if a pricing rule applies to a date
+ */
+ListingSchema.methods._ruleApplies = function(rule, date) {
+  const dayOfWeek = date.getDay(); // 0 = Sunday, 5 = Friday, 6 = Saturday
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+
+  switch (rule.type) {
+    case 'weekend':
+      // Friday (5) and Saturday (6) nights
+      return dayOfWeek === 5 || dayOfWeek === 6;
+
+    case 'weekday':
+      // Monday-Thursday nights (Sunday-Wednesday check-in)
+      return dayOfWeek >= 0 && dayOfWeek <= 4 && dayOfWeek !== 5 && dayOfWeek !== 6;
+
+    case 'haute_saison':
+    case 'basse_saison':
+      if (!rule.seasonDates) return false;
+      return this._isDateInSeason(month, day, rule.seasonDates);
+
+    case 'event':
+      // Event pricing is handled like haute_saison
+      if (!rule.seasonDates) return false;
+      return this._isDateInSeason(month, day, rule.seasonDates);
+
+    default:
+      return false;
+  }
+};
+
+/**
+ * Check if date is within seasonal range
+ */
+ListingSchema.methods._isDateInSeason = function(month, day, seasonDates) {
+  const { startMonth, startDay, endMonth, endDay } = seasonDates;
+
+  // Handle year-wrap (e.g., Dec 15 - Jan 15)
+  if (startMonth > endMonth || (startMonth === endMonth && startDay > endDay)) {
+    // Season wraps around year
+    return (month > startMonth || (month === startMonth && day >= startDay)) ||
+           (month < endMonth || (month === endMonth && day <= endDay));
+  }
+
+  // Normal range within same year
+  if (month > startMonth && month < endMonth) return true;
+  if (month === startMonth && day >= startDay) return true;
+  if (month === endMonth && day <= endDay) return true;
+
+  return false;
+};
+
+/**
+ * Apply pricing rule to base price
+ */
+ListingSchema.methods._applyRule = function(rule, basePrice) {
+  switch (rule.adjustmentType) {
+    case 'percentage':
+      return basePrice * (1 + rule.adjustmentValue / 100);
+    case 'fixed':
+      return basePrice + rule.adjustmentValue;
+    case 'absolute':
+      return rule.adjustmentValue;
+    default:
+      return basePrice;
+  }
+};
+
+/**
+ * Check if a date is blocked (either in blockedDates or customPricing with isBlocked)
+ */
+ListingSchema.methods.isDateBlocked = function(date) {
+  const targetDate = new Date(date);
+  targetDate.setHours(0, 0, 0, 0);
+
+  // Check blockedDates
+  const blocked = this.blockedDates?.some(bd => {
+    const start = new Date(bd.startDate);
+    const end = new Date(bd.endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    return targetDate >= start && targetDate <= end;
+  });
+
+  if (blocked) return true;
+
+  // Check customPricing with isBlocked
+  const blockedCustom = this.customPricing?.some(cp => {
+    if (!cp.isBlocked) return false;
+    const start = new Date(cp.startDate);
+    const end = new Date(cp.endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    return targetDate >= start && targetDate <= end;
+  });
+
+  return blockedCustom || false;
 };
 
 // Update stats when listing is updated

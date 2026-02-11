@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   X, Calendar, Clock, MapPin, Users, DollarSign, CreditCard,
   Home, Car, Star, CheckCircle, XCircle, AlertCircle,
@@ -102,6 +102,16 @@ export default function BookingDetailsModal({
 }: BookingDetailsModalProps) {
   const t = useTranslation('bookings');
 
+  // ESC key to close modal (P1 #30)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !booking) return null;
 
   const getStatusBadge = (status: string) => {
@@ -136,7 +146,7 @@ export default function BookingDetailsModal({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
@@ -145,7 +155,7 @@ export default function BookingDetailsModal({
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
+    return new Date(dateString).toLocaleTimeString('fr-FR', {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -183,11 +193,12 @@ export default function BookingDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Booking details">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Modal */}

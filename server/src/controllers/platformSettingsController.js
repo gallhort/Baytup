@@ -133,7 +133,7 @@ const updateSetting = async (req, res) => {
     const updatedSetting = await PlatformSettings.setValue(
       key,
       parsedValue,
-      req.user._id,
+      req.user.id,
       reason
     );
 
@@ -190,7 +190,7 @@ const updateCommissionRates = async (req, res) => {
       const updated = await PlatformSettings.setValue(
         key,
         parsedRate,
-        req.user._id,
+        req.user.id,
         reason || `Mise à jour groupée des commissions`
       );
 

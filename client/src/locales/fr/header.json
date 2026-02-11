@@ -60,6 +60,8 @@
   "vehicleType": "Type de véhicule",
   "addVehicleType": "Ajouter type de véhicule",
   "noNotifications": "Aucune nouvelle notification",
+  "markAllRead": "Tout marquer comme lu",
+  "viewAllNotifications": "Voir toutes les notifications",
   "bookings": "Voyages",
   "myBookings": "Mes réservations",
   "trips": "Voyages",

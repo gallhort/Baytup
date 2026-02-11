@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { GUEST_SERVICE_FEE_RATE, HOST_COMMISSION_RATE } = require('../config/fees');
 
 const BookingSchema = new mongoose.Schema({
   // Basic Information
@@ -322,6 +323,34 @@ const BookingSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
+// Valid status transitions (P1 #20)
+const VALID_TRANSITIONS = {
+  pending: ['confirmed', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin', 'expired', 'rejected'],
+  confirmed: ['active', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin', 'expired'],
+  active: ['completed', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin'],
+  completed: [],
+  cancelled_by_guest: [],
+  cancelled_by_host: [],
+  cancelled_by_admin: [],
+  expired: [],
+  rejected: []
+};
+
+BookingSchema.pre('save', function(next) {
+  if (this.isModified('status') && !this.isNew) {
+    const oldStatus = this._original_status;
+    const newStatus = this.status;
+    if (oldStatus && VALID_TRANSITIONS[oldStatus] && !VALID_TRANSITIONS[oldStatus].includes(newStatus)) {
+      return next(new Error(`Invalid status transition: ${oldStatus} -> ${newStatus}`));
+    }
+  }
+  next();
+});
+
+BookingSchema.post('init', function() {
+  this._original_status = this.status;
+});
+
 // Indexes
 BookingSchema.index({ listing: 1, startDate: 1, endDate: 1 });
 BookingSchema.index({ guest: 1, status: 1 });
@@ -397,11 +426,11 @@ BookingSchema.pre('save', function(next) {
     // Base amount for fee calculation (goes to host before commission)
     const baseAmount = this.pricing.subtotal + (this.pricing.cleaningFee || 0);
 
-    // Guest Service Fee - 8% (charged to guest, added to their total)
-    this.pricing.guestServiceFee = Math.round(baseAmount * 0.08);
+    // Guest Service Fee (charged to guest, added to their total)
+    this.pricing.guestServiceFee = Math.round(baseAmount * GUEST_SERVICE_FEE_RATE);
 
-    // Host Commission - 3% (deducted from host payout, not visible to guest)
-    this.pricing.hostCommission = Math.round(baseAmount * 0.03);
+    // Host Commission (deducted from host payout, not visible to guest)
+    this.pricing.hostCommission = Math.round(baseAmount * HOST_COMMISSION_RATE);
 
     // Legacy serviceFee equals guestServiceFee for backward compatibility
     this.pricing.serviceFee = this.pricing.guestServiceFee;
@@ -438,11 +467,11 @@ BookingSchema.methods.updateStatus = function() {
   return this.save({ validateBeforeSave: false });
 };
 
-// Check for overlapping bookings
+// Check for overlapping bookings (includes pending to prevent TOCTOU - P0 #5)
 BookingSchema.statics.checkAvailability = async function(listingId, startDate, endDate, excludeBookingId = null) {
   const query = {
     listing: listingId,
-    status: { $in: ['confirmed', 'paid', 'active'] },
+    status: { $in: ['pending', 'confirmed', 'paid', 'active'] },
     $or: [
       {
         startDate: { $lte: startDate },

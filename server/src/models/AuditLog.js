@@ -94,7 +94,7 @@ const AuditLogSchema = new mongoose.Schema({
   },
   userAgent: String,
   device: {
-    type: String,
+    deviceType: String,
     browser: String,
     os: String,
     isMobile: Boolean

@@ -132,7 +132,8 @@
   "location": {
     "title": "الموقع",
     "exactLocation": "يتم توفير الموقع الدقيق بعد الحجز",
-    "exactLocationDescription": "سنشارك العنوان الدقيق بمجرد تأكيد حجزك"
+    "exactLocationDescription": "سنشارك العنوان الدقيق بمجرد تأكيد حجزك",
+    "exactAddressNote": "سيتم تقديم العنوان الدقيق بمجرد تأكيد الحجز."
   },
   "booking": {
     "perNight": "ليلة",

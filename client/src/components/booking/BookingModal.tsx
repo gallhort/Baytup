@@ -106,6 +106,16 @@ export default function BookingModal({
   // ✅ FIX UX: Ref for scrollable content to auto-scroll on error
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // ESC key to close modal (P1 #30)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // ✅ FIX UX: Auto-scroll to top when error occurs
   useEffect(() => {
     if (error && contentRef.current) {
@@ -167,7 +177,7 @@ export default function BookingModal({
   // ✅ FIX: Display prices in the ACTUAL payment currency
   const formatPrice = (price: number) => {
     if (actualPaymentCurrency === 'EUR') {
-      return `€${price.toLocaleString('fr-FR')}`;
+      return `€${price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
     return `${price.toLocaleString('fr-FR')} DZD`;
   };
@@ -177,7 +187,7 @@ export default function BookingModal({
     if (listingCurrency === userCurrency) return null;
     const converted = convertCurrency(price, listingCurrency as 'DZD' | 'EUR', userCurrency as 'DZD' | 'EUR');
     if (userCurrency === 'EUR') {
-      return `≈ €${converted.toLocaleString('fr-FR')}`;
+      return `≈ €${converted.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
     return `≈ ${converted.toLocaleString('fr-FR')} DZD`;
   };
@@ -297,7 +307,11 @@ export default function BookingModal({
           setShowStripeForm(true);
           setLoading(false);
         }
-        // SLICKPAY: Redirect to payment page (for DZD)
+        // CHARGILY: Redirect to payment page (for DZD - CIB/Edahabia)
+        else if (payment.provider === 'chargily' && payment.paymentUrl) {
+          window.location.href = payment.paymentUrl;
+        }
+        // SLICKPAY (legacy): Redirect to payment page (for DZD)
         else if (payment.provider === 'slickpay' && payment.paymentUrl) {
           window.location.href = payment.paymentUrl;
         }
@@ -337,11 +351,12 @@ export default function BookingModal({
 
   return (
     // ✅ FIX: Increased z-index to z-[10000] to ensure modal is above Leaflet maps (which use high z-index)
-    <div className="fixed inset-0 z-[10000] overflow-y-auto">
+    <div className="fixed inset-0 z-[10000] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Modal */}
@@ -353,7 +368,7 @@ export default function BookingModal({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{(t as any)?.modal?.title || 'Confirm and Pay'}</h2>
+              <h2 id="booking-modal-title" className="text-2xl font-bold text-gray-900">{(t as any)?.modal?.title || 'Confirm and Pay'}</h2>
               <p className="text-sm text-gray-600 mt-1">{listing.title}</p>
             </div>
             <button

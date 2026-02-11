@@ -132,7 +132,8 @@
   "location": {
     "title": "Emplacement",
     "exactLocation": "Adresse exacte fournie après réservation",
-    "exactLocationDescription": "Nous partagerons l'adresse précise une fois votre réservation confirmée"
+    "exactLocationDescription": "Nous partagerons l'adresse précise une fois votre réservation confirmée",
+    "exactAddressNote": "L'adresse exacte vous sera communiquée une fois la réservation confirmée."
   },
   "booking": {
     "perNight": "nuit",

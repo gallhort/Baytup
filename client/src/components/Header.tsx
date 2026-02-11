@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   Search,
   MapPin,
@@ -56,8 +56,16 @@ interface CalendarProps {
 const CalendarComponent: React.FC<CalendarProps> = ({ checkIn, checkOut, onDateSelect, onClose, vehicleMode, activeField }) => {
   const t = useTranslation('header') as any;
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedCheckIn, setSelectedCheckIn] = useState<Date | null>(checkIn ? new Date(checkIn) : null);
-  const [selectedCheckOut, setSelectedCheckOut] = useState<Date | null>(checkOut ? new Date(checkOut) : null);
+  const [selectedCheckIn, setSelectedCheckIn] = useState<Date | null>(() => {
+    if (!checkIn) return null;
+    const [y, m, d] = checkIn.split('T')[0].split('-').map(Number);
+    return new Date(y, m - 1, d);
+  });
+  const [selectedCheckOut, setSelectedCheckOut] = useState<Date | null>(() => {
+    if (!checkOut) return null;
+    const [y, m, d] = checkOut.split('T')[0].split('-').map(Number);
+    return new Date(y, m - 1, d);
+  });
 
   // ✅ FIX BUG DATE: Initialiser correctement selon le champ actif
   // Si on clique sur "Départ" et qu'il y a déjà une checkIn, on est en mode sélection de checkOut
@@ -361,6 +369,7 @@ const Header = React.memo(function Header({
 }: HeaderProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const { scrollY, scrollDirection, isAtTop, hasScrolled } = useScrollDirection();
   const { markAsRead, markAllAsRead } = useSocket();
   const vehiclesEnabled = useFeature('vehiclesEnabled'); // ✅ Feature flag
@@ -430,7 +439,42 @@ const Header = React.memo(function Header({
   }, [vehiclesEnabled]);
 
   // Update search data when URL params change
+  // ✅ FIX: Reset search data when returning to homepage (no search params)
   useEffect(() => {
+    // Check if we're on the homepage (pathname is '/' and no search params)
+    const isHomepage = pathname === '/';
+    const hasSearchParams = searchParams?.get('location') || searchParams?.get('checkIn') || searchParams?.get('checkOut');
+
+    console.log('[Header] Route change detected:', { pathname, isHomepage, hasSearchParams });
+
+    if (isHomepage && !hasSearchParams) {
+      console.log('[Header] Resetting search data for homepage');
+      // Reset search data when returning to homepage
+      setSearchData({
+        location: '',
+        checkIn: '',
+        checkOut: '',
+        adults: 1,
+        children: 0,
+        infants: 0,
+        pets: 0,
+        category: 'stays',
+        pickupTime: '10:00',
+        returnTime: '18:00',
+        driverAge: '25+',
+        vehicleType: 'any',
+        placeId: '',
+        coordinates: null,
+        city: '',
+        region: '',
+        placeTypes: []
+      });
+      // ✅ Also reset dropdown states
+      setActiveSearchField(null);
+      setGoogleSuggestions([]);
+      return;
+    }
+
     if (searchParams) {
       let category = (searchParams.get('category') || 'stays') as 'stays' | 'vehicles';
 
@@ -454,7 +498,7 @@ const Header = React.memo(function Header({
       setCurrentActiveCategory(category);
       setActiveSearchTab(category);
     }
-  }, [searchParams, vehiclesEnabled]);
+  }, [searchParams, vehiclesEnabled, pathname]);
 
   // Enhanced search bar handlers with smooth animations
   const handleSearchClick = useCallback(() => {
@@ -1074,27 +1118,47 @@ const Header = React.memo(function Header({
                           <div className="text-xs font-semibold text-gray-900 mb-1">
                             {t.where}
                           </div>
-                          <input
-                            type="text"
-                            placeholder={t.searchDestinations}
-                            value={searchData.location}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setSearchData({...searchData, location: value});
-                              setActiveSearchField('where');
-                              // Fetch Google suggestions when user types
-                              if (value.length > 0) {
-                                debouncedFetchSuggestions(value);
-                              } else {
-                                setGoogleSuggestions([]);
-                              }
-                            }}
-                            className="w-full text-sm bg-transparent border-none outline-none text-gray-600 placeholder-gray-400"
-                            style={{ fontSize: '14px' }}
-                            onFocus={() => setActiveSearchField('where')}
-                            autoComplete="off"
-                            spellCheck={false}
-                          />
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              placeholder={t.searchDestinations}
+                              value={searchData.location}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setSearchData({...searchData, location: value});
+                                setActiveSearchField('where');
+                                // Fetch Google suggestions when user types
+                                if (value.length > 0) {
+                                  debouncedFetchSuggestions(value);
+                                } else {
+                                  setGoogleSuggestions([]);
+                                }
+                              }}
+                              className="w-full text-sm bg-transparent border-none outline-none text-gray-600 placeholder-gray-400"
+                              style={{ fontSize: '14px' }}
+                              onFocus={(e) => {
+                                setActiveSearchField('where');
+                                // Select all text on focus so user can easily type over
+                                e.target.select();
+                              }}
+                              autoComplete="off"
+                              spellCheck={false}
+                            />
+                            {searchData.location && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSearchData({...searchData, location: '', placeId: '', coordinates: null, city: '', region: '', placeTypes: []});
+                                  setGoogleSuggestions([]);
+                                  setActiveSearchField('where');
+                                }}
+                                className="flex-shrink-0 p-1 rounded-full hover:bg-gray-200 transition-colors"
+                              >
+                                <X className="w-3 h-3 text-gray-500" />
+                              </button>
+                            )}
+                          </div>
 
                           {/* Airbnb Location Dropdown with Google API */}
                           {activeSearchField === 'where' && (
@@ -1606,7 +1670,7 @@ const Header = React.memo(function Header({
                               }}
                               className="text-xs text-orange-500 hover:text-orange-600 font-medium transition-colors"
                             >
-                              Mark all as read
+                              {t.markAllRead || 'Mark all as read'}
                             </button>
                           )}
                         </div>
@@ -1673,7 +1737,7 @@ const Header = React.memo(function Header({
                                   onClick={() => setIsNotificationMenuOpen(false)}
                                   className="text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors block text-center"
                                 >
-                                  View all notifications
+                                  {t.viewAllNotifications || 'View all notifications'}
                                 </Link>
                               </div>
                             </>

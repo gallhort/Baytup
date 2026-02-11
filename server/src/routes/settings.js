@@ -14,7 +14,7 @@ const {
   deleteAccount
 } = require('../controllers/settingsController');
 const { protect, authorize } = require('../middleware/auth');
-const { uploadAvatar: uploadAvatarMiddleware } = require('../middleware/upload');
+const { uploadAvatar: uploadAvatarMiddleware, validateFileContent, handleUploadError } = require('../middleware/upload');
 const SystemSettings = require('../models/SystemSettings');
 const featureFlagCache = require('../services/featureFlagCache');
 
@@ -75,7 +75,7 @@ router.put('/password', changePassword);
 router.put('/email', changeEmail);
 
 // Avatar - Use uploadAvatarMiddleware for proper file handling
-router.post('/avatar', uploadAvatarMiddleware.single('avatar'), uploadAvatar);
+router.post('/avatar', uploadAvatarMiddleware.single('avatar'), handleUploadError, validateFileContent, uploadAvatar);
 router.delete('/avatar', deleteAvatar);
 
 // Account management

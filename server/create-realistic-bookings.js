@@ -99,12 +99,17 @@ db.once('open', async function() {
       createdAt.setDate(startDate.getDate() - 3);
 
       // Prix basés sur le listing réel (ou aléatoire si pas de prix)
+      // Baytup Fee Structure: 8% guest service fee + 3% host commission = 11% total
       const basePrice = listing.pricing?.basePrice || Math.floor(Math.random() * 5000) + 2000;
+      const subtotal = basePrice * nights;
       const cleaningFee = Math.floor(basePrice * 0.2);
-      const serviceFee = Math.floor(basePrice * 0.15);
-      const totalAmount = (basePrice * nights) + cleaningFee + serviceFee;
-      const platformFee = Math.floor(totalAmount * 0.1); // 10% commission
-      const hostEarnings = totalAmount - platformFee;
+      const baseAmount = subtotal + cleaningFee;
+      const guestServiceFee = Math.round(baseAmount * 0.08); // 8% guest service fee
+      const hostCommission = Math.round(baseAmount * 0.03); // 3% host commission
+      const serviceFee = guestServiceFee; // Legacy field
+      const totalAmount = subtotal + cleaningFee + guestServiceFee;
+      const platformFee = guestServiceFee + hostCommission; // 11% total platform revenue
+      const hostEarnings = baseAmount - hostCommission; // Host receives base - 3%
 
       // 70% completed, 30% active
       const status = Math.random() > 0.3 ? 'completed' : 'active';
@@ -123,13 +128,17 @@ db.once('open', async function() {
         },
         pricing: {
           basePrice: basePrice,
+          nights: nights,
+          subtotal: subtotal,
           cleaningFee: cleaningFee,
+          guestServiceFee: guestServiceFee,
+          hostCommission: hostCommission,
           serviceFee: serviceFee,
+          taxes: 0,
           totalAmount: totalAmount,
-          platformFee: platformFee,
-          hostEarnings: hostEarnings,
-          currency: 'DZD',
-          nights: nights
+          hostPayout: hostEarnings,
+          platformRevenue: platformFee,
+          currency: 'DZD'
         },
         payment: {
           status: 'paid',

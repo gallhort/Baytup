@@ -12,9 +12,16 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { useApp } from '@/contexts/AppContext';
+import { useSocket } from '@/contexts/SocketContext';
 import { getPrimaryListingImage, getAvatarUrl } from '@/utils/imageUtils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatPrice } from '@/utils/priceUtils';
+import dynamic from 'next/dynamic';
+
+const StripePaymentForm = dynamic(() => import('@/components/payment/StripePaymentForm'), {
+  ssr: false,
+  loading: () => <div className="flex justify-center py-8"><Loader className="w-8 h-8 animate-spin text-[#FF6B35]" /></div>
+});
 interface Booking {
   _id: string;
   listing: {
@@ -34,6 +41,7 @@ interface Booking {
       basePrice: number;
       currency: string;
     };
+    cancellationPolicy?: string;
   };
   guest: {
     _id: string;
@@ -66,6 +74,7 @@ interface Booking {
     subtotal: number;
     cleaningFee: number;
     serviceFee: number;
+    guestServiceFee?: number;
     taxes: number;
     totalAmount: number;
     currency: string;
@@ -135,6 +144,7 @@ export default function BookingDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { state } = useApp();
+  const { refreshNotifications } = useSocket();
   const user = state.user;
   const t = useTranslation('bookings');
 
@@ -145,6 +155,10 @@ export default function BookingDetailsPage() {
   const [cancelReason, setCancelReason] = useState('');
   const [cancelling, setCancelling] = useState(false);
   const [retryingPayment, setRetryingPayment] = useState(false);
+  const [stripePaymentData, setStripePaymentData] = useState<{
+    clientSecret: string;
+    publishableKey: string;
+  } | null>(null);
 
   // Check-in/Check-out states
   const [showCheckInModal, setShowCheckInModal] = useState(false);
@@ -305,17 +319,28 @@ export default function BookingDetailsPage() {
         const refundInfo = response.data.data.refundInfo;
 
         if (refundInfo.refundAmount > 0) {
+          const isGracePeriod = refundInfo.isGracePeriod;
+          const policyLabel = refundInfo.cancellationPolicy || '';
+          const refundPct = refundInfo.refundBreakdown?.subtotalPercent ?? '';
+          let details = `Refund: ${formatPrice(refundInfo.refundAmount, booking.pricing.currency)}`;
+          if (isGracePeriod) {
+            details += ' (grace period - full refund including service fees)';
+          } else if (refundPct !== '') {
+            details += ` (${refundPct}% of stay, policy: ${policyLabel})`;
+          }
           toast.success(
-            `Booking cancelled. Refund of ${formatPrice(refundInfo.refundAmount, booking.pricing.currency)} will be processed.`,
-            { duration: 5000 }
+            `Booking cancelled. ${details}. Refund will be processed.`,
+            { duration: 6000 }
           );
         } else {
-          toast.success('Booking cancelled successfully');
+          toast.success('Booking cancelled. No refund applicable per cancellation policy.');
         }
 
         setShowCancelModal(false);
         setCancelReason('');
         fetchBookingDetails(booking._id);
+        // Refresh notifications to show cancellation in the top bar bell icon
+        refreshNotifications();
       }
     } catch (err: any) {
       console.error('Error cancelling booking:', err);
@@ -339,15 +364,22 @@ export default function BookingDetailsPage() {
       );
 
       if (response.data.status === 'success') {
-        const paymentUrl = response.data.data.payment.paymentUrl;
+        const payment = response.data.data.payment;
 
-        toast.success('Payment invoice created! Redirecting to payment page...', {
-          duration: 3000
-        });
-
-        setTimeout(() => {
-          window.location.href = paymentUrl;
-        }, 1000);
+        if (payment.provider === 'stripe') {
+          // Stripe: show inline payment form
+          setStripePaymentData({
+            clientSecret: payment.clientSecret,
+            publishableKey: payment.publishableKey
+          });
+          setRetryingPayment(false);
+        } else {
+          // SlickPay: redirect to external payment page
+          toast.success('Redirection vers la page de paiement...', { duration: 3000 });
+          setTimeout(() => {
+            window.location.href = payment.paymentUrl;
+          }, 1000);
+        }
       }
     } catch (err: any) {
       console.error('Error retrying payment:', err);
@@ -485,7 +517,9 @@ export default function BookingDetailsPage() {
     return true;
   };
 
-  // Calculate refund preview
+  // Calculate refund preview - matches server-side refundCalculator logic
+  // Grace period (48h after booking, check-in >14 days): FULL refund including service fees
+  // Otherwise: service fee (8%) is NOT refunded, refund based on subtotal + cleaningFee
   const refundPreview = useMemo(() => {
     if (!booking) return null;
 
@@ -493,30 +527,85 @@ export default function BookingDetailsPage() {
     const now = new Date();
     const daysUntilCheckIn = Math.ceil((startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-    let refundAmount = 0;
-    let cancellationFee = 0;
+    const subtotal = booking.pricing.subtotal || 0;
+    const cleaningFee = booking.pricing.cleaningFee || 0;
+    const guestServiceFee = booking.pricing.guestServiceFee || booking.pricing.serviceFee || 0;
+
+    // Check grace period: within 48h of booking AND check-in > 14 days away
+    let isInGracePeriod = false;
+    if (booking.createdAt) {
+      const bookingCreatedAt = new Date(booking.createdAt);
+      const hoursSinceBooking = (now.getTime() - bookingCreatedAt.getTime()) / (1000 * 60 * 60);
+      isInGracePeriod = hoursSinceBooking <= 48 && daysUntilCheckIn >= 14;
+    }
+
+    let subtotalRefundPercent = 0;
 
     if (isHost) {
-      refundAmount = booking.pricing.totalAmount;
-      cancellationFee = 0;
+      // Host cancels = 100% refund to guest
+      subtotalRefundPercent = 100;
     } else {
-      if (daysUntilCheckIn >= 7) {
-        refundAmount = booking.pricing.totalAmount;
-        cancellationFee = 0;
-      } else if (daysUntilCheckIn >= 3) {
-        refundAmount = booking.pricing.totalAmount * 0.5;
-        cancellationFee = booking.pricing.totalAmount * 0.5;
-      } else {
-        refundAmount = 0;
-        cancellationFee = booking.pricing.totalAmount;
+      // Guest cancellation - use listing's cancellation policy
+      const policy = booking.listing?.cancellationPolicy || 'moderate';
+      const hoursUntilCheckIn = daysUntilCheckIn * 24;
+
+      switch (policy) {
+        case 'flexible':
+          subtotalRefundPercent = hoursUntilCheckIn >= 24 ? 100 : 0;
+          break;
+        case 'moderate':
+          subtotalRefundPercent = daysUntilCheckIn >= 5 ? 100 : 50;
+          break;
+        case 'strict':
+          if (daysUntilCheckIn >= 14) subtotalRefundPercent = 100;
+          else if (daysUntilCheckIn >= 7) subtotalRefundPercent = 50;
+          else subtotalRefundPercent = 0;
+          break;
+        case 'strict_long_term':
+          // For 28+ night stays: special rules
+          if (booking.pricing.nights >= 28) {
+            // Check 48h booking grace for long stays (28+ days before check-in)
+            let longStayGrace = false;
+            if (booking.createdAt) {
+              const hoursSinceBooking = (now.getTime() - new Date(booking.createdAt).getTime()) / (1000 * 60 * 60);
+              longStayGrace = hoursSinceBooking <= 48 && daysUntilCheckIn >= 28;
+            }
+            if (longStayGrace) subtotalRefundPercent = 100;
+            else if (daysUntilCheckIn >= 30) subtotalRefundPercent = 50;
+            else subtotalRefundPercent = 0;
+          } else {
+            // Short stay with strict_long_term → treated as strict
+            if (daysUntilCheckIn >= 14) subtotalRefundPercent = 100;
+            else if (daysUntilCheckIn >= 7) subtotalRefundPercent = 50;
+            else subtotalRefundPercent = 0;
+          }
+          break;
+        case 'super_strict':
+          if (daysUntilCheckIn >= 30) subtotalRefundPercent = 100;
+          else if (daysUntilCheckIn >= 14) subtotalRefundPercent = 50;
+          else subtotalRefundPercent = 0;
+          break;
+        case 'non_refundable':
+          subtotalRefundPercent = 0;
+          break;
+        default:
+          subtotalRefundPercent = daysUntilCheckIn >= 5 ? 100 : 50;
       }
     }
+
+    const subtotalRefund = Math.round(subtotal * (subtotalRefundPercent / 100));
+    const cleaningFeeRefund = daysUntilCheckIn > 0 ? cleaningFee : 0;
+    // Grace period: service fee IS refunded. Otherwise: NOT refunded.
+    const serviceFeeRefund = (isHost || isInGracePeriod) ? guestServiceFee : 0;
+    const refundAmount = subtotalRefund + cleaningFeeRefund + serviceFeeRefund;
+    const cancellationFee = booking.pricing.totalAmount - refundAmount;
 
     return {
       daysUntilCheckIn,
       refundAmount,
       cancellationFee,
-      refundPercentage: (refundAmount / booking.pricing.totalAmount) * 100
+      refundPercentage: booking.pricing.totalAmount > 0 ? (refundAmount / booking.pricing.totalAmount) * 100 : 0,
+      isInGracePeriod
     };
   }, [booking, isHost]);
 
@@ -1107,7 +1196,34 @@ export default function BookingDetailsPage() {
           )}
 
           {/* Actions */}
-          {booking.status === 'pending_payment' && isGuest && (
+          {booking.status === 'pending_payment' && isGuest && stripePaymentData && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-[#FF6B35]" />
+                Paiement par carte
+              </h3>
+              <StripePaymentForm
+                clientSecret={stripePaymentData.clientSecret}
+                publishableKey={stripePaymentData.publishableKey}
+                bookingId={booking._id}
+                amount={booking.pricing.totalAmount}
+                currency={booking.pricing.currency || 'EUR'}
+                onSuccess={() => {
+                  toast.success('Paiement confirmé!');
+                  setStripePaymentData(null);
+                  fetchBookingDetails(booking._id);
+                  refreshNotifications();
+                }}
+                onError={(error) => {
+                  toast.error(error || 'Erreur de paiement');
+                }}
+                onCancel={() => {
+                  setStripePaymentData(null);
+                }}
+              />
+            </div>
+          )}
+          {booking.status === 'pending_payment' && isGuest && !stripePaymentData && (
             <button
               onClick={handleRetryPayment}
               disabled={retryingPayment}
@@ -1415,12 +1531,73 @@ export default function BookingDetailsPage() {
                       </p>
                     ) : (
                       <div className="text-sm text-gray-700 space-y-1">
-                        <p><strong>{(t as any).details.cancelModal.daysUntilCheckIn}</strong></p>
-                        <ul className="list-disc list-inside space-y-1 mt-2">
-                          <li>{(t as any).details.cancelModal.policyRules['7plus']}</li>
-                          <li>{(t as any).details.cancelModal.policyRules['3to6']}</li>
-                          <li>{(t as any).details.cancelModal.policyRules.less3}</li>
-                        </ul>
+                        <p><strong>{refundPreview?.daysUntilCheckIn} jours avant l&apos;arrivée</strong></p>
+                        {refundPreview?.isInGracePeriod && (
+                          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                            <p className="text-green-700 font-semibold">Période de grâce active (48h après réservation)</p>
+                            <p className="text-green-600 text-xs mt-1">Remboursement intégral incluant les frais de service</p>
+                          </div>
+                        )}
+                        {(() => {
+                          const policy = booking.listing?.cancellationPolicy || 'moderate';
+                          switch (policy) {
+                            case 'flexible':
+                              return (
+                                <ul className="list-disc list-inside space-y-1 mt-2">
+                                  <li>24h+ avant : remboursement à 100%</li>
+                                  <li>Moins de 24h : aucun remboursement</li>
+                                </ul>
+                              );
+                            case 'strict':
+                              return (
+                                <ul className="list-disc list-inside space-y-1 mt-2">
+                                  <li>14+ jours avant : remboursement à 100%</li>
+                                  <li>7-13 jours avant : remboursement à 50%</li>
+                                  <li>Moins de 7 jours : aucun remboursement</li>
+                                </ul>
+                              );
+                            case 'strict_long_term':
+                              return (
+                                <ul className="list-disc list-inside space-y-1 mt-2">
+                                  {booking.pricing.nights >= 28 ? (
+                                    <>
+                                      <li>48h après réservation + 28j avant : remboursement à 100%</li>
+                                      <li>30+ jours avant : remboursement à 50%</li>
+                                      <li>Moins de 30 jours : aucun remboursement</li>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <li>14+ jours avant : remboursement à 100%</li>
+                                      <li>7-13 jours avant : remboursement à 50%</li>
+                                      <li>Moins de 7 jours : aucun remboursement</li>
+                                    </>
+                                  )}
+                                </ul>
+                              );
+                            case 'super_strict':
+                              return (
+                                <ul className="list-disc list-inside space-y-1 mt-2">
+                                  <li>30+ jours avant : remboursement à 100%</li>
+                                  <li>14-29 jours avant : remboursement à 50%</li>
+                                  <li>Moins de 14 jours : aucun remboursement</li>
+                                </ul>
+                              );
+                            case 'non_refundable':
+                              return (
+                                <p className="mt-2 text-red-600 font-medium">Non remboursable</p>
+                              );
+                            default: // moderate
+                              return (
+                                <ul className="list-disc list-inside space-y-1 mt-2">
+                                  <li>5+ jours avant : remboursement à 100%</li>
+                                  <li>Moins de 5 jours : remboursement à 50%</li>
+                                </ul>
+                              );
+                          }
+                        })()}
+                        {!refundPreview?.isInGracePeriod && (
+                          <p className="text-xs text-gray-500 mt-2">Les frais de service (8%) ne sont pas remboursés hors période de grâce.</p>
+                        )}
                       </div>
                     )}
                   </div>
