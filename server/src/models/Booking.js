@@ -325,10 +325,13 @@ const BookingSchema = new mongoose.Schema({
 
 // Valid status transitions (P1 #20)
 const VALID_TRANSITIONS = {
-  pending: ['confirmed', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin', 'expired', 'rejected'],
-  confirmed: ['active', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin', 'expired'],
-  active: ['completed', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin'],
-  completed: [],
+  pending: ['pending_payment', 'confirmed', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin', 'expired', 'rejected'],
+  pending_payment: ['confirmed', 'paid', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin', 'expired'],
+  confirmed: ['paid', 'active', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin', 'expired'],
+  paid: ['active', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin'],
+  active: ['completed', 'disputed', 'cancelled_by_guest', 'cancelled_by_host', 'cancelled_by_admin'],
+  completed: ['disputed'],
+  disputed: ['completed', 'cancelled_by_admin'],
   cancelled_by_guest: [],
   cancelled_by_host: [],
   cancelled_by_admin: [],
