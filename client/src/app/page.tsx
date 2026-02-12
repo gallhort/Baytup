@@ -403,7 +403,8 @@ export default function HomePage() {
             const params = new URLSearchParams({
               wilaya: destination.wilaya,
               limit: '1',
-              page: '1'
+              page: '1',
+              currency: currency
             });
 
             const response = await fetch(`${API_URL}/listings?${params}`);
@@ -432,7 +433,7 @@ export default function HomePage() {
     if (!loading) {
       fetchDestinationCounts();
     }
-  }, [loading]);
+  }, [loading, currency]);
 
   // Format property count for display
   const formatPropertyCount = (count: number) => {
