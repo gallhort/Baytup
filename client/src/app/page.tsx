@@ -387,7 +387,7 @@ export default function HomePage() {
     { name: 'constantine', displayName: 'Constantine', wilaya: 'Constantine', image: getListingImageUrl(undefined, 0) },
     { name: 'annaba', displayName: 'Annaba', wilaya: 'Annaba', image: getListingImageUrl(undefined, 0) },
     { name: 'tlemcen', displayName: 'Tlemcen', wilaya: 'Tlemcen', image: getListingImageUrl(undefined, 0) },
-    { name: 'ghardaia', displayName: 'Ghardaïa', wilaya: 'Gharda', image: getListingImageUrl(undefined, 0) }
+    { name: 'ghardaia', displayName: 'Ghardaïa', wilaya: 'Ghardaia,Ghardaïa', image: getListingImageUrl(undefined, 0) }
   ];
 
   // Fetch listing counts per destination using wilaya filter (searches city+state, not country)
