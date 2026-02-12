@@ -28,6 +28,7 @@ import {
 import toast from 'react-hot-toast';
 import { useApp } from '@/contexts/AppContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import DashboardChecklist from '@/components/onboarding/DashboardChecklist';
 
 ChartJS.register(
   CategoryScale,
@@ -270,6 +271,9 @@ export default function GuestDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Onboarding Checklist */}
+      <DashboardChecklist user={user} />
+
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl shadow-lg p-8 text-white">
         <div className="flex items-center justify-between">

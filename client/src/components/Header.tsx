@@ -31,7 +31,8 @@ import {
   UserCheck,
   Shield,
   HelpCircle,
-  LayoutDashboard
+  LayoutDashboard,
+  BookOpen
 } from 'lucide-react';
 import { useClickAway } from '@/hooks/useClickAway';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -1927,6 +1928,18 @@ const Header = React.memo(function Header({
                             <HelpCircle className="h-4 w-4" />
                             <span>{t.help}</span>
                           </Link>
+                          <button
+                            onClick={() => {
+                              setIsUserMenuOpen(false);
+                              if (typeof window !== 'undefined' && (window as any).__baytupOpenOnboarding) {
+                                (window as any).__baytupOpenOnboarding();
+                              }
+                            }}
+                            className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors hover:scale-105 flex items-center space-x-2"
+                          >
+                            <BookOpen className="h-4 w-4" />
+                            <span>{language === 'fr' ? 'Revoir le guide' : language === 'ar' ? 'إعادة مشاهدة الدليل' : 'Replay guide'}</span>
+                          </button>
                         </>
                       ) : (
                         <>
@@ -1952,6 +1965,18 @@ const Header = React.memo(function Header({
                             <HelpCircle className="h-4 w-4" />
                             <span>{language === 'fr' ? 'Aide & Support' : language === 'ar' ? 'المساعدة والدعم' : 'Help & Support'}</span>
                           </Link>
+                          <button
+                            onClick={() => {
+                              setIsUserMenuOpen(false);
+                              if (typeof window !== 'undefined' && (window as any).__baytupOpenOnboarding) {
+                                (window as any).__baytupOpenOnboarding();
+                              }
+                            }}
+                            className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors hover:scale-105 flex items-center space-x-2"
+                          >
+                            <BookOpen className="h-4 w-4" />
+                            <span>{language === 'fr' ? 'Revoir le guide' : language === 'ar' ? 'إعادة مشاهدة الدليل' : 'Replay guide'}</span>
+                          </button>
                           <div className="border-t border-gray-100 my-2" />
                           <button
                             onClick={() => {

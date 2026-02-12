@@ -13,6 +13,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useFeature } from '@/contexts/FeatureFlagsContext'; // ✅ Feature flags
 import { Listing } from '@/types';
 import { MapPin, Grid3X3, SlidersHorizontal } from 'lucide-react';
+import OnboardingTour, { useSearchTour } from '@/components/onboarding/OnboardingTour';
 
 // Enhanced lazy loading with better error boundaries
 import dynamic from 'next/dynamic';
@@ -68,6 +69,12 @@ function SearchPageContent() {
   const { language, currency, isReady: contextReady } = useLanguage();
   const t = useTranslation('search') as any;
   const vehiclesEnabled = useFeature('vehiclesEnabled'); // ✅ Feature flag
+  const { isTourActive, completeTour } = useSearchTour();
+
+  // Mark that user has searched (for onboarding checklist)
+  useEffect(() => {
+    try { localStorage.setItem('baytup_has_searched', 'true'); } catch {}
+  }, []);
 
   // Set direction based on language
   const isRTL = language === 'ar';
@@ -617,7 +624,7 @@ function SearchPageContent() {
       <div className="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           {/* Results count - Abritel style: "18 logements • Ville" */}
-          <div className="py-3">
+          <div className="py-3" data-tour="search-bar">
             <div className="text-base font-normal text-gray-900">
               {loading ? (
                 <span className="inline-block w-48 h-5 bg-gray-200 rounded animate-pulse" />
@@ -636,6 +643,7 @@ function SearchPageContent() {
           </div>
 
           {/* Horizontal Filter Chips */}
+          <div data-tour="filters">
           <HorizontalFilterChips
             onFiltersClick={() => setIsFiltersModalOpen(true)}
             activeFiltersCount={0}
@@ -644,6 +652,7 @@ function SearchPageContent() {
             searchOnMapMove={searchOnMapMove}
             onSearchOnMapMoveChange={setSearchOnMapMove}
           />
+          </div>
         </div>
       </div>
 
@@ -706,6 +715,7 @@ function SearchPageContent() {
                 {/* Connection status removed - REST API works fine without WebSocket */}
 
                 {/* Abritel-style Search Results */}
+                <div data-tour="listing-card">
                 <SearchResults
                   listings={listingsToDisplay}
                   loading={loading}
@@ -723,6 +733,7 @@ function SearchPageContent() {
                     children: filters.children
                   }}
                 />
+                </div>
               </div>
             )}
           </div>
@@ -808,6 +819,9 @@ function SearchPageContent() {
         totalResults={filteredListings.length}
         allListings={filteredListings}
       />
+
+      {/* Onboarding Tour */}
+      <OnboardingTour isActive={isTourActive} onComplete={completeTour} />
     </div>
   );
 }

@@ -460,11 +460,30 @@ const ListingSchema = new mongoose.Schema({
     }
   },
 
-  // Blocked dates
+  // iCal calendar sync
+  icalToken: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  externalCalendars: [{
+    name: { type: String, required: true },
+    url: { type: String, required: true },
+    lastSynced: { type: Date },
+    lastError: { type: String }
+  }],
+
+  // Blocked dates (enhanced for iCal sync)
   blockedDates: [{
-    startDate: Date,
-    endDate: Date,
-    reason: String
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    reason: String,
+    source: {
+      type: String,
+      enum: ['manual', 'ical', 'booking'],
+      default: 'manual'
+    },
+    externalCalendarName: { type: String }
   }],
 
   // Featured
@@ -563,6 +582,7 @@ ListingSchema.index({ featured: -1, createdAt: -1 });
 ListingSchema.index({ 'stats.averageRating': -1 });
 ListingSchema.index({ host: 1 });
 ListingSchema.index({ 'customPricing.startDate': 1, 'customPricing.endDate': 1 });
+ListingSchema.index({ icalToken: 1 });
 
 // Virtual for primary image
 ListingSchema.virtual('primaryImage').get(function() {

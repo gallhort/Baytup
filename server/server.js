@@ -5,10 +5,17 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
-const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const path = require('path');
 const connectDB = require('./src/config/database');
+const {
+  apiLimiter,
+  authLimiter,
+  strictLimiter,
+  uploadLimiter,
+  searchLimiter,
+  webhookLimiter
+} = require('./src/middleware/rateLimiter');
 const { initBookingAutomation } = require('./src/services/bookingAutomation');
 const { sanitizeInput } = require('./src/middleware/sanitize');
 
@@ -391,62 +398,7 @@ io.on('connection', (socket) => {
 // Trust proxy for rate limiting
 app.set('trust proxy', 1);
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW) * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX),
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// More lenient rate limiter for auth endpoints
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // 20 requests per window
-  message: {
-    error: 'Too many authentication attempts, please try again later.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true, // Don't count successful requests
-});
-
-// Very lenient rate limiter for email verification (people may click multiple times)
-const verifyEmailLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 10, // 10 attempts per minute
-  message: {
-    error: 'Too many verification attempts, please wait a moment and try again.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true,
-});
-
-// More lenient rate limiter for listings endpoint (used heavily by homepage)
-const listingsLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 300, // 300 requests per minute (allows homepage to make multiple requests)
-  message: {
-    error: 'Too many requests, please try again shortly.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// More lenient rate limiter for wishlist checks
-const wishlistLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 200, // 200 requests per minute
-  message: {
-    error: 'Too many wishlist requests, please try again shortly.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Rate limiters imported from ./src/middleware/rateLimiter.js
 
 // Middleware
 // Enhanced Helmet security configuration
@@ -558,47 +510,52 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Apply global API rate limiter to all /api/ routes
+app.use('/api/', apiLimiter);
+
 // Apply specific rate limiters to auth routes
-app.use('/api/auth/verify-email', verifyEmailLimiter);
-app.use('/api/auth/resend-verification', verifyEmailLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
-app.use('/api/auth/forgot-password', authLimiter);
-app.use('/api/auth/reset-password', authLimiter);
+app.use('/api/auth/forgotpassword', authLimiter);
+app.use('/api/auth/resetpassword', strictLimiter);
+app.use('/api/auth/verify-email', strictLimiter);
+app.use('/api/auth/resend-verification', strictLimiter);
 
-// API Routes (will be added)
+// Apply search rate limiter to listings GET route
+app.use('/api/listings', searchLimiter);
+
+// Apply webhook rate limiter
+app.use('/api/webhooks', webhookLimiter);
+
+// API Routes
 app.use('/api/auth', require('./src/routes/auth'));
-app.use('/api/auth/2fa', limiter, require('./src/routes/twoFactor')); // ✅ NEW: Two-Factor Authentication
+app.use('/api/auth/2fa', require('./src/routes/twoFactor'));
 
-// Apply general rate limiter to other routes
-// app.use('/api/users', limiter, require('./src/routes/users')); // Empty route - user ops via /api/auth, /api/admin, /api/settings
-app.use('/api/listings', listingsLimiter, require('./src/routes/listings')); // Use more lenient limiter
-app.use('/api/bookings', limiter, require('./src/routes/bookings'));
-app.use('/api/reviews', limiter, require('./src/routes/reviews'));
-app.use('/api/messages', limiter, require('./src/routes/messages'));
-// app.use('/api/payments', limiter, require('./src/routes/payments')); // Empty route - payments via /api/bookings
-app.use('/api/host-applications', limiter, require('./src/routes/hostApplications'));
-app.use('/api/admin', limiter, require('./src/routes/admin'));
-app.use('/api/admin/host-applications', limiter, require('./src/routes/adminHostApplicationRoutes'));
-app.use('/api/wishlists', wishlistLimiter, require('./src/routes/wishlistRoutes')); // Use more lenient limiter
-app.use('/api/dashboard', limiter, require('./src/routes/dashboardRoutes'));
-app.use('/api/settings', limiter, require('./src/routes/settings'));
-app.use('/api/earnings', limiter, require('./src/routes/earnings'));
-app.use('/api/payouts', limiter, require('./src/routes/payout'));
-app.use('/api/notifications', limiter, require('./src/routes/notifications'));
-app.use('/api/webhooks', require('./src/routes/webhooks')); // Webhook routes (no rate limiting for external services)
-// ✅ NOUVELLE ROUTE: Disputes
-app.use('/api/disputes', limiter, require('./src/routes/disputes'));
-// ✅ NOUVELLE ROUTE: Moderation (Admin)
-app.use('/api/moderation', limiter, require('./src/routes/moderation'));
-// ✅ NOUVELLE ROUTE: Support Tickets
-app.use('/api/tickets', limiter, require('./src/routes/tickets'));
-// ✅ NOUVELLE ROUTE: Cities (alternative gratuite à Google Places Autocomplete)
+// Route handlers (global apiLimiter already applied to all /api/ routes above)
+// Route-specific limiters (searchLimiter, webhookLimiter) also applied above
+app.use('/api/listings', require('./src/routes/listings'));
+app.use('/api/bookings', require('./src/routes/bookings'));
+app.use('/api/reviews', require('./src/routes/reviews'));
+app.use('/api/messages', require('./src/routes/messages'));
+app.use('/api/host-applications', require('./src/routes/hostApplications'));
+app.use('/api/admin', require('./src/routes/admin'));
+app.use('/api/admin/host-applications', require('./src/routes/adminHostApplicationRoutes'));
+app.use('/api/wishlists', require('./src/routes/wishlistRoutes'));
+app.use('/api/dashboard', require('./src/routes/dashboardRoutes'));
+app.use('/api/settings', require('./src/routes/settings'));
+app.use('/api/earnings', require('./src/routes/earnings'));
+app.use('/api/payouts', require('./src/routes/payout'));
+app.use('/api/notifications', require('./src/routes/notifications'));
+app.use('/api/webhooks', require('./src/routes/webhooks'));
+app.use('/api/disputes', require('./src/routes/disputes'));
+app.use('/api/moderation', require('./src/routes/moderation'));
+app.use('/api/tickets', require('./src/routes/tickets'));
 app.use('/api/cities', require('./src/routes/cities'));
-app.use('/api/faq', require('./src/routes/faq')); // ✅ NEW: FAQ / Knowledge Base
-app.use('/api/escrow', limiter, require('./src/routes/escrow')); // ✅ NEW: Escrow / Séquestre
-app.use('/api/stripe-connect', limiter, require('./src/routes/stripeConnect')); // ✅ NEW: Stripe Connect for host payouts
-app.use('/api/pricing', limiter, require('./src/routes/pricing')); // ✅ NEW: Dynamic Pricing Calculator
+app.use('/api/faq', require('./src/routes/faq'));
+app.use('/api/escrow', require('./src/routes/escrow'));
+app.use('/api/stripe-connect', require('./src/routes/stripeConnect'));
+app.use('/api/pricing', require('./src/routes/pricing'));
+app.use('/api/calendar', require('./src/routes/calendar'));
 
 // 404 handler
 app.use('*', (req, res) => {

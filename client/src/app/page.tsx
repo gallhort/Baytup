@@ -829,8 +829,13 @@ export default function HomePage() {
                               fill
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                               className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              unoptimized
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = getListingImageUrl(undefined, 0);
+                                const img = e.target as HTMLImageElement;
+                                if (!img.dataset.fallback) {
+                                  img.dataset.fallback = 'true';
+                                  img.src = getListingImageUrl(undefined, 0);
+                                }
                               }}
                             />
                           </div>

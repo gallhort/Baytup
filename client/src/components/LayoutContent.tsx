@@ -6,10 +6,18 @@ import HeaderWrapper from './HeaderWrapper';
 import Footer from './Footer';
 import { Toaster } from 'react-hot-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import OnboardingModal, { useOnboarding } from './onboarding/OnboardingModal';
 
 export default function LayoutContent({ children }: { children: React.ReactNode }) {
   const [headerHeight, setHeaderHeight] = React.useState(0);
   const pathname = usePathname();
+  const { showOnboarding, openOnboarding, closeOnboarding } = useOnboarding();
+
+  // Expose openOnboarding globally so Header can trigger it
+  React.useEffect(() => {
+    (window as any).__baytupOpenOnboarding = openOnboarding;
+    return () => { delete (window as any).__baytupOpenOnboarding; };
+  }, [openOnboarding]);
 
   // ✅ Hide footer on search page (Airbnb-style)
   const hideFooter = pathname === '/search';
@@ -71,6 +79,7 @@ export default function LayoutContent({ children }: { children: React.ReactNode 
           },
         }}
       />
+      <OnboardingModal isOpen={showOnboarding} onClose={closeOnboarding} />
     </>
   );
 }
