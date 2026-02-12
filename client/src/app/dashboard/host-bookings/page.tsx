@@ -55,12 +55,6 @@ export default function HostBookingsPage() {
       // ✅ FIX BQ-45: Handle different response structures
       const bookingsData = response.data.data?.bookings || response.data.bookings || response.data.data || [];
 
-      console.log('[Host Bookings] API Response:', {
-        total: bookingsData.length,
-        structure: Object.keys(response.data),
-        sample: bookingsData[0]
-      });
-
       setBookings(Array.isArray(bookingsData) ? bookingsData : []);
     } catch (error) {
       console.error('Error fetching bookings:', error);

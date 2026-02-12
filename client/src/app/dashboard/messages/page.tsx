@@ -277,8 +277,6 @@ export default function MessagesPage() {
 
     // ✅ FIX BQ-34: New message received - ensure real-time display
     socketRef.current.on('new_message', (data: { conversationId: string; message: Message }) => {
-      console.log('[Socket] New message received:', data);
-
       // Only add message if it's for the currently selected conversation
       if (selectedConversation && data.conversationId === selectedConversation._id) {
         setMessages(prev => {

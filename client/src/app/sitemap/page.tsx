@@ -11,7 +11,6 @@ export default function SitemapPage() {
       links: [
         { label: 'Home', href: '/' },
         { label: 'Search', href: '/search' },
-        { label: 'About', href: '/about' },
       ]
     },
     {
@@ -39,7 +38,7 @@ export default function SitemapPage() {
       links: [
         { label: 'Browse Listings', href: '/search' },
         { label: 'My Bookings', href: '/dashboard/bookings' },
-        { label: 'Travel History', href: '/dashboard/travel-history' },
+        { label: 'Travel History', href: '/dashboard/history' },
         { label: 'Favorites', href: '/dashboard/saved' },
       ]
     },

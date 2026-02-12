@@ -93,8 +93,16 @@ const updatePasswordValidation = [
     .notEmpty()
     .withMessage('Current password is required'),
   body('newPassword')
-    .isLength({ min: 6 })
-    .withMessage('New password must be at least 6 characters')
+    .isLength({ min: 8, max: 100 })
+    .withMessage('New password must be between 8 and 100 characters')
+    .matches(/[A-Z]/)
+    .withMessage('New password must contain at least one uppercase letter')
+    .matches(/[a-z]/)
+    .withMessage('New password must contain at least one lowercase letter')
+    .matches(/[0-9]/)
+    .withMessage('New password must contain at least one number')
+    .matches(/[@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)
+    .withMessage('New password must contain at least one special character')
 ];
 
 const forgotPasswordValidation = [
@@ -106,8 +114,16 @@ const forgotPasswordValidation = [
 
 const resetPasswordValidation = [
   body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters')
+    .isLength({ min: 8, max: 100 })
+    .withMessage('Password must be between 8 and 100 characters')
+    .matches(/[A-Z]/)
+    .withMessage('Password must contain at least one uppercase letter')
+    .matches(/[a-z]/)
+    .withMessage('Password must contain at least one lowercase letter')
+    .matches(/[0-9]/)
+    .withMessage('Password must contain at least one number')
+    .matches(/[@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)
+    .withMessage('Password must contain at least one special character')
 ];
 
 // Listing validation rules

@@ -93,5 +93,18 @@
   "location": {
     "defaultCity": "City",
     "defaultState": "State"
+  },
+  "cards": {
+    "guests": "guest",
+    "guestsPlural": "guests",
+    "bedrooms": "bedroom",
+    "bedroomsPlural": "bedrooms",
+    "bathrooms": "bathroom",
+    "bathroomsPlural": "bathrooms",
+    "reviews": "reviews",
+    "firstReview": "Be the first to leave a review",
+    "avgPricePerNight": "avg. price per night",
+    "avgPricePerDay": "avg. price per day",
+    "viewAll": "View all listings"
   }
 }

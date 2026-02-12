@@ -237,7 +237,7 @@ class SlickPayService {
    * @param {string} signature - Signature from webhook
    * @returns {boolean}
    */
-  verifyWebhookSignature(payload, signature) {
+  verifyWebhookSignature(payload, signature, rawBody) {
     const crypto = require('crypto');
     const secret = process.env.SLICK_PAY_WEBHOOK_SECRET;
 
@@ -249,9 +249,11 @@ class SlickPayService {
 
     if (!signature) return false;
 
+    // Use raw body buffer for HMAC to avoid JSON serialization differences
+    const body = rawBody || JSON.stringify(payload);
     const expectedSignature = crypto
       .createHmac('sha256', secret)
-      .update(JSON.stringify(payload))
+      .update(body)
       .digest('hex');
 
     // Timing-safe comparison to prevent timing attacks (P1 #19)

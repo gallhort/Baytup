@@ -361,8 +361,13 @@ BookingSchema.index({ host: 1, status: 1 });
 BookingSchema.index({ status: 1, startDate: 1 });
 BookingSchema.index({ 'payment.status': 1 });
 BookingSchema.index({ createdAt: -1 });
-// ✅ NEW: Index for host response deadline queries
 BookingSchema.index({ status: 1, 'hostResponse.deadline': 1 });
+// Compound indexes for sorted queries and payment lookups
+BookingSchema.index({ guest: 1, createdAt: -1 });
+BookingSchema.index({ host: 1, createdAt: -1 });
+BookingSchema.index({ guest: 1, 'payment.status': 1 });
+BookingSchema.index({ host: 1, 'payment.status': 1 });
+BookingSchema.index({ listing: 1, status: 1, startDate: 1, endDate: 1 });
 
 // Virtual for duration in nights
 BookingSchema.virtual('duration').get(function() {
@@ -474,7 +479,7 @@ BookingSchema.methods.updateStatus = function() {
 BookingSchema.statics.checkAvailability = async function(listingId, startDate, endDate, excludeBookingId = null) {
   const query = {
     listing: listingId,
-    status: { $in: ['pending', 'confirmed', 'paid', 'active'] },
+    status: { $in: ['pending', 'pending_payment', 'confirmed', 'paid', 'active'] },
     $or: [
       {
         startDate: { $lte: startDate },

@@ -54,9 +54,6 @@ export default function AdminSettingsPage() {
       setSaving(true);
 
       const token = localStorage.getItem('token');
-      console.log('🔑 Token:', token ? 'exists' : 'missing');
-      console.log('👤 User role:', state.user?.role);
-      console.log('📧 User email:', state.user?.email);
 
       const data: UpdateFeatureRequest = {
         enabled,
@@ -84,8 +81,7 @@ export default function AdminSettingsPage() {
         await refreshFlags();
       }
     } catch (error: any) {
-      console.error('❌ Error updating feature:', error);
-      console.error('Response:', error.response?.data);
+      console.error('Error updating feature:', error);
       toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour');
     } finally {
       setSaving(false);

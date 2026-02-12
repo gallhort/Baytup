@@ -228,8 +228,6 @@ export default function MyListingsPage() {
 
         setTotalPages(pages || 1);
         setTotalListings(total);
-
-        console.log('[My Listings] Pagination:', { pages, total, currentPage });
       } else {
         // Fallback: calculate from listings array
         const calculatedPages = Math.ceil(listingsData.length / itemsPerPage) || 1;

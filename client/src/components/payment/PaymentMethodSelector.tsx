@@ -32,17 +32,18 @@ export default function PaymentMethodSelector({
       id: 'card' as PaymentMethod,
       name: isEUR
         ? ((t as any)?.card?.nameStripe || 'Bank card (Stripe)')
-        : ((t as any)?.card?.nameSlickPay || 'Carte bancaire (SlickPay)'),
+        : ((t as any)?.card?.nameSlickPay || 'Carte CIB / Edahabia'),
       description: isEUR
         ? ((t as any)?.card?.descriptionStripe || 'Secure payment by Visa, Mastercard')
-        : ((t as any)?.card?.descriptionSlickPay || 'Paiement sécurisé par carte CIB/Edahabia'),
+        : ((t as any)?.card?.descriptionSlickPay || 'Compatible BaridiMob — Payez avec votre carte CIB ou Edahabia'),
       icon: CreditCard,
       benefits: [
         (t as any)?.card?.benefit1 || 'Instant payment',
         (t as any)?.card?.benefit2 || 'Immediate confirmation',
         (t as any)?.card?.benefit3 || 'Secured by SSL encryption'
       ],
-      available: true
+      available: true,
+      popular: isDZD
     },
     {
       id: 'cash' as PaymentMethod,
@@ -54,7 +55,8 @@ export default function PaymentMethodSelector({
         (t as any)?.cash?.benefit2 || 'Over 200 agencies in Algeria',
         (t as any)?.cash?.benefit3 || '48h to complete payment'
       ],
-      available: cashAvailable
+      available: cashAvailable,
+      popular: false
     }
   ];
 
@@ -107,10 +109,15 @@ export default function PaymentMethodSelector({
 
                   {/* Content */}
                   <div className="flex-grow">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className={`font-semibold ${isSelected ? 'text-[#FF6B35]' : 'text-gray-900'}`}>
                         {option.name}
                       </h3>
+                      {option.popular && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                          {(t as any)?.popular || 'Popular'}
+                        </span>
+                      )}
                       {!option.available && (
                         <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
                           {(t as any)?.notAvailable || 'Not available'}
@@ -157,6 +164,13 @@ export default function PaymentMethodSelector({
       {isEUR && (
         <p className="text-xs text-gray-500 text-center mt-4">
           {(t as any)?.eurNotice || 'EUR payments are processed by Stripe, the global leader in online payments.'}
+        </p>
+      )}
+
+      {/* DZD notice - local payment reassurance */}
+      {isDZD && (
+        <p className="text-xs text-green-600 text-center mt-4 font-medium">
+          {(t as any)?.dzdNotice || '100% local payment — your data stays in Algeria.'}
         </p>
       )}
     </div>

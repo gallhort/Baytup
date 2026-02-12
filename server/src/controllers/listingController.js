@@ -49,7 +49,8 @@ const getListings = async (req, res, next) => {
       includeInactive = false,
       // ✅ FIX: Add adults and children to prevent ReferenceError
       adults,
-      children
+      children,
+      coupDeCoeur
     } = req.query;
 
     // Build query
@@ -202,6 +203,12 @@ const getListings = async (req, res, next) => {
       // For now, we'll handle it after the query
     }
 
+    // Coup de coeur filter (high-rated listings with enough reviews)
+    if (coupDeCoeur === 'true') {
+      query['stats.averageRating'] = { ...(query['stats.averageRating'] || {}), $gte: 4.7 };
+      query['stats.reviewCount'] = { $gte: 3 };
+    }
+
     // Stay-specific filters (for accommodation properties)
     if (bedrooms && bedrooms !== 'any' && !isNaN(parseInt(bedrooms))) {
       query['stayDetails.bedrooms'] = { $gte: parseInt(bedrooms) };
@@ -221,6 +228,23 @@ const getListings = async (req, res, next) => {
     if (features && category === 'vehicle') {
       const featuresArray = Array.isArray(features) ? features : features.split(',');
       query['vehicleDetails.features'] = { $all: featuresArray };
+    }
+
+    // Wilaya/region filter - searches only city and state fields (not country)
+    const wilaya = req.query.wilaya;
+    if (wilaya) {
+      const wilayas = Array.isArray(wilaya) ? wilaya : wilaya.split(',');
+      const wilayConds = wilayas.flatMap(w => {
+        const term = w.trim();
+        return [
+          { 'address.city': { $regex: term, $options: 'i' } },
+          { 'address.state': { $regex: term, $options: 'i' } }
+        ];
+      });
+      if (wilayConds.length > 0) {
+        if (!query.$and) query.$and = [];
+        query.$and.push({ $or: wilayConds });
+      }
     }
 
     // ✅ Enhanced location-based search with bounds support (Airbnb-style)

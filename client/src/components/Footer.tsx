@@ -20,7 +20,7 @@ export default function Footer() {
   ];
 
   const currencies = [
-    { code: 'DZD', symbol: 'دج', name: 'Algerian Dinar' },
+    { code: 'DZD', symbol: 'DA', name: 'Algerian Dinar' },
     { code: 'EUR', symbol: '€', name: 'Euro' }
   ];
 
@@ -53,7 +53,15 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/coming-soon?page=help-center"
+                  href="/dashboard/support"
+                  className="text-sm font-medium text-[#FF6B35] hover:text-[#e55a2a] transition-colors"
+                >
+                  {language === 'fr' ? 'Contacter le support' : language === 'ar' ? 'اتصل بالدعم' : 'Contact Support'}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/help"
                   className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   {t.helpCenter}
@@ -61,10 +69,10 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/coming-soon?page=safety-trust"
+                  href="/help/disputes"
                   className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
                 >
-                  {t.safety}
+                  {language === 'fr' ? 'Résolution des litiges' : language === 'ar' ? 'حل النزاعات' : 'Dispute Resolution'}
                 </Link>
               </li>
               <li>

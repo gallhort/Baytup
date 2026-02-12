@@ -46,11 +46,12 @@ export default function MapModal({
   const modalTitle = title || (t as any)?.map?.title || 'Explore Properties on Map';
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  // IMPORTANT: Use Algeria center coordinates SAME AS HOMEPAGE
-  const [mapCenter, setMapCenter] = useState<[number, number]>([28.0, 2.0]); // Center of Algeria
-  const [mapZoom, setMapZoom] = useState(5.5); // Zoom level to show entire Algeria
+  const [mapCenter, setMapCenter] = useState<[number, number]>([28.0, 2.0]);
+  const [mapZoom, setMapZoom] = useState(5.5);
   const [visibleListingsCount, setVisibleListingsCount] = useState(listings.length);
   const [currentMapBounds, setCurrentMapBounds] = useState<google.maps.LatLngBounds | null>(null);
+  const [shouldFitBounds, setShouldFitBounds] = useState(false);
+  const prevIsOpen = useRef(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Handle ESC key press and modal state
@@ -68,10 +69,14 @@ export default function MapModal({
     if (isOpen) {
       document.addEventListener('keydown', handleEscKey);
       document.body.style.overflow = 'hidden';
-      // Reset visible count when opening
       setVisibleListingsCount(listings.length);
-      // Don't reset bounds to allow persistence
-      // setCurrentMapBounds(null);
+      // Fit bounds ONLY on first open (not on every re-render)
+      if (!prevIsOpen.current && listings.length > 0) {
+        setShouldFitBounds(true);
+      }
+      prevIsOpen.current = true;
+    } else {
+      prevIsOpen.current = false;
     }
 
     return () => {
@@ -123,7 +128,7 @@ export default function MapModal({
     }
   }, [currentMapBounds, listings, isListingInBounds]);
 
-  // Calculate center based on listings or use Algeria center
+  // Calculate center based on listings coordinates
   useEffect(() => {
     if (filteredListings.length > 0) {
       const validListings = filteredListings.filter(listing =>
@@ -131,15 +136,17 @@ export default function MapModal({
       );
 
       if (validListings.length > 0) {
-        // Keep Algeria center for consistency with homepage
-        setMapCenter([28.0, 2.0]); // Center of Algeria
-        setMapZoom(5.5); // Show all Algeria
+        const coords = validListings.map(l => l.address?.coordinates || l.displayCoordinates);
+        const avgLat = coords.reduce((sum: number, c: number[]) => sum + c[0], 0) / coords.length;
+        const avgLng = coords.reduce((sum: number, c: number[]) => sum + c[1], 0) / coords.length;
+        setMapCenter([avgLat, avgLng]);
+        setMapZoom(validListings.length === 1 ? 13 : 10);
+        return;
       }
-    } else {
-      // Use Algeria center when no listings
-      setMapCenter([28.0, 2.0]); // Center of Algeria
-      setMapZoom(5.5); // Show all Algeria
     }
+    // Fallback: Algeria center
+    setMapCenter([28.0, 2.0]);
+    setMapZoom(5.5);
   }, [filteredListings]);
 
 
@@ -243,8 +250,9 @@ export default function MapModal({
               }}
               currency={currency}
               className="w-full h-full rounded-b-3xl"
-              interactive={true} // ALWAYS interactive in modal
-              fitBounds={false} // Don't auto-fit to show Algeria
+              interactive={true}
+              fitBounds={shouldFitBounds}
+              onFitBoundsComplete={() => setShouldFitBounds(false)}
               searchParams={searchParams}
             />
           ) : (

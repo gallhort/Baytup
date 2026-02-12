@@ -107,6 +107,11 @@ export default function ListingDetailPage() {
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Guest photos state
+  const [guestPhotos, setGuestPhotos] = useState<{ url: string; caption: string; reviewerName: string }[]>([]);
+  const [showGuestPhotoLightbox, setShowGuestPhotoLightbox] = useState(false);
+  const [guestPhotoIndex, setGuestPhotoIndex] = useState(0);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
   // Booking state - initialized from URL params if available
@@ -196,8 +201,6 @@ export default function ListingDetailPage() {
       setLoading(true);
       setError(null);
 
-      console.log('[ListingDetail] Fetching listing:', id);
-
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/listings/${id}`);
 
       if (!response.ok) {
@@ -206,7 +209,6 @@ export default function ListingDetailPage() {
       }
 
       const data = await response.json();
-      console.log('[ListingDetail] API Response:', data);
 
       // ✅ Support de multiples structures de réponse
       let listingData = null;
@@ -233,7 +235,6 @@ export default function ListingDetailPage() {
       }
 
       if (listingData && (listingData._id || listingData.id)) {
-        console.log('[ListingDetail] Listing loaded:', listingData._id || listingData.id);
         setListing(listingData);
 
         // Fetch reviews for this listing
@@ -252,12 +253,28 @@ export default function ListingDetailPage() {
 
   const fetchReviews = async (listingId: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews?listing=${listingId}&status=published&limit=10`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews?listing=${listingId}&status=published&limit=50`);
 
       if (response.ok) {
         const data = await response.json();
         if (data.status === 'success' && data.data?.reviews) {
           setReviews(data.data.reviews);
+
+          // Extract guest photos from all reviews
+          const allPhotos: { url: string; caption: string; reviewerName: string }[] = [];
+          data.data.reviews.forEach((review: any) => {
+            if (review.photos && review.photos.length > 0) {
+              const name = typeof review.reviewer === 'object' ? review.reviewer.firstName : 'Voyageur';
+              review.photos.forEach((photo: any) => {
+                allPhotos.push({
+                  url: photo.url,
+                  caption: photo.caption || '',
+                  reviewerName: name
+                });
+              });
+            }
+          });
+          setGuestPhotos(allPhotos);
         }
       }
     } catch (err) {
@@ -495,8 +512,52 @@ export default function ListingDetailPage() {
   // Check if we need to show currency warning
   const showCurrencyWarning = !listingAcceptsCurrency(currency);
 
+  // JSON-LD structured data for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': listing.category === 'vehicle' ? 'Product' : 'LodgingBusiness',
+    name: listing.title,
+    description: listing.description,
+    image: displayImages.map((img: any) => getImageUrl(img.url)),
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: listing.address?.street,
+      addressLocality: listing.address?.city,
+      addressRegion: listing.address?.state,
+      addressCountry: listing.address?.country || 'DZ'
+    },
+    ...(listing.location?.coordinates ? {
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: listing.location.coordinates[1],
+        longitude: listing.location.coordinates[0]
+      }
+    } : {}),
+    ...(listing.stats?.reviewCount > 0 ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: listing.stats.averageRating,
+        reviewCount: listing.stats.reviewCount,
+        bestRating: 5,
+        worstRating: 1
+      }
+    } : {}),
+    offers: {
+      '@type': 'Offer',
+      price: listing.pricing?.basePrice,
+      priceCurrency: listing.pricing?.currency || 'DZD',
+      availability: listing.status === 'active' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Booking Modal */}
       <BookingModal
         isOpen={showBookingModal}
@@ -671,6 +732,15 @@ export default function ListingDetailPage() {
                 <div className="flex items-center gap-1">
                   <Award className="w-4 h-4" />
                   <span>Superhôte</span>
+                </div>
+                <span>·</span>
+              </>
+            )}
+            {((listing.stats?.averageRating || 0) >= 4.7 && (listing.stats?.reviewCount || 0) >= 3) && (
+              <>
+                <div className="flex items-center gap-1 text-rose-600">
+                  <Heart className="w-4 h-4 fill-current" />
+                  <span className="font-medium">Coup de coeur</span>
                 </div>
                 <span>·</span>
               </>
@@ -1076,6 +1146,51 @@ export default function ListingDetailPage() {
               </div>
             )}
 
+            {/* Garantie Baytup - Trust Box */}
+            <div className="pb-8 border-b border-gray-200">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2.5 bg-green-100 rounded-xl">
+                    <Shield className="w-6 h-6 text-green-700" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Réservez en toute sérénité</h3>
+                    <p className="text-sm text-green-700 font-medium">La garantie Baytup</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-gray-900 text-sm">Hôtes vérifiés</p>
+                      <p className="text-xs text-gray-600">Identité et logement vérifiés par Baytup</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-gray-900 text-sm">Paiement sécurisé</p>
+                      <p className="text-xs text-gray-600">Vos données bancaires sont protégées</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-gray-900 text-sm">Réservation garantie</p>
+                      <p className="text-xs text-gray-600">Confirmation instantanée ou sous 24h</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Phone className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-gray-900 text-sm">Support 7j/7</p>
+                      <p className="text-xs text-gray-600">Une équipe disponible pour vous aider</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Reviews Section */}
             {reviews.length > 0 && (
               <div className="pb-8 border-b border-gray-200">
@@ -1111,7 +1226,13 @@ export default function ListingDetailPage() {
                           <div className="font-medium text-gray-900">
                             {typeof review.reviewer === 'object' ? review.reviewer.firstName : 'Utilisateur'}
                           </div>
-                          <div className="text-xs text-gray-500">{review.age || 'Récemment'}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">{review.age || 'Récemment'}</span>
+                            <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
+                              <CheckCircle className="w-3 h-3" />
+                              Séjour vérifié
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
@@ -1125,6 +1246,31 @@ export default function ListingDetailPage() {
                         ))}
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">{review.comment}</p>
+                      {/* Review photos inline */}
+                      {(review as any).photos && (review as any).photos.length > 0 && (
+                        <div className="flex gap-2 mt-2">
+                          {(review as any).photos.slice(0, 3).map((photo: any, pIdx: number) => (
+                            <img
+                              key={pIdx}
+                              src={getImageUrl(photo.url)}
+                              alt={photo.caption || 'Photo du voyageur'}
+                              className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-80 transition"
+                              onClick={() => {
+                                const globalIdx = guestPhotos.findIndex(gp => gp.url === photo.url);
+                                if (globalIdx >= 0) {
+                                  setGuestPhotoIndex(globalIdx);
+                                  setShowGuestPhotoLightbox(true);
+                                }
+                              }}
+                            />
+                          ))}
+                          {(review as any).photos.length > 3 && (
+                            <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-sm text-gray-600 font-medium">
+                              +{(review as any).photos.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1140,6 +1286,88 @@ export default function ListingDetailPage() {
                     }
                   </button>
                 )}
+              </div>
+            )}
+
+            {/* Guest Photos Section */}
+            {guestPhotos.length > 0 && (
+              <div className="pb-8 border-b border-gray-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <Camera className="w-5 h-5 text-gray-900" />
+                  <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+                    Photos des voyageurs ({guestPhotos.length})
+                  </h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {guestPhotos.slice(0, 8).map((photo, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setGuestPhotoIndex(idx);
+                        setShowGuestPhotoLightbox(true);
+                      }}
+                      className="aspect-square rounded-xl overflow-hidden group relative"
+                    >
+                      <img
+                        src={getImageUrl(photo.url)}
+                        alt={photo.caption || `Photo par ${photo.reviewerName}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                        <p className="text-white text-xs font-medium truncate">{photo.reviewerName}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                {guestPhotos.length > 8 && (
+                  <button
+                    onClick={() => {
+                      setGuestPhotoIndex(0);
+                      setShowGuestPhotoLightbox(true);
+                    }}
+                    className="mt-4 px-6 py-3 border border-gray-900 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Voir les {guestPhotos.length} photos
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Guest Photo Lightbox */}
+            {showGuestPhotoLightbox && guestPhotos.length > 0 && (
+              <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center" onClick={() => setShowGuestPhotoLightbox(false)}>
+                <button
+                  onClick={() => setShowGuestPhotoLightbox(false)}
+                  className="absolute top-4 right-4 p-2 text-white hover:bg-white/20 rounded-full z-10"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setGuestPhotoIndex(prev => (prev - 1 + guestPhotos.length) % guestPhotos.length); }}
+                  className="absolute left-4 p-3 bg-white/20 hover:bg-white/30 rounded-full text-white transition z-10"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <div className="max-w-4xl max-h-[80vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+                  <img
+                    src={getImageUrl(guestPhotos[guestPhotoIndex].url)}
+                    alt={guestPhotos[guestPhotoIndex].caption}
+                    className="max-h-[70vh] object-contain rounded-lg"
+                  />
+                  <div className="mt-4 text-center text-white">
+                    <p className="font-medium">{guestPhotos[guestPhotoIndex].reviewerName}</p>
+                    {guestPhotos[guestPhotoIndex].caption && (
+                      <p className="text-sm text-gray-300 mt-1">{guestPhotos[guestPhotoIndex].caption}</p>
+                    )}
+                    <p className="text-xs text-gray-400 mt-2">{guestPhotoIndex + 1} / {guestPhotos.length}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setGuestPhotoIndex(prev => (prev + 1) % guestPhotos.length); }}
+                  className="absolute right-4 p-3 bg-white/20 hover:bg-white/30 rounded-full text-white transition z-10"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
               </div>
             )}
 

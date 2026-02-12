@@ -161,6 +161,14 @@ const createReview = async (req, res, next) => {
       });
     }
 
+    // Check if stay has actually ended
+    if (new Date(booking.endDate) > new Date()) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Cannot review before the stay has ended'
+      });
+    }
+
     // Check if review already exists
     const existingReview = await Review.findOne({
       booking: bookingId,
@@ -1048,6 +1056,34 @@ const getHostPendingReviews = async (req, res, next) => {
   }
 };
 
+// @desc    Upload review photos
+// @route   POST /api/reviews/upload-photos
+// @access  Private
+const uploadPhotos = async (req, res, next) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'No files uploaded'
+      });
+    }
+
+    const photoUrls = req.files.map(file => ({
+      url: `/uploads/reviews/${file.filename}`,
+      caption: ''
+    }));
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        photos: photoUrls
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getReviews,
   getReview,
@@ -1063,5 +1099,6 @@ module.exports = {
   getPendingReviews,
   getHostReviews,
   getHostReviewStats,
-  getHostPendingReviews
+  getHostPendingReviews,
+  uploadPhotos
 };

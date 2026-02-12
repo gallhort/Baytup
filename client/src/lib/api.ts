@@ -84,6 +84,7 @@ export const listingsAPI = {
       if (filters.search) params.append('search', filters.search);
       // ✅ NEW: Currency filter for multi-currency support
       if (filters.currency) params.append('currency', filters.currency);
+      if (filters.coupDeCoeur) params.append('coupDeCoeur', 'true');
 
       const response = await api.get(`/listings?${params.toString()}`);
       

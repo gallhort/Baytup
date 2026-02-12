@@ -14,8 +14,10 @@ const {
   getPendingReviews,
   getHostReviews,
   getHostReviewStats,
-  getHostPendingReviews
+  getHostPendingReviews,
+  uploadPhotos
 } = require('../controllers/reviewController');
+const { uploadReviewPhotos, handleUploadError, validateFileContent } = require('../middleware/upload');
 const { protect } = require('../middleware/auth');
 const {
   createReviewValidation,
@@ -42,6 +44,9 @@ router.get('/listing/:listingId/stats', listingIdValidation, validate, getListin
 
 // Protected routes
 router.use(protect); // All routes below this require authentication
+
+// Photo upload for reviews (max 5 photos, must be before /:id routes)
+router.post('/upload-photos', uploadReviewPhotos.array('photos', 5), handleUploadError, validateFileContent, uploadPhotos);
 
 // Host's review management routes (must be before other routes)
 router.get('/host-reviews/stats', getHostReviewStats);

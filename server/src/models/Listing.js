@@ -453,6 +453,10 @@ const ListingSchema = new mongoose.Schema({
     reviewCount: {
       type: Number,
       default: 0
+    },
+    guestPhotoCount: {
+      type: Number,
+      default: 0
     }
   },
 
@@ -576,6 +580,11 @@ ListingSchema.virtual('priceInEUR').get(function() {
 ListingSchema.virtual('priceInDZD').get(function() {
   if (this.pricing.currency === 'DZD') return this.pricing.basePrice;
   return Math.round(this.pricing.basePrice * 150);
+});
+
+// Coup de coeur badge (averageRating >= 4.7 AND reviewCount >= 3)
+ListingSchema.virtual('isCoupDeCoeur').get(function() {
+  return (this.stats?.averageRating >= 4.7 && this.stats?.reviewCount >= 3);
 });
 
 // Generate slug before saving

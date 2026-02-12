@@ -1,14 +1,16 @@
 {
   "chooseMethod": "Choisissez votre mode de paiement sécurisé",
   "notAvailable": "Non disponible",
+  "popular": "Populaire",
   "important": "Important",
   "cashNotice": "Vous aurez 48 heures pour effectuer le paiement dans une agence Nord Express. Passé ce délai, votre réservation sera automatiquement annulée.",
   "eurNotice": "Les paiements en EUR sont traités par Stripe, leader mondial du paiement en ligne.",
+  "dzdNotice": "Paiement 100% local — vos données restent en Algérie.",
   "card": {
     "nameStripe": "Carte bancaire (Stripe)",
-    "nameSlickpay": "Carte bancaire (SlickPay)",
+    "nameSlickPay": "Carte CIB / Edahabia",
     "descriptionStripe": "Paiement sécurisé par Visa, Mastercard",
-    "descriptionSlickpay": "Paiement sécurisé par carte CIB/Edahabia",
+    "descriptionSlickPay": "Compatible BaridiMob — Payez avec votre carte CIB ou Edahabia",
     "benefit1": "Paiement instantané",
     "benefit2": "Confirmation immédiate",
     "benefit3": "Sécurisé par cryptage SSL"

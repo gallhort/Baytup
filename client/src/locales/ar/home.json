@@ -93,5 +93,18 @@
   "location": {
     "defaultCity": "المدينة",
     "defaultState": "الولاية"
+  },
+  "cards": {
+    "guests": "شخص",
+    "guestsPlural": "أشخاص",
+    "bedrooms": "غرفة",
+    "bedroomsPlural": "غرف",
+    "bathrooms": "حمام",
+    "bathroomsPlural": "حمامات",
+    "reviews": "تقييمات",
+    "firstReview": "كن أول من يترك تقييم",
+    "avgPricePerNight": "متوسط السعر لليلة",
+    "avgPricePerDay": "متوسط السعر لليوم",
+    "viewAll": "عرض جميع الإعلانات"
   }
 }

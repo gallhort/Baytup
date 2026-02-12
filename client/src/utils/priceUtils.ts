@@ -205,7 +205,7 @@ export function formatPriceRange(
  */
 export function getCurrencySymbol(currency: string): string {
   const symbols: { [key: string]: string } = {
-    DZD: 'دج',
+    DZD: 'DA',
     EUR: '€',
     USD: '$',
     GBP: '£',

@@ -27,9 +27,9 @@ router.post('/chargily', captureRawBody, handleChargilyWebhook);
 /**
  * Slick Pay webhook endpoint (DEPRECATED - kept for backward compatibility)
  * This is a public endpoint that Slick Pay will call
- * No authentication required
+ * Requires raw body for signature verification
  */
-router.post('/slickpay', handleSlickPayWebhook);
+router.post('/slickpay', captureRawBody, handleSlickPayWebhook);
 
 /**
  * Stripe webhook endpoint

@@ -86,6 +86,9 @@ export default function FiltersModal({
       // Filter by superhost
       if (localFilters.superhost && !listing.host?.hostInfo?.superhost) return false;
 
+      // Filter by coup de coeur
+      if (localFilters.coupDeCoeur && !((listing.stats?.averageRating || 0) >= 4.7 && (listing.stats?.reviewCount || 0) >= 3)) return false;
+
       return true;
     }).length;
   }, [allListings, localFilters, category, totalResults]);
@@ -187,7 +190,8 @@ export default function FiltersModal({
       beds: undefined,
       amenities: [],
       instantBook: false,
-      superhost: false
+      superhost: false,
+      coupDeCoeur: false
     };
     setLocalFilters(clearedFilters);
   };
@@ -420,6 +424,19 @@ export default function FiltersModal({
                     checked={localFilters.superhost || false}
                     onChange={(e) => setLocalFilters({ ...localFilters, superhost: e.target.checked })}
                     className="w-6 h-6 text-[#FF6B35] border-gray-300 rounded focus:ring-[#FF6B35]"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-rose-50 transition-colors">
+                  <div>
+                    <div className="font-medium">❤ Coup de coeur voyageurs</div>
+                    <div className="text-sm text-gray-600">Note 4.7+ avec au moins 3 avis</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={localFilters.coupDeCoeur || false}
+                    onChange={(e) => setLocalFilters({ ...localFilters, coupDeCoeur: e.target.checked })}
+                    className="w-6 h-6 text-rose-500 border-gray-300 rounded focus:ring-rose-500"
                   />
                 </label>
               </div>

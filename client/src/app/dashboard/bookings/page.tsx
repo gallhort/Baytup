@@ -250,50 +250,23 @@ export default function BookingsPage() {
         endpoint = `${process.env.NEXT_PUBLIC_API_URL}/bookings/guest`;
       }
 
-      console.log('[Bookings] Fetching from:', endpoint, 'with params:', params.toString());
-      console.log('[Bookings] Status filter:', statusFilter);
-
       const response = await axios.get(
         `${endpoint}?${params.toString()}`,
         { headers: { Authorization: `Bearer ${token}` }, signal }
       );
-
-      console.log('[Bookings] Response received:', response.data);
-      console.log('[Bookings] Full response structure:', {
-        hasData: !!response.data.data,
-        hasBookings: !!response.data.bookings,
-        hasDataBookings: !!response.data.data?.bookings,
-        dataType: typeof response.data.data,
-        bookingsType: typeof response.data.bookings
-      });
 
       // ✅ FIX BQ-45: Improved response parsing with multiple fallbacks
       let bookingsData = [];
 
       if (response.data.data && Array.isArray(response.data.data.bookings)) {
         bookingsData = response.data.data.bookings;
-        console.log('[Bookings] ✅ Parsed from response.data.data.bookings');
       } else if (Array.isArray(response.data.bookings)) {
         bookingsData = response.data.bookings;
-        console.log('[Bookings] ✅ Parsed from response.data.bookings');
       } else if (Array.isArray(response.data.data)) {
         bookingsData = response.data.data;
-        console.log('[Bookings] ✅ Parsed from response.data.data (direct array)');
       } else {
-        console.error('[Bookings] ❌ Could not parse bookings from response:', response.data);
+        console.error('[Bookings] Could not parse bookings from response');
         bookingsData = [];
-      }
-
-      console.log('[Bookings] Number of bookings parsed:', bookingsData.length);
-
-      // ✅ Debug logs when filtering
-      if (statusFilter && bookingsData.length === 0) {
-        console.warn(`[Bookings] ⚠️ No bookings found with status "${statusFilter}"`);
-        console.log('[Bookings] Try checking if bookings exist in database with this exact status');
-      }
-      if (bookingsData.length > 0) {
-        console.log('[Bookings] Booking statuses:', bookingsData.map((b: any) => b.status));
-        console.log('[Bookings] Sample booking:', bookingsData[0]);
       }
 
       // ✅ FIX BQ-45: Ensure we're setting an array
@@ -301,8 +274,6 @@ export default function BookingsPage() {
       setStats(response.data.stats || stats);
       setTotalPages(response.data.pagination?.pages || 1);
 
-      console.log('[Bookings] ✅ State updated - Bookings:', bookingsData.length, 'Stats:', response.data.stats || 'none');
-      
     } catch (error: any) {
       if (axios.isCancel(error) || error?.name === 'CanceledError') return; // Aborted by cleanup
       console.error('[Bookings] Error:', error);

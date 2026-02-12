@@ -35,12 +35,13 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
     query.isBlocked = isBlocked === 'true';
   }
 
-  // Search by name or email
+  // Search by name or email (escape regex special chars to prevent NoSQL injection)
   if (search) {
+    const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     query.$or = [
-      { firstName: { $regex: search, $options: 'i' } },
-      { lastName: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } }
+      { firstName: { $regex: escapedSearch, $options: 'i' } },
+      { lastName: { $regex: escapedSearch, $options: 'i' } },
+      { email: { $regex: escapedSearch, $options: 'i' } }
     ];
   }
 

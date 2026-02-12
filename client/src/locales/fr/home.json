@@ -93,5 +93,18 @@
   "location": {
     "defaultCity": "Ville",
     "defaultState": "État"
+  },
+  "cards": {
+    "guests": "personne",
+    "guestsPlural": "personnes",
+    "bedrooms": "chambre",
+    "bedroomsPlural": "chambres",
+    "bathrooms": "salle de bain",
+    "bathroomsPlural": "salles de bain",
+    "reviews": "avis",
+    "firstReview": "Soyez le premier à laisser un avis",
+    "avgPricePerNight": "prix moy. par nuit",
+    "avgPricePerDay": "prix moy. par jour",
+    "viewAll": "Voir toutes les annonces"
   }
 }

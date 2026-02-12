@@ -600,6 +600,16 @@ export default function BookingModal({
               </label>
             </div>
 
+            {/* Cancellation Policy */}
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4">
+              <p className="text-sm font-semibold text-amber-900 mb-1">Politique d&apos;annulation</p>
+              <ul className="text-sm text-amber-800 space-y-1">
+                <li>Annulation gratuite jusqu&apos;à 48h avant l&apos;arrivée</li>
+                <li>Remboursement de 50% entre 48h et 24h avant l&apos;arrivée</li>
+                <li>Aucun remboursement moins de 24h avant l&apos;arrivée</li>
+              </ul>
+            </div>
+
             {/* Important Information */}
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
               <div className="flex items-start gap-3">

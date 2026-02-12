@@ -51,6 +51,21 @@ const listingStorage = multer.diskStorage({
   }
 });
 
+// Storage configuration for review photos (guest photos)
+const reviewStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../../uploads/reviews');
+    ensureDirectoryExists(uploadDir);
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    const ext = path.extname(file.originalname);
+    const userId = req.user?.id || req.user?._id || 'review';
+    cb(null, `review_${userId}_${uniqueSuffix}${ext}`);
+  }
+});
+
 // Storage configuration for user avatars
 const avatarStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -66,26 +81,26 @@ const avatarStorage = multer.diskStorage({
   }
 });
 
-// File filter for documents (PDF, JPG, PNG, JPEG)
+// File filter for documents (PDF, JPG, PNG, JPEG) - strict exact match
 const documentFileFilter = (req, file, cb) => {
-  const allowedTypes = /pdf|jpg|jpeg|png/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const allowedExtensions = /^\.(pdf|jpg|jpeg|png)$/i;
+  const allowedMimetypes = /^(application\/pdf|image\/jpeg|image\/png)$/;
+  const ext = path.extname(file.originalname).toLowerCase();
 
-  if (extname && mimetype) {
+  if (allowedExtensions.test(ext) && allowedMimetypes.test(file.mimetype)) {
     return cb(null, true);
   } else {
     cb(new Error('Only PDF, JPG, JPEG, and PNG files are allowed for documents!'));
   }
 };
 
-// File filter for images (JPG, PNG, JPEG, WebP)
+// File filter for images (JPG, PNG, JPEG, WebP) - strict exact match
 const imageFileFilter = (req, file, cb) => {
-  const allowedTypes = /jpg|jpeg|png|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const allowedExtensions = /^\.(jpg|jpeg|png|webp)$/i;
+  const allowedMimetypes = /^(image\/jpeg|image\/png|image\/webp)$/;
+  const ext = path.extname(file.originalname).toLowerCase();
 
-  if (extname && mimetype) {
+  if (allowedExtensions.test(ext) && allowedMimetypes.test(file.mimetype)) {
     return cb(null, true);
   } else {
     cb(new Error('Only JPG, JPEG, PNG, and WebP files are allowed for images!'));
@@ -116,6 +131,15 @@ const uploadAvatar = multer({
   fileFilter: imageFileFilter,
   limits: {
     fileSize: 2 * 1024 * 1024, // 2MB limit for avatars
+  }
+});
+
+// Upload middleware for review photos
+const uploadReviewPhotos = multer({
+  storage: reviewStorage,
+  fileFilter: imageFileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit for review photos
   }
 });
 
@@ -209,5 +233,6 @@ module.exports = upload;
 module.exports.uploadDocument = uploadDocument;
 module.exports.uploadListingImage = uploadListingImage;
 module.exports.uploadAvatar = uploadAvatar;
+module.exports.uploadReviewPhotos = uploadReviewPhotos;
 module.exports.handleUploadError = handleUploadError;
 module.exports.validateFileContent = validateFileContent;

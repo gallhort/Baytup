@@ -5,22 +5,22 @@ const Listing = require('../models/Listing');
 const Booking = require('../models/Booking');
 const Review = require('../models/Review');
 const { Conversation, Message } = require('../models/Message');
-const moment = require('moment');
+const { startOfDay, startOfMonth, subMonths, subDays, isAfter } = require('date-fns');
 
 // Get Admin Dashboard Data
 const getAdminDashboard = catchAsync(async (req, res, next) => {
   try {
-    const today = moment().startOf('day');
-    const thisMonth = moment().startOf('month');
-    const lastMonth = moment().subtract(1, 'months').startOf('month');
-    const last30Days = moment().subtract(30, 'days');
+    const today = startOfDay(new Date());
+    const thisMonth = startOfMonth(new Date());
+    const lastMonth = startOfMonth(subMonths(new Date(), 1));
+    const last30Days = subDays(new Date(), 30);
 
     // User statistics
     const totalUsers = await User.countDocuments();
     const activeHosts = await User.countDocuments({ role: 'host', isActive: true });
     const activeGuests = await User.countDocuments({ role: 'guest', isActive: true });
     const newUsersThisMonth = await User.countDocuments({
-      createdAt: { $gte: thisMonth.toDate() }
+      createdAt: { $gte: thisMonth }
     });
 
     // Listing statistics
@@ -67,7 +67,7 @@ const getAdminDashboard = catchAsync(async (req, res, next) => {
         $match: {
           status: { $in: ['paid', 'active', 'completed'] },
           'payment.status': 'paid',
-          createdAt: { $gte: moment().subtract(6, 'months').toDate() }
+          createdAt: { $gte: subMonths(new Date(), 6) }
         }
       },
       {
@@ -119,7 +119,7 @@ const getAdminDashboard = catchAsync(async (req, res, next) => {
     const userGrowth = await User.aggregate([
       {
         $match: {
-          createdAt: { $gte: moment().subtract(30, 'days').toDate() }
+          createdAt: { $gte: subDays(new Date(), 30) }
         }
       },
       {
@@ -174,9 +174,9 @@ const getAdminDashboard = catchAsync(async (req, res, next) => {
 const getHostDashboard = catchAsync(async (req, res, next) => {
   try {
     const hostId = req.user.id;
-    const today = moment().startOf('day');
-    const thisMonth = moment().startOf('month');
-    const last30Days = moment().subtract(30, 'days');
+    const today = startOfDay(new Date());
+    const thisMonth = startOfMonth(new Date());
+    const last30Days = subDays(new Date(), 30);
 
     // Host's listings
     const myListings = await Listing.find({ host: hostId })
@@ -202,7 +202,7 @@ const getHostDashboard = catchAsync(async (req, res, next) => {
     const upcomingBookings = await Booking.find({
       listing: { $in: listingIds },
       status: 'confirmed',
-      checkIn: { $gte: today.toDate() }
+      checkIn: { $gte: today }
     })
       .sort('checkIn')
       .limit(10)
@@ -241,7 +241,7 @@ const getHostDashboard = catchAsync(async (req, res, next) => {
           listing: { $in: listingIds },
           status: { $in: ['paid', 'active', 'completed'] }, // ✅ Fixed
           'payment.status': 'paid', // ✅ Ensure payment is completed
-          createdAt: { $gte: moment().subtract(6, 'months').toDate() }
+          createdAt: { $gte: subMonths(new Date(), 6) }
         }
       },
       {
@@ -281,8 +281,8 @@ const getHostDashboard = catchAsync(async (req, res, next) => {
       listing: { $in: listingIds },
       status: { $in: ['confirmed', 'active'] },
       $or: [
-        { checkIn: { $gte: today.toDate() } },
-        { checkOut: { $gte: today.toDate() } }
+        { checkIn: { $gte: today } },
+        { checkOut: { $gte: today } }
       ]
     })
       .populate('listing', 'title')
@@ -358,7 +358,7 @@ const getHostDashboard = catchAsync(async (req, res, next) => {
 const getGuestDashboard = catchAsync(async (req, res, next) => {
   try {
     const guestId = req.user.id;
-    const today = moment().startOf('day');
+    const today = startOfDay(new Date());
 
     // Guest's bookings
     const myBookings = await Booking.find({ guest: guestId })
@@ -368,7 +368,7 @@ const getGuestDashboard = catchAsync(async (req, res, next) => {
 
     const totalBookings = myBookings.length;
     const upcomingBookings = myBookings.filter(b =>
-      b.status === 'confirmed' && moment(b.checkIn).isAfter(today)
+      b.status === 'confirmed' && isAfter(new Date(b.checkIn), today)
     );
     const activeBookings = myBookings.filter(b => b.status === 'active');
     const completedBookings = myBookings.filter(b => b.status === 'completed');
@@ -423,7 +423,7 @@ const getGuestDashboard = catchAsync(async (req, res, next) => {
           guest: guestId,
           status: { $in: ['paid', 'active', 'completed'] },
           'payment.status': 'paid', // ✅ Only paid bookings
-          createdAt: { $gte: moment().subtract(6, 'months').toDate() }
+          createdAt: { $gte: subMonths(new Date(), 6) }
         }
       },
       {

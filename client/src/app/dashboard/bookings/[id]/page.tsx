@@ -6,7 +6,7 @@ import {
   CheckCircle, XCircle, Loader, Calendar, MapPin, Users, Home, Mail,
   Phone, Clock, AlertCircle, ArrowLeft, DollarSign, CreditCard,
   FileText, MessageSquare, Download, Share2, Star, Ban, Edit, Eye, Info,
-  LogIn, LogOut, CheckCheck
+  LogIn, LogOut, CheckCheck, Camera, X, ImagePlus
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -173,6 +173,8 @@ export default function BookingDetailsPage() {
   // Review modal states
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewPhotos, setReviewPhotos] = useState<Array<{ url: string; caption: string; preview?: string }>>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [reviewData, setReviewData] = useState({
     rating: 5,
     comment: '',
@@ -388,6 +390,62 @@ export default function BookingDetailsPage() {
     }
   };
 
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const remaining = 5 - reviewPhotos.length;
+    if (remaining <= 0) {
+      toast.error('Maximum 5 photos par avis');
+      return;
+    }
+
+    const filesToUpload = Array.from(files).slice(0, remaining);
+    const formData = new FormData();
+    filesToUpload.forEach(file => formData.append('photos', file));
+
+    try {
+      setUploadingPhotos(true);
+      const token = localStorage.getItem('token');
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/reviews/upload-photos`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.data.status === 'success') {
+        const uploaded = response.data.data.photos.map((p: any, i: number) => ({
+          url: p.url,
+          caption: '',
+          preview: URL.createObjectURL(filesToUpload[i])
+        }));
+        setReviewPhotos(prev => [...prev, ...uploaded]);
+        toast.success(`${filesToUpload.length} photo(s) ajoutée(s)`);
+      }
+    } catch (err: any) {
+      console.error('Error uploading photos:', err);
+      toast.error('Erreur lors de l\'upload des photos');
+    } finally {
+      setUploadingPhotos(false);
+      // Reset input
+      e.target.value = '';
+    }
+  };
+
+  const removeReviewPhoto = (index: number) => {
+    setReviewPhotos(prev => {
+      const removed = prev[index];
+      if (removed.preview) URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   const handleSubmitReview = async () => {
     if (!booking) return;
 
@@ -404,9 +462,14 @@ export default function BookingDetailsPage() {
         ? `/bookings/${booking._id}/review-host`
         : `/bookings/${booking._id}/review-guest`;
 
+      const payload = {
+        ...reviewData,
+        photos: reviewPhotos.map(p => ({ url: p.url, caption: p.caption }))
+      };
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
-        reviewData,
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -423,6 +486,9 @@ export default function BookingDetailsPage() {
           location: 5,
           value: 5
         });
+        // Clean up photo previews
+        reviewPhotos.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
+        setReviewPhotos([]);
         fetchBookingDetails(booking._id);
       }
     } catch (err: any) {
@@ -1877,6 +1943,73 @@ export default function BookingDetailsPage() {
                   </p>
                 </div>
 
+                {/* Photo Upload Section */}
+                {isGuest && (
+                  <div>
+                    {/* CTA Prompt */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Camera className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-blue-900">Ajoutez des photos de votre séjour</p>
+                          <p className="text-sm text-blue-700 mt-0.5">
+                            Vos photos aident les futurs voyageurs à se projeter. Partagez les meilleurs moments !
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Photo Thumbnails Preview */}
+                    {reviewPhotos.length > 0 && (
+                      <div className="grid grid-cols-5 gap-2 mb-3">
+                        {reviewPhotos.map((photo, idx) => (
+                          <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group">
+                            <img
+                              src={photo.preview || `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${photo.url}`}
+                              alt={`Photo ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeReviewPhoto(idx)}
+                              className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Upload Button */}
+                    {reviewPhotos.length < 5 && (
+                      <label className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[#FF6B35] hover:bg-orange-50 transition text-gray-500 hover:text-[#FF6B35]">
+                        {uploadingPhotos ? (
+                          <>
+                            <Loader className="w-5 h-5 animate-spin" />
+                            <span className="text-sm font-medium">Upload en cours...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ImagePlus className="w-5 h-5" />
+                            <span className="text-sm font-medium">Ajouter des photos ({reviewPhotos.length}/5)</span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          multiple
+                          onChange={handlePhotoSelect}
+                          disabled={uploadingPhotos}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 <div className="flex gap-3">
                   <button
@@ -1906,6 +2039,8 @@ export default function BookingDetailsPage() {
                         location: 5,
                         value: 5
                       });
+                      reviewPhotos.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
+                      setReviewPhotos([]);
                     }}
                     disabled={submittingReview}
                     className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-medium disabled:opacity-50"

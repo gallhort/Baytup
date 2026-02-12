@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Star, MapPin, Users, Bed, Bath, Heart } from 'lucide-react';
+import Image from 'next/image';
+import { Star, MapPin, Users, Bed, Bath, Heart, Camera } from 'lucide-react';
 import { Listing } from '@/types';
 import { getListingImageUrl } from '@/utils/imageUtils';
 import WishlistButton from '@/components/WishlistButton';
@@ -153,24 +154,32 @@ export default function SearchResults({
 
                 {/* Image Section - Full width, consistent height */}
                 <div className="relative w-full h-56 flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                  <img
+                  <Image
                     src={getListingImageUrl(listing, 0)}
                     alt={listing.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className="object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = '/placeholder.jpg';
+                      (e.target as HTMLImageElement).src = '/placeholder.jpg';
                     }}
                   />
 
-                  {/* Featured badge */}
+                  {/* Featured / Coup de coeur badges */}
                   {listing.featured && (
-                    <div className="absolute top-2 left-2 px-2 py-1 bg-gradient-to-r from-[#FF6B35] to-orange-500 text-white rounded-md text-xs font-bold shadow-lg">
+                    <div className="absolute top-2 start-2 px-2 py-1 bg-gradient-to-r from-[#FF6B35] to-orange-500 text-white rounded-md text-xs font-bold shadow-lg">
                       {(t as any).listingCard?.featured || 'En vedette'}
                     </div>
                   )}
+                  {!listing.featured && (listing.stats?.averageRating || 0) >= 4.7 && (listing.stats?.reviewCount || 0) >= 3 && (
+                    <div className="absolute top-2 start-2 px-2 py-1 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-md text-xs font-bold shadow-lg flex items-center gap-1">
+                      <Heart className="w-3 h-3 fill-current" />
+                      Coup de coeur
+                    </div>
+                  )}
 
-                  {/* Wishlist button - absolute top right */}
-                  <div className="absolute top-2 right-2">
+                  {/* Wishlist button - absolute top end */}
+                  <div className="absolute top-2 end-2">
                     <button
                       onClick={(e) => {
                         e.preventDefault();
@@ -186,7 +195,7 @@ export default function SearchResults({
                 {/* Content Section - Abritel layout: LEFT content + RIGHT price */}
                 <div className="flex-1 p-4 flex flex-row justify-between gap-4 min-w-0">
                   {/* LEFT: Main content (ville, titre, détails, badge) */}
-                  <div className="flex-1 flex flex-col justify-between min-w-0 text-left">
+                  <div className="flex-1 flex flex-col justify-between min-w-0 text-start">
                     <div className="space-y-1.5">
                       {/* Arrondissement/Ville - Taille augmentée */}
                       <div className="text-sm text-gray-600 truncate">
@@ -216,6 +225,14 @@ export default function SearchResults({
                           {(t as any).listingCard?.professionalHost || 'Hôte professionnel'}
                         </div>
                       )}
+
+                      {/* Guest photo count indicator */}
+                      {(listing as any).stats?.guestPhotoCount > 0 && (
+                        <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                          <Camera className="w-3.5 h-3.5" />
+                          <span>{(listing as any).stats.guestPhotoCount} photo{(listing as any).stats.guestPhotoCount > 1 ? 's' : ''} voyageur{(listing as any).stats.guestPhotoCount > 1 ? 's' : ''}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Rating badge at bottom - Taille augmentée */}
@@ -235,7 +252,7 @@ export default function SearchResults({
                   </div>
 
                   {/* RIGHT: Price section - Tailles augmentées */}
-                  <div className="flex flex-col items-end justify-end text-right flex-shrink-0">
+                  <div className="flex flex-col items-end justify-end text-end flex-shrink-0">
                     {/* Prix principal */}
                     <div className="font-bold text-2xl text-gray-900">
                       {formatPrice(listing.pricing?.basePrice || 0, listing.pricing?.currency || 'DZD')}

@@ -4,12 +4,15 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Search, MapPin, Star,
   ChevronLeft, ChevronRight, Map,
-  Home as HomeIcon, Car, Building, X
+  Home as HomeIcon, Car, Building, X,
+  Shield, CreditCard, Headphones, UserCheck,
+  SearchCheck, CalendarCheck, Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useSocketConnection } from '@/hooks/useSocket';
 import { useFeature } from '@/contexts/FeatureFlagsContext';
 import { SearchFilters } from '@/types';
 import dynamic from 'next/dynamic';
@@ -31,7 +34,6 @@ const LeafletMapView = dynamic(() => import('@/components/search/LeafletMapView'
   }
 });
 import { getListingImageUrl } from '@/utils/imageUtils';
-import socketService from '@/lib/socket';
 
 // Types
 interface Property {
@@ -102,7 +104,6 @@ export default function HomePage() {
   const { language, currency } = useLanguage();
   const t = useTranslation('home') as any;
   const isRTL = language === 'ar';
-  const { isConnected, connectionError } = useSocketConnection();
   const vehiclesEnabled = useFeature('vehiclesEnabled'); // ✅ Feature flag
 
   // State
@@ -161,15 +162,10 @@ export default function HomePage() {
     try {
       setLoading(true);
 
-      // Wait for socket connection
-      if (!isConnected) {
-        await socketService.waitForConnection();
-      }
-
       const filters: SearchFilters & { limit: number; sort: string; currency?: string } = {
-        limit: 20,
+        limit: 8,
         sort: '-featured,-createdAt',
-        currency: currency // ✅ Pass currency to filter by EUR/DZD
+        currency: currency
       };
 
       // Handle category filtering
@@ -181,11 +177,25 @@ export default function HomePage() {
         }
       }
 
-      // Use Socket.IO for search
-      const response = await socketService.searchListings(filters);
+      // Use REST API directly (more reliable than Socket.IO for initial data fetch)
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const params = new URLSearchParams();
+      params.set('limit', String(filters.limit));
+      params.set('sort', filters.sort);
+      if (filters.currency) params.set('currency', filters.currency);
+      if (filters.category) params.set('category', filters.category);
+      if (filters.subcategory) params.set('subcategory', filters.subcategory);
 
-      if (response.success) {
-        const rawListings = response.data.data.listings || [];
+      const res = await fetch(`${API_URL}/listings?${params}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const response = await res.json();
+
+      if (response.status === 'success') {
+        const rawListings = response.data?.listings || [];
 
         // Transform API data to match homepage Property interface
         const transformedListings = rawListings.map((listing: any) => {
@@ -325,11 +335,6 @@ export default function HomePage() {
     }
 }, [mapBounds, filteredProperties, isPropertyInBounds]);  // Ajouter isPropertyInBounds
 
-  // Initialize displayProperties on first render
-  useEffect(() => {
-    setDisplayProperties(filteredProperties);
-  }, []);
-
   // Handle map bounds change - ALWAYS update bounds, even when map is closed
   const handleMapBoundsChange = (bounds: google.maps.LatLngBounds | null) => {
     setMapBounds(bounds);
@@ -344,7 +349,7 @@ export default function HomePage() {
     const badges = [];
     if (property.featured) badges.push(t.badges?.featured || 'Featured');
     if (property.host?.hostInfo?.superhost) badges.push(t.badges?.superhost || 'Superhost');
-    if (property.stats?.averageRating && property.stats.averageRating >= 4.8) badges.push(t.badges?.guestFavorite || 'Guest favorite');
+    if ((property.stats?.averageRating || 0) >= 4.7 && (property.stats?.totalReviews || 0) >= 3) badges.push('Coup de coeur');
     return badges;
   };
 
@@ -377,84 +382,55 @@ export default function HomePage() {
   const [loadingCounts, setLoadingCounts] = useState(true);
 
   const destinations = [
-    { name: 'algiers', displayName: 'Algiers', image: getListingImageUrl(undefined, 0) },
-    { name: 'oran', displayName: 'Oran', image: getListingImageUrl(undefined, 0) },
-    { name: 'constantine', displayName: 'Constantine', image: getListingImageUrl(undefined, 0) },
-    { name: 'annaba', displayName: 'Annaba', image: getListingImageUrl(undefined, 0) },
-    { name: 'tlemcen', displayName: 'Tlemcen', image: getListingImageUrl(undefined, 0) },
-    { name: 'ghardaia', displayName: 'Ghardaïa', image: getListingImageUrl(undefined, 0) }
+    { name: 'algiers', displayName: 'Algiers', wilaya: 'Alger,Algiers', image: getListingImageUrl(undefined, 0) },
+    { name: 'oran', displayName: 'Oran', wilaya: 'Oran', image: getListingImageUrl(undefined, 0) },
+    { name: 'constantine', displayName: 'Constantine', wilaya: 'Constantine', image: getListingImageUrl(undefined, 0) },
+    { name: 'annaba', displayName: 'Annaba', wilaya: 'Annaba', image: getListingImageUrl(undefined, 0) },
+    { name: 'tlemcen', displayName: 'Tlemcen', wilaya: 'Tlemcen', image: getListingImageUrl(undefined, 0) },
+    { name: 'ghardaia', displayName: 'Ghardaïa', wilaya: 'Gharda', image: getListingImageUrl(undefined, 0) }
   ];
 
-  // Fetch listing counts for each destination using REST API with optimized batching
+  // Fetch listing counts per destination using wilaya filter (searches city+state, not country)
   useEffect(() => {
     const fetchDestinationCounts = async () => {
       try {
         setLoadingCounts(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
         const counts: {[key: string]: number} = {};
 
-        // Batch fetch counts for cities with longer delays to avoid rate limiting
-        const batchSize = 2; // Process only 2 cities at a time
-        for (let i = 0; i < destinations.length; i += batchSize) {
-          const batch = destinations.slice(i, i + batchSize);
+        await Promise.all(destinations.map(async (destination) => {
+          try {
+            const params = new URLSearchParams({
+              wilaya: destination.wilaya,
+              limit: '1',
+              page: '1'
+            });
 
-          await Promise.all(batch.map(async (destination) => {
-            try {
-              // Only try the most likely format to reduce API calls
-              const searchTerm = `${destination.displayName}, Algeria`;
+            const response = await fetch(`${API_URL}/listings?${params}`);
 
-              const params = new URLSearchParams({
-                location: searchTerm,
-                limit: '1',
-                page: '1'
-              });
-
-              const response = await fetch(`http://localhost:5000/api/listings?${params}`, {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                }
-              });
-
-              if (response.ok) {
-                const data = await response.json();
-                const count = data.data?.totalCount || data.totalCount || data.pagination?.total || 0;
-                counts[destination.name] = count;
-              } else if (response.status === 429) {
-                counts[destination.name] = 0;
-              } else {
-                counts[destination.name] = 0;
-              }
-            } catch (error) {
+            if (response.ok) {
+              const data = await response.json();
+              counts[destination.name] = data.pagination?.total || 0;
+            } else {
               counts[destination.name] = 0;
             }
-          }));
-
-          // Longer delay between batches (500ms)
-          if (i + batchSize < destinations.length) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+          } catch {
+            counts[destination.name] = 0;
           }
-        }
+        }));
 
         setDestinationCounts(counts);
-      } catch (error) {
-        console.error('Error fetching destination counts:', error);
-        // Set default counts in case of error
+      } catch {
         const defaultCounts: {[key: string]: number} = {};
-        destinations.forEach(dest => {
-          defaultCounts[dest.name] = 0;
-        });
+        destinations.forEach(dest => { defaultCounts[dest.name] = 0; });
         setDestinationCounts(defaultCounts);
       } finally {
         setLoadingCounts(false);
       }
     };
 
-    // Delay initial fetch to allow server to stabilize
     if (!loading) {
-      const timer = setTimeout(() => {
-        fetchDestinationCounts();
-      }, 1000);
-      return () => clearTimeout(timer);
+      fetchDestinationCounts();
     }
   }, [loading]);
 
@@ -556,6 +532,55 @@ export default function HomePage() {
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
             <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
               <div className="w-1 h-3 bg-white/50 rounded-full mt-2 animate-pulse" />
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section className="py-20 bg-white">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                {(t as any).howItWorks?.title || 'Comment ça marche'}
+              </h2>
+              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                {(t as any).howItWorks?.subtitle || 'Réservez votre logement en Algérie en 3 étapes simples'}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+              {[
+                {
+                  icon: SearchCheck,
+                  step: '1',
+                  title: (t as any).howItWorks?.step1Title || 'Recherchez',
+                  desc: (t as any).howItWorks?.step1Desc || 'Parcourez des centaines de logements à travers toute l\'Algérie. Filtrez par ville, type, prix et équipements.'
+                },
+                {
+                  icon: CalendarCheck,
+                  step: '2',
+                  title: (t as any).howItWorks?.step2Title || 'Réservez',
+                  desc: (t as any).howItWorks?.step2Desc || 'Sélectionnez vos dates et réservez en ligne. Paiement sécurisé et confirmation instantanée.'
+                },
+                {
+                  icon: Sparkles,
+                  step: '3',
+                  title: (t as any).howItWorks?.step3Title || 'Profitez',
+                  desc: (t as any).howItWorks?.step3Desc || 'Arrivez et profitez de votre séjour. Votre hôte vous accueille avec tout le confort nécessaire.'
+                }
+              ].map((item, index) => (
+                <div key={index} className="text-center group">
+                  <div className="relative mb-6 inline-flex">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center group-hover:from-primary-100 group-hover:to-primary-200 transition-all duration-300 group-hover:scale-110">
+                      <item.icon className="w-9 h-9 text-primary-600" />
+                    </div>
+                    <span className="absolute -top-2 -right-2 w-7 h-7 bg-primary-500 text-white text-sm font-bold rounded-full flex items-center justify-center shadow-lg">
+                      {item.step}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -774,10 +799,18 @@ export default function HomePage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {displayProperties.map((property, index) => {
                   const currentIndex = currentImageIndex[property._id] || 0;
                   const animationDelay = (index % 8) * 100;
+
+                  // Subcategory label
+                  const subcategoryLabels: Record<string, string> = {
+                    apartment: 'Appartement', villa: 'Villa', studio: 'Studio', house: 'Maison',
+                    room: 'Chambre', chalet: 'Chalet', riad: 'Riad', cottage: 'Cottage',
+                    car: 'Voiture', suv: 'SUV', van: 'Van', motorcycle: 'Moto',
+                  };
+                  const categoryLabel = subcategoryLabels[property.subcategory] || property.subcategory || (property.category === 'vehicle' ? 'Véhicule' : 'Logement');
 
                   return (
                     <Link
@@ -786,61 +819,34 @@ export default function HomePage() {
                       className="group cursor-pointer animate-fade-in-up"
                       style={{ animationDelay: `${animationDelay}ms` }}
                     >
-                      <div className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100/50">
+                      <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
                         {/* Image Container */}
                         <div className="relative overflow-hidden">
-                          <div className="aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200">
-                            <img
+                          <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200">
+                            <Image
                               src={getListingImageUrl(property, currentIndex)}
                               alt={property.title}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                              fill
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
                               onError={(e) => {
-                                e.currentTarget.src = getListingImageUrl(undefined, 0);
+                                (e.target as HTMLImageElement).src = getListingImageUrl(undefined, 0);
                               }}
                             />
                           </div>
 
-                          {/* Enhanced Overlay Gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                          {/* Enhanced Property Badges */}
-                          {(() => {
-                            const badges = getPropertyBadges(property);
-                            return badges.length > 0 && (
-                              <div className="absolute top-4 left-4 z-10">
-                                <div className="flex flex-wrap gap-2">
-                                  {badges.slice(0, 2).map((badge, i) => (
-                                    <span
-                                      key={i}
-                                      className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm border ${
-                                        badge === (t.badges?.featured || 'Featured')
-                                          ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white border-primary-400/50'
-                                          : badge === (t.badges?.superhost || 'Superhost')
-                                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400/50'
-                                          : 'bg-white/95 text-gray-900 border-gray-200/50'
-                                      }`}
-                                    >
-                                      {badge}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          })()}
-
-                          {/* Enhanced Image Navigation */}
+                          {/* Image Navigation */}
                           {property.images.length > 1 && (
                             <>
-                              {/* Navigation Arrows */}
                               <button
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   prevImage(property._id, property.images.length);
                                 }}
-                                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2.5 rounded-full bg-white/90 hover:bg-white hover:scale-110 backdrop-blur-sm border border-gray-200/50 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg z-10"
+                                className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md z-10"
                               >
-                                <ChevronLeft className="w-4 h-4 text-gray-800" />
+                                <ChevronLeft className="w-4 h-4 text-gray-700" />
                               </button>
                               <button
                                 onClick={(e) => {
@@ -848,28 +854,25 @@ export default function HomePage() {
                                   e.stopPropagation();
                                   nextImage(property._id, property.images.length);
                                 }}
-                                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2.5 rounded-full bg-white/90 hover:bg-white hover:scale-110 backdrop-blur-sm border border-gray-200/50 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg z-10"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md z-10"
                               >
-                                <ChevronRight className="w-4 h-4 text-gray-800" />
+                                <ChevronRight className="w-4 h-4 text-gray-700" />
                               </button>
 
-                              {/* Enhanced Image Dots */}
-                              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1.5">
-                                {property.images.map((_, index) => (
+                              {/* Dots */}
+                              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1.5">
+                                {property.images.slice(0, 5).map((_, idx) => (
                                   <button
-                                    key={index}
+                                    key={idx}
                                     onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
-                                      setCurrentImageIndex(prev => ({
-                                        ...prev,
-                                        [property._id]: index
-                                      }));
+                                      setCurrentImageIndex(prev => ({ ...prev, [property._id]: idx }));
                                     }}
-                                    className={`transition-all duration-300 rounded-full ${
-                                      index === currentIndex
-                                        ? 'w-6 h-2 bg-white shadow-lg'
-                                        : 'w-2 h-2 bg-white/70 hover:bg-white/90'
+                                    className={`rounded-full transition-all duration-300 ${
+                                      idx === currentIndex
+                                        ? 'w-2 h-2 bg-white shadow'
+                                        : 'w-1.5 h-1.5 bg-white/60'
                                     }`}
                                   />
                                 ))}
@@ -877,79 +880,73 @@ export default function HomePage() {
                             </>
                           )}
 
-                          {/* Enhanced Wishlist Button */}
-                          <div className="absolute top-4 right-4 z-10">
+                          {/* Wishlist Button */}
+                          <div className="absolute top-3 right-3 z-10">
                             <WishlistButton
                               listingId={property._id}
                               size="md"
-                              className="shadow-lg"
+                              className="shadow-md"
                             />
                           </div>
                         </div>
 
-                        {/* Enhanced Property Details */}
-                        <div className="p-6 space-y-4">
-                          {/* Property Title & Rating */}
-                          <div className="flex items-start justify-between mb-3">
-                            <h3 className="font-bold text-gray-900 text-lg leading-tight pr-3 group-hover:text-primary-700 transition-colors duration-300">
-                              {property.title}
-                            </h3>
-                            {property.stats?.averageRating && property.stats.averageRating > 0 && (
-                              <div className="flex items-center space-x-1.5 flex-shrink-0 bg-gray-50 rounded-lg px-2.5 py-1.5">
-                                <Star className="w-4 h-4 fill-current text-yellow-400" />
-                                <span className="text-sm font-bold text-gray-900">{property.stats.averageRating.toFixed(1)}</span>
-                                {property.stats?.totalReviews && property.stats.totalReviews > 0 && (
-                                  <span className="text-xs text-gray-500 font-medium">({property.stats.totalReviews})</span>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                        {/* Property Details */}
+                        <div className="p-4 flex flex-col flex-grow">
+                          {/* Category label */}
+                          <p className="text-xs text-gray-500 font-medium mb-1">{categoryLabel}</p>
 
-                          {/* Location */}
-                          <div className="flex items-center space-x-2 mb-3">
-                            <MapPin className="w-4 h-4 text-gray-400" />
-                            <p className="text-gray-600 text-sm font-medium">{getPropertyLocation(property)}</p>
-                          </div>
+                          {/* Location as main title */}
+                          <h3 className="font-bold text-gray-900 text-[15px] leading-snug mb-1 line-clamp-1">
+                            {property.address?.city || property.title}{property.address?.state ? `, ${property.address.state}` : ''}
+                          </h3>
 
-                          {/* Vehicle Details */}
-                          {property.category === 'vehicle' && property.vehicleDetails && (
-                            <div className="flex items-center space-x-2 mb-3">
-                              <Car className="w-4 h-4 text-primary-500" />
-                              <p className="text-gray-700 text-sm font-medium">
-                                {property.vehicleDetails.year} {property.vehicleDetails.make} {property.vehicleDetails.model}
-                              </p>
-                            </div>
+                          {/* Stay Details: guests · bedrooms · bathrooms */}
+                          {property.category === 'stay' && property.stayDetails ? (
+                            <p className="text-sm text-gray-500 mb-2 line-clamp-1">
+                              {[
+                                property.stayDetails.guests > 0 && `${property.stayDetails.guests} ${property.stayDetails.guests > 1 ? (t.cards?.guestsPlural || 'personnes') : (t.cards?.guests || 'personne')}`,
+                                property.stayDetails.bedrooms > 0 && `${property.stayDetails.bedrooms} ${property.stayDetails.bedrooms > 1 ? (t.cards?.bedroomsPlural || 'chambres') : (t.cards?.bedrooms || 'chambre')}`,
+                                property.stayDetails.bathrooms > 0 && `${property.stayDetails.bathrooms} ${property.stayDetails.bathrooms > 1 ? (t.cards?.bathroomsPlural || 'salles de bain') : (t.cards?.bathrooms || 'salle de bain')}`,
+                              ].filter(Boolean).join(' \u00B7 ')}
+                            </p>
+                          ) : property.category === 'vehicle' && property.vehicleDetails ? (
+                            <p className="text-sm text-gray-500 mb-2 line-clamp-1">
+                              {property.vehicleDetails.year} {property.vehicleDetails.make} {property.vehicleDetails.model}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-gray-500 mb-2">&nbsp;</p>
                           )}
 
-                          {/* Stay Details */}
-                          {property.category === 'stay' && property.stayDetails && (
-                            <div className="flex items-center space-x-4 mb-3 text-sm text-gray-600">
-                              {property.stayDetails.bedrooms > 0 && (
-                                <span className="flex items-center space-x-1">
-                                  <span className="font-medium">{property.stayDetails.bedrooms}</span>
-                                  <span>{property.stayDetails.bedrooms !== 1 ? ((t as any).propertyDetails?.beds || 'beds') : ((t as any).propertyDetails?.bed || 'bed')}</span>
-                                </span>
-                              )}
-                              {property.stayDetails.bathrooms > 0 && (
-                                <span className="flex items-center space-x-1">
-                                  <span className="font-medium">{property.stayDetails.bathrooms}</span>
-                                  <span>{property.stayDetails.bathrooms !== 1 ? ((t as any).propertyDetails?.baths || 'baths') : ((t as any).propertyDetails?.bath || 'bath')}</span>
-                                </span>
+                          {/* Spacer */}
+                          <div className="flex-grow" />
+
+                          {/* Bottom row: Rating + Price */}
+                          <div className="flex items-end justify-between pt-2">
+                            {/* Rating pill */}
+                            <div className="flex items-center gap-2">
+                              {property.stats?.averageRating > 0 ? (
+                                <>
+                                  <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-700 text-white min-w-[2.2rem]">
+                                    {property.stats.averageRating.toFixed(1)}
+                                  </span>
+                                  {property.stats?.totalReviews > 0 && (
+                                    <span className="text-xs text-gray-500">{property.stats.totalReviews} {t.cards?.reviews || 'avis'}</span>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="text-xs text-gray-400 italic">{t.cards?.firstReview || 'Soyez le premier à laisser un avis'}</span>
                               )}
                             </div>
-                          )}
 
-                          {/* Pricing */}
-                          <div className="flex items-baseline justify-between pt-2 border-t border-gray-100">
-                            <div className="flex items-baseline space-x-1">
-                              <span className="font-bold text-xl text-gray-900">
+                            {/* Price */}
+                            <div className="text-right">
+                              <span className="font-bold text-lg text-gray-900">
                                 {formatPrice(property, currency)}
                               </span>
-                              <span className="text-gray-500 text-sm font-medium">
-                                {property.category === 'vehicle' ? 'par jour' : 'par nuit'}
-                              </span>
+                              <p className="text-[11px] text-gray-400 leading-tight">
+                                {property.category === 'vehicle' ? (t.cards?.avgPricePerDay || 'prix moy. par jour') : (t.cards?.avgPricePerNight || 'prix moy. par nuit')}
+                              </p>
                             </div>
-                            <span className="text-xs text-gray-400 font-medium">{(t as any).pricing?.total || 'total before taxes'}</span>
                           </div>
                         </div>
                       </div>
@@ -957,8 +954,78 @@ export default function HomePage() {
                   );
                 })}
               </div>
+
+              {/* CTA Voir toutes les annonces */}
+              <div className="flex justify-center mt-10">
+                <Link
+                  href="/search"
+                  className="px-8 py-3.5 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors duration-200 text-sm"
+                >
+                  {t.cards?.viewAll || 'Voir toutes les annonces'}
+                </Link>
+              </div>
             </>
             )}
+          </div>
+        </section>
+
+        {/* Browse by Property Type */}
+        <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                {(t as any).propertyTypes?.title || 'Explorez par type de logement'}
+              </h2>
+              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                {(t as any).propertyTypes?.subtitle || 'Du studio moderne à la villa avec piscine, trouvez le logement qui vous correspond'}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+              {[
+                {
+                  icon: Building,
+                  label: (t as any).propertyTypes?.apartment || 'Appartements',
+                  desc: (t as any).propertyTypes?.apartmentDesc || 'En centre-ville',
+                  subcategory: 'apartment',
+                  color: 'from-blue-500 to-blue-600'
+                },
+                {
+                  icon: HomeIcon,
+                  label: (t as any).propertyTypes?.villa || 'Villas',
+                  desc: (t as any).propertyTypes?.villaDesc || 'Espace et confort',
+                  subcategory: 'villa',
+                  color: 'from-emerald-500 to-emerald-600'
+                },
+                {
+                  icon: Building,
+                  label: (t as any).propertyTypes?.studio || 'Studios',
+                  desc: (t as any).propertyTypes?.studioDesc || 'Pratiques et abordables',
+                  subcategory: 'studio',
+                  color: 'from-violet-500 to-violet-600'
+                },
+                {
+                  icon: HomeIcon,
+                  label: (t as any).propertyTypes?.house || 'Maisons',
+                  desc: (t as any).propertyTypes?.houseDesc || 'Comme chez soi',
+                  subcategory: 'house',
+                  color: 'from-amber-500 to-amber-600'
+                }
+              ].map((type, index) => (
+                <Link
+                  key={index}
+                  href={`/search?subcategory=${type.subcategory}`}
+                  className="group"
+                >
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-center h-full flex flex-col items-center justify-center">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                      <type.icon className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="font-bold text-gray-900 text-lg mb-1">{type.label}</h3>
+                    <p className="text-sm text-gray-500">{type.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -996,13 +1063,15 @@ export default function HomePage() {
                     <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border border-gray-100/50">
                       {/* Image Container */}
                       <div className="relative overflow-hidden">
-                        <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200">
-                          <img
+                        <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200">
+                          <Image
                             src={destination.image}
                             alt={destination.displayName}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover group-hover:scale-110 transition-transform duration-700"
                             onError={(e) => {
-                              e.currentTarget.src = getListingImageUrl(undefined, 0);
+                              (e.target as HTMLImageElement).src = getListingImageUrl(undefined, 0);
                             }}
                           />
                         </div>
@@ -1052,6 +1121,94 @@ export default function HomePage() {
                 <span>{(t as any).sections?.exploreAllDestinations || 'Explore All Destinations'}</span>
                 <ChevronRight className="w-5 h-5" />
               </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Become a Host CTA */}
+        <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-white rounded-full blur-3xl" />
+          </div>
+          <div className="container mx-auto px-6 relative z-10">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                {(t as any).becomeHost?.title || 'Vous avez un logement ?'}
+              </h2>
+              <p className="text-white/90 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
+                {(t as any).becomeHost?.subtitle || 'Rejoignez des milliers d\'hôtes en Algérie. Publiez votre annonce gratuitement et commencez à gagner de l\'argent dès aujourd\'hui.'}
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  href="/dashboard/listings/new"
+                  className="inline-flex items-center space-x-3 bg-white text-primary-700 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-xl"
+                >
+                  <HomeIcon className="w-6 h-6" />
+                  <span>{(t as any).becomeHost?.cta || 'Publier mon annonce'}</span>
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+              <div className="flex items-center justify-center gap-8 mt-10 text-white/80 text-sm">
+                <span className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4" />
+                  {(t as any).becomeHost?.free || 'Publication gratuite'}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  {(t as any).becomeHost?.insured || 'Assurance incluse'}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Headphones className="w-4 h-4" />
+                  {(t as any).becomeHost?.support || 'Support dédié'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Trust & Security Section */}
+        <section className="py-20 bg-white">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                {(t as any).trust?.title || 'Réservez en toute confiance'}
+              </h2>
+              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                {(t as any).trust?.subtitle || 'Baytup vous garantit une expérience sécurisée à chaque étape'}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+              {[
+                {
+                  icon: UserCheck,
+                  title: (t as any).trust?.verifiedTitle || 'Hôtes vérifiés',
+                  desc: (t as any).trust?.verifiedDesc || 'Chaque hôte est vérifié avec une pièce d\'identité avant de pouvoir publier.'
+                },
+                {
+                  icon: CreditCard,
+                  title: (t as any).trust?.paymentTitle || 'Paiement sécurisé',
+                  desc: (t as any).trust?.paymentDesc || 'Vos paiements sont protégés. L\'hôte reçoit l\'argent après votre arrivée.'
+                },
+                {
+                  icon: Shield,
+                  title: (t as any).trust?.guaranteeTitle || 'Garantie réservation',
+                  desc: (t as any).trust?.guaranteeDesc || 'En cas de problème, nous vous aidons à trouver une solution ou un remboursement.'
+                },
+                {
+                  icon: Headphones,
+                  title: (t as any).trust?.supportTitle || 'Support 7j/7',
+                  desc: (t as any).trust?.supportDesc || 'Notre équipe est disponible pour vous aider avant, pendant et après votre séjour.'
+                }
+              ].map((item, index) => (
+                <div key={index} className="text-center group">
+                  <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center group-hover:bg-primary-50 group-hover:border-primary-100 transition-all duration-300">
+                    <item.icon className="w-8 h-8 text-gray-600 group-hover:text-primary-600 transition-colors duration-300" />
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-lg mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>

@@ -16,8 +16,7 @@ function escapeHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+    .replace(/'/g, '&#x27;');
 }
 
 /**
@@ -40,7 +39,7 @@ function sanitizeObject(obj) {
     const sanitized = {};
     for (const key of Object.keys(obj)) {
       // Skip sanitizing certain fields that may contain valid HTML or special chars
-      const skipFields = ['password', 'token', 'signature', 'hash', 'secret'];
+      const skipFields = ['password', 'token', 'signature', 'hash', 'secret', 'url', 'avatar', 'image', 'path'];
       if (skipFields.some(field => key.toLowerCase().includes(field))) {
         sanitized[key] = obj[key];
       } else {

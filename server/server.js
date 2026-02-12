@@ -518,7 +518,7 @@ app.use(sanitizeInput);
 app.use((req, res, next) => {
   if (req.query.page) {
     const page = parseInt(req.query.page);
-    req.query.page = (isNaN(page) || page < 1) ? '1' : String(page);
+    req.query.page = (isNaN(page) || page < 1) ? '1' : String(Math.min(page, 1000));
   }
   if (req.query.limit) {
     const limit = parseInt(req.query.limit);
@@ -527,8 +527,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Security headers for all uploaded files
+const uploadSecurityHeaders = (req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "default-src 'none'");
+  next();
+};
+
+// Serve static files - public assets (listings, reviews, avatars)
+app.use('/uploads/listings', uploadSecurityHeaders, express.static(path.join(__dirname, 'uploads/listings')));
+app.use('/uploads/reviews', uploadSecurityHeaders, express.static(path.join(__dirname, 'uploads/reviews')));
+app.use('/uploads/users', uploadSecurityHeaders, express.static(path.join(__dirname, 'uploads/users')));
+
+// Protected documents (IDs, host applications) - require authentication
+const { protect } = require('./src/middleware/auth');
+app.use('/uploads/documents', protect, uploadSecurityHeaders, express.static(path.join(__dirname, 'uploads/documents')));
 
 // ✅ Feature Flags Middleware - inject feature flags into all requests
 const { injectFeatureFlags } = require('./src/middleware/featureFlags');
@@ -558,12 +571,12 @@ app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/auth/2fa', limiter, require('./src/routes/twoFactor')); // ✅ NEW: Two-Factor Authentication
 
 // Apply general rate limiter to other routes
-app.use('/api/users', limiter, require('./src/routes/users'));
+// app.use('/api/users', limiter, require('./src/routes/users')); // Empty route - user ops via /api/auth, /api/admin, /api/settings
 app.use('/api/listings', listingsLimiter, require('./src/routes/listings')); // Use more lenient limiter
 app.use('/api/bookings', limiter, require('./src/routes/bookings'));
 app.use('/api/reviews', limiter, require('./src/routes/reviews'));
 app.use('/api/messages', limiter, require('./src/routes/messages'));
-app.use('/api/payments', limiter, require('./src/routes/payments'));
+// app.use('/api/payments', limiter, require('./src/routes/payments')); // Empty route - payments via /api/bookings
 app.use('/api/host-applications', limiter, require('./src/routes/hostApplications'));
 app.use('/api/admin', limiter, require('./src/routes/admin'));
 app.use('/api/admin/host-applications', limiter, require('./src/routes/adminHostApplicationRoutes'));

@@ -2098,6 +2098,11 @@ select:focus-visible {
 
 .leaflet-popup-pane {
   z-index: 5 !important;
+  pointer-events: none !important;
+}
+
+.leaflet-popup {
+  pointer-events: auto !important;
 }
 
 .leaflet-control {

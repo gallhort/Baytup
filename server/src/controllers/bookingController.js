@@ -1,10 +1,11 @@
+const mongoose = require('mongoose');
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
 const Booking = require('../models/Booking');
 const Listing = require('../models/Listing');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
-const moment = require('moment');
+const { startOfDay, startOfMonth, endOfMonth, addDays, addMonths, isBefore, isAfter, differenceInDays, format } = require('date-fns');
 const {
   sendBookingCreatedEmail,
   sendBookingUpdatedEmail,
@@ -28,7 +29,6 @@ const getGuestBookings = catchAsync(async (req, res, next) => {
 
   if (status) {
     query.status = status;
-    console.log(`[getGuestBookings] Filtering by status: "${status}" for guest: ${guestId}`);
   }
 
   if (startDate || endDate) {
@@ -36,8 +36,6 @@ const getGuestBookings = catchAsync(async (req, res, next) => {
     if (startDate) query.startDate.$gte = new Date(startDate);
     if (endDate) query.startDate.$lte = new Date(endDate);
   }
-
-  console.log('[getGuestBookings] Query:', JSON.stringify(query));
 
   // Execute query with pagination
   const skip = (page - 1) * limit;
@@ -50,24 +48,32 @@ const getGuestBookings = catchAsync(async (req, res, next) => {
     .skip(skip)
     .limit(parseInt(limit));
 
-  console.log(`[getGuestBookings] Found ${bookings.length} bookings`);
-  if (status && bookings.length === 0) {
-    console.warn(`[getGuestBookings] ⚠️ No bookings found with status "${status}" for guest ${guestId}`);
-  }
-
   const total = await Booking.countDocuments(query);
-  console.log(`[getGuestBookings] Total matching bookings: ${total}`);
 
-  // ✅ FIX: Calculate stats for this guest's bookings
+  // Calculate stats for this guest's bookings (single aggregation instead of 8 queries)
+  const statsAgg = await Booking.aggregate([
+    { $match: { guest: new mongoose.Types.ObjectId(guestId) } },
+    { $facet: {
+      total: [{ $count: 'n' }],
+      pending: [{ $match: { status: 'pending' } }, { $count: 'n' }],
+      confirmed: [{ $match: { status: 'confirmed' } }, { $count: 'n' }],
+      active: [{ $match: { status: 'active' } }, { $count: 'n' }],
+      completed: [{ $match: { status: 'completed' } }, { $count: 'n' }],
+      cancelled: [{ $match: { status: { $regex: /cancelled/ } } }, { $count: 'n' }],
+      payment_pending: [{ $match: { 'payment.status': 'pending' } }, { $count: 'n' }],
+      payment_completed: [{ $match: { 'payment.status': { $in: ['completed', 'paid'] } } }, { $count: 'n' }]
+    }}
+  ]);
+  const s = statsAgg[0] || {};
   const stats = {
-    total: await Booking.countDocuments({ guest: guestId }),
-    pending: await Booking.countDocuments({ guest: guestId, status: 'pending' }),
-    confirmed: await Booking.countDocuments({ guest: guestId, status: 'confirmed' }),
-    active: await Booking.countDocuments({ guest: guestId, status: 'active' }),
-    completed: await Booking.countDocuments({ guest: guestId, status: 'completed' }),
-    cancelled: await Booking.countDocuments({ guest: guestId, status: { $regex: 'cancelled' } }),
-    payment_pending: await Booking.countDocuments({ guest: guestId, 'payment.status': 'pending' }),
-    payment_completed: await Booking.countDocuments({ guest: guestId, 'payment.status': { $in: ['completed', 'paid'] } })
+    total: s.total?.[0]?.n || 0,
+    pending: s.pending?.[0]?.n || 0,
+    confirmed: s.confirmed?.[0]?.n || 0,
+    active: s.active?.[0]?.n || 0,
+    completed: s.completed?.[0]?.n || 0,
+    cancelled: s.cancelled?.[0]?.n || 0,
+    payment_pending: s.payment_pending?.[0]?.n || 0,
+    payment_completed: s.payment_completed?.[0]?.n || 0
   };
 
   const sanitizedBookings = sanitizeBookingsArray(bookings, req.user.id, req.user.role);
@@ -136,16 +142,19 @@ const createBooking = catchAsync(async (req, res, next) => {
   } = req.body;
 
   // Validate dates (P0 #6)
-  const start = moment(startDate);
-  const end = moment(endDate);
-  if (!start.isValid() || !end.isValid()) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
     return next(new AppError('Invalid dates provided', 400));
   }
-  if (end.isSameOrBefore(start)) {
+  if (!isAfter(end, start)) {
     return next(new AppError('End date must be after start date', 400));
   }
-  if (start.isBefore(moment().startOf('day'))) {
+  if (isBefore(start, startOfDay(new Date()))) {
     return next(new AppError('Start date cannot be in the past', 400));
+  }
+  if (isAfter(start, addDays(new Date(), 365))) {
+    return next(new AppError('Cannot book more than 365 days in advance', 400));
   }
 
   // Validate guest count (P0 #7)
@@ -164,6 +173,11 @@ const createBooking = catchAsync(async (req, res, next) => {
 
   if (listingDoc.status !== 'active') {
     return next(new AppError('This listing is not available for booking', 400));
+  }
+
+  // Prevent booking own listing
+  if (listingDoc.host.toString() === req.user.id) {
+    return next(new AppError('You cannot book your own listing', 400));
   }
 
   // Check availability
@@ -231,10 +245,12 @@ const createBooking = catchAsync(async (req, res, next) => {
     return next(new AppError('This listing was just booked by someone else for the selected dates. Please choose different dates.', 409));
   }
 
-  // Populate booking
-  await booking.populate('listing', 'title category images address pricing');
-  await booking.populate('host', 'firstName lastName avatar');
-  await booking.populate('guest', 'firstName lastName email');
+  // Populate booking (single query instead of 3)
+  await booking.populate([
+    { path: 'listing', select: 'title category images address pricing' },
+    { path: 'host', select: 'firstName lastName avatar' },
+    { path: 'guest', select: 'firstName lastName email' }
+  ]);
 
   // Send email notifications to guest and host
   try {
@@ -312,9 +328,11 @@ const updateBooking = catchAsync(async (req, res, next) => {
 
   await booking.save();
 
-  await booking.populate('listing', 'title category images address pricing');
-  await booking.populate('host', 'firstName lastName avatar email');
-  await booking.populate('guest', 'firstName lastName email');
+  await booking.populate([
+    { path: 'listing', select: 'title category images address pricing' },
+    { path: 'host', select: 'firstName lastName avatar email' },
+    { path: 'guest', select: 'firstName lastName email' }
+  ]);
 
   // Send email notifications about booking update
   try {
@@ -427,7 +445,6 @@ const cancelBooking = catchAsync(async (req, res, next) => {
           reason: cancelledByRole === 'host' ? 'host_cancellation' : 'guest_cancellation',
           cancellationDate: new Date()
         });
-        console.log(`[CancelBooking] Processed escrow refund for booking ${booking._id}`);
       } catch (escrowError) {
         console.error('[CancelBooking] Escrow refund failed:', escrowError.message);
         // Continue - admin will need to process manually
@@ -437,8 +454,10 @@ const cancelBooking = catchAsync(async (req, res, next) => {
 
   await booking.save({ validateBeforeSave: false });
 
-  await booking.populate('host', 'firstName lastName avatar');
-  await booking.populate('guest', 'firstName lastName avatar phone email');
+  await booking.populate([
+    { path: 'host', select: 'firstName lastName avatar' },
+    { path: 'guest', select: 'firstName lastName avatar phone email' }
+  ]);
 
   // Format currency for notifications
   const currency = booking.pricing.currency || 'DZD';
@@ -589,12 +608,12 @@ const getBookingCalendar = catchAsync(async (req, res, next) => {
   let startDate, endDate;
 
   if (year && month) {
-    startDate = moment(`${year}-${month}-01`).startOf('month').toDate();
-    endDate = moment(startDate).endOf('month').toDate();
+    startDate = startOfMonth(new Date(`${year}-${month}-01`));
+    endDate = endOfMonth(new Date(startDate));
   } else {
     // Get current month and next 2 months
-    startDate = moment().startOf('month').toDate();
-    endDate = moment().add(2, 'months').endOf('month').toDate();
+    startDate = startOfMonth(new Date());
+    endDate = endOfMonth(addMonths(new Date(), 2));
   }
 
   const bookings = await Booking.find({
@@ -926,7 +945,6 @@ const getHostBookings = catchAsync(async (req, res, next) => {
 
   if (status) {
     query.status = status;
-    console.log(`[getHostBookings] Filtering by status: "${status}" for host: ${hostId}`);
   }
 
   if (listingId) {
@@ -939,8 +957,6 @@ const getHostBookings = catchAsync(async (req, res, next) => {
     if (endDate) query.startDate.$lte = new Date(endDate);
   }
 
-  console.log('[getHostBookings] Query:', JSON.stringify(query));
-
   // Execute query with pagination
   const skip = (page - 1) * limit;
   const bookings = await Booking.find(query)
@@ -952,22 +968,28 @@ const getHostBookings = catchAsync(async (req, res, next) => {
     .skip(skip)
     .limit(parseInt(limit));
 
-  console.log(`[getHostBookings] Found ${bookings.length} bookings`);
-  if (status && bookings.length === 0) {
-    console.warn(`[getHostBookings] ⚠️ No bookings found with status "${status}" for host ${hostId}`);
-  }
-
   const total = await Booking.countDocuments(query);
-  console.log(`[getHostBookings] Total matching bookings: ${total}`);
 
-  // Calculate statistics
+  // Calculate statistics (single aggregation instead of 5 queries)
+  const hostStatsAgg = await Booking.aggregate([
+    { $match: { host: new mongoose.Types.ObjectId(hostId) } },
+    { $facet: {
+      total: [{ $count: 'n' }],
+      pending: [{ $match: { status: 'pending' } }, { $count: 'n' }],
+      confirmed: [{ $match: { status: 'confirmed' } }, { $count: 'n' }],
+      paid: [{ $match: { status: 'paid' } }, { $count: 'n' }],
+      active: [{ $match: { status: 'active' } }, { $count: 'n' }],
+      completed: [{ $match: { status: 'completed' } }, { $count: 'n' }]
+    }}
+  ]);
+  const hs = hostStatsAgg[0] || {};
   const stats = {
-    total: total,
-    pending: await Booking.countDocuments({ host: hostId, status: 'pending' }),
-    confirmed: await Booking.countDocuments({ host: hostId, status: 'confirmed' }),
-    paid: await Booking.countDocuments({ host: hostId, status: 'paid' }),
-    active: await Booking.countDocuments({ host: hostId, status: 'active' }),
-    completed: await Booking.countDocuments({ host: hostId, status: 'completed' })
+    total: hs.total?.[0]?.n || 0,
+    pending: hs.pending?.[0]?.n || 0,
+    confirmed: hs.confirmed?.[0]?.n || 0,
+    paid: hs.paid?.[0]?.n || 0,
+    active: hs.active?.[0]?.n || 0,
+    completed: hs.completed?.[0]?.n || 0
   };
 
   // Calculate revenue
@@ -1027,12 +1049,12 @@ const getHostBookingsCalendar = catchAsync(async (req, res, next) => {
   let startDate, endDate;
 
   if (year && month) {
-    startDate = moment(`${year}-${month}-01`).startOf('month').toDate();
-    endDate = moment(startDate).endOf('month').toDate();
+    startDate = startOfMonth(new Date(`${year}-${month}-01`));
+    endDate = endOfMonth(new Date(startDate));
   } else {
     // Get current month
-    startDate = moment().startOf('month').toDate();
-    endDate = moment().endOf('month').toDate();
+    startDate = startOfMonth(new Date());
+    endDate = endOfMonth(new Date());
   }
 
   const query = {
@@ -1137,9 +1159,11 @@ const updateBookingStatus = catchAsync(async (req, res, next) => {
 
   await booking.save({ validateBeforeSave: false });
 
-  await booking.populate('listing', 'title category images address pricing');
-  await booking.populate('guest', 'firstName lastName avatar email');
-  await booking.populate('host', 'firstName lastName avatar email');
+  await booking.populate([
+    { path: 'listing', select: 'title category images address pricing' },
+    { path: 'guest', select: 'firstName lastName avatar email' },
+    { path: 'host', select: 'firstName lastName avatar email' }
+  ]);
 
   // Create in-app notifications and send emails based on status change
   try {
@@ -1250,6 +1274,22 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
     return next(new AppError('You cannot book your own listing', 400));
   }
 
+  // Validate dates
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return next(new AppError('Invalid dates provided', 400));
+  }
+  if (!isAfter(end, start)) {
+    return next(new AppError('End date must be after start date', 400));
+  }
+  if (isBefore(start, startOfDay(new Date()))) {
+    return next(new AppError('Start date cannot be in the past', 400));
+  }
+  if (isAfter(start, addDays(new Date(), 365))) {
+    return next(new AppError('Cannot book more than 365 days in advance', 400));
+  }
+
   // Check availability
   const isAvailable = await Booking.checkAvailability(listingId, new Date(startDate), new Date(endDate));
   if (!isAvailable) {
@@ -1257,8 +1297,6 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
   }
 
   // Calculate duration
-  const start = moment(startDate);
-  const end = moment(endDate);
   const nights = end.diff(start, 'days');
 
   if (nights < listingDoc.availability.minStay) {
@@ -1279,14 +1317,11 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
   if (paymentCurrency && paymentCurrency === altCurrency) {
     currency = paymentCurrency;
     useAltPricing = true;
-    console.log(`💰 Using user's selected ALT currency: ${currency} (listing accepts: ${primaryCurrency}, ${altCurrency})`);
   } else if (paymentCurrency && paymentCurrency === primaryCurrency) {
     currency = primaryCurrency;
-    console.log(`💰 Using primary currency: ${currency}`);
   }
 
   const paymentProvider = currency === 'EUR' ? 'stripe' : 'slickpay';
-  console.log(`💳 Payment provider: ${paymentProvider} for currency: ${currency}`);
 
   // ✅ FIX: Calculate pricing using the correct price based on selected currency
   // For dual-currency listings, use altBasePrice/altCleaningFee when paying in altCurrency
@@ -1296,8 +1331,6 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
   const cleaningFee = useAltPricing && listingDoc.pricing.altCleaningFee !== undefined
     ? listingDoc.pricing.altCleaningFee
     : (listingDoc.pricing.cleaningFee || 0);
-
-  console.log(`💵 Pricing: basePrice=${basePrice} ${currency}, cleaningFee=${cleaningFee} ${currency}, useAltPricing=${useAltPricing}`);
 
   const subtotal = basePrice * nights;
   const baseAmount = subtotal + cleaningFee;
@@ -1525,7 +1558,7 @@ const createBookingWithPayment = catchAsync(async (req, res, next) => {
         recipient: booking.host._id,
         type: 'booking_created',
         title: 'New Booking Request!',
-        message: `${guest.firstName} ${guest.lastName} has created a booking for "${booking.listing.title}" from ${moment(booking.startDate).format('MMM DD')} to ${moment(booking.endDate).format('MMM DD, YYYY')}. Waiting for payment confirmation.`,
+        message: `${guest.firstName} ${guest.lastName} has created a booking for "${booking.listing.title}" from ${format(new Date(booking.startDate), 'MMM dd')} to ${format(new Date(booking.endDate), 'MMM dd, yyyy')}. Waiting for payment confirmation.`,
         data: {
           bookingId: booking._id,
           listingTitle: booking.listing.title,
@@ -1585,15 +1618,6 @@ const verifyPaymentAndConfirmBooking = catchAsync(async (req, res, next) => {
 
   // ✅ MULTI-PROVIDER: Verify payment based on payment method
   if (booking.payment.transactionId || booking.payment.stripePaymentIntentId) {
-    console.log('🔍 Verifying payment for booking:', {
-      bookingId: booking._id,
-      paymentMethod: booking.payment.method,
-      transactionId: booking.payment.transactionId,
-      stripePaymentIntentId: booking.payment.stripePaymentIntentId,
-      currentStatus: booking.payment.status,
-      currentBookingStatus: booking.status
-    });
-
     try {
       let isPaid = false;
       let paymentStatus = 'pending';
@@ -1601,10 +1625,8 @@ const verifyPaymentAndConfirmBooking = catchAsync(async (req, res, next) => {
       // ✅ STRIPE verification
       if (booking.payment.method === 'stripe' && booking.payment.stripePaymentIntentId) {
         const stripeService = require('../services/stripeService');
-        console.log('📡 Calling Stripe API to check payment status...');
 
         const paymentIntent = await stripeService.getPaymentIntent(booking.payment.stripePaymentIntentId);
-        console.log('✅ Stripe API Response:', paymentIntent);
 
         if (paymentIntent.status === 'succeeded') {
           isPaid = true;
@@ -1620,16 +1642,8 @@ const verifyPaymentAndConfirmBooking = catchAsync(async (req, res, next) => {
       // ✅ SLICKPAY verification
       else {
         const slickPayService = require('../services/slickPayService');
-        console.log('📡 Calling SlickPay API to check invoice status...');
 
         const invoiceStatus = await slickPayService.getInvoiceStatus(booking.payment.transactionId);
-
-        console.log('✅ SlickPay API Response:', {
-          success: invoiceStatus.success,
-          completed: invoiceStatus.completed,
-          paymentStatus: invoiceStatus.paymentStatus,
-          data: invoiceStatus.data
-        });
 
         if (invoiceStatus.completed || invoiceStatus.paymentStatus === 'paid') {
           isPaid = true;
@@ -1657,7 +1671,6 @@ const verifyPaymentAndConfirmBooking = catchAsync(async (req, res, next) => {
               provider: booking.payment.method,
               transactionId: booking.payment.transactionId || booking.payment.stripePaymentIntentId
             });
-            console.log(`[VerifyPayment] Created escrow ${escrow._id} for booking ${booking._id}`);
           } catch (escrowError) {
             console.error('[VerifyPayment] Failed to create escrow:', escrowError);
           }
@@ -1809,7 +1822,8 @@ const reviewHostAfterBooking = catchAsync(async (req, res, next) => {
     checkIn,
     accuracy,
     location,
-    value
+    value,
+    photos
   } = req.body;
 
   const booking = await Booking.findById(id)
@@ -1868,6 +1882,7 @@ const reviewHostAfterBooking = catchAsync(async (req, res, next) => {
         value: value || rating
       },
       comment,
+      photos: photos || [],
       status: 'published',
       publishedAt: new Date()
     });
@@ -1887,10 +1902,12 @@ const reviewHostAfterBooking = catchAsync(async (req, res, next) => {
   if (allReviews.length > 0) {
     const totalRating = allReviews.reduce((sum, r) => sum + (r.rating.overall || r.rating || 0), 0);
     const averageRating = totalRating / allReviews.length;
+    const guestPhotoCount = allReviews.reduce((sum, r) => sum + (r.photos?.length || 0), 0);
 
     if (!booking.listing.stats) booking.listing.stats = {};
     booking.listing.stats.averageRating = Math.round(averageRating * 10) / 10;
     booking.listing.stats.reviewCount = allReviews.length;
+    booking.listing.stats.guestPhotoCount = guestPhotoCount;
     await booking.listing.save({ validateBeforeSave: false });
   }
 
@@ -2046,7 +2063,6 @@ const retryBookingPayment = catchAsync(async (req, res, next) => {
   // Get guest details
   const guest = booking.guest;
   const listing = booking.listing;
-  const moment = require('moment');
 
   // Calculate total amount (subtotal + cleaning fee + service fee)
   const serviceFeeAmount = booking.pricing.guestServiceFee || booking.pricing.serviceFee || 0;
@@ -2076,8 +2092,8 @@ const retryBookingPayment = catchAsync(async (req, res, next) => {
         listingTitle: listing.title,
         metadata: {
           retry: 'true',
-          startDate: moment(booking.startDate).format('YYYY-MM-DD'),
-          endDate: moment(booking.endDate).format('YYYY-MM-DD')
+          startDate: format(new Date(booking.startDate), 'yyyy-MM-dd'),
+          endDate: format(new Date(booking.endDate), 'yyyy-MM-dd')
         }
       });
 
@@ -2127,7 +2143,7 @@ const retryBookingPayment = catchAsync(async (req, res, next) => {
           }
         ],
         bookingId: booking._id.toString(),
-        note: `Réessai paiement - ${moment(booking.startDate).format('DD/MM/YYYY')} au ${moment(booking.endDate).format('DD/MM/YYYY')}`
+        note: `Réessai paiement - ${format(new Date(booking.startDate), 'dd/MM/yyyy')} au ${format(new Date(booking.endDate), 'dd/MM/yyyy')}`
       });
 
       // Update booking with SlickPay invoice ID
@@ -2475,7 +2491,6 @@ const getAllBookingsAdmin = catchAsync(async (req, res, next) => {
 
   if (status) {
     query.status = status;
-    console.log(`[getAllBookingsAdmin] Filtering by status: "${status}"`);
   }
 
   if (listing) {
@@ -2496,8 +2511,6 @@ const getAllBookingsAdmin = catchAsync(async (req, res, next) => {
     if (endDate) query.startDate.$lte = new Date(endDate);
   }
 
-  console.log('[getAllBookingsAdmin] Query:', JSON.stringify(query));
-
   // Execute query with pagination
   const skip = (page - 1) * limit;
   const bookings = await Booking.find(query)
@@ -2510,13 +2523,7 @@ const getAllBookingsAdmin = catchAsync(async (req, res, next) => {
     .skip(skip)
     .limit(parseInt(limit));
 
-  console.log(`[getAllBookingsAdmin] Found ${bookings.length} bookings`);
-  if (status && bookings.length === 0) {
-    console.warn(`[getAllBookingsAdmin] ⚠️ No bookings found with status "${status}"`);
-  }
-
   const total = await Booking.countDocuments(query);
-  console.log(`[getAllBookingsAdmin] Total matching bookings: ${total}`);
 
   // Get statistics
   const stats = {
@@ -2590,9 +2597,9 @@ const createBookingWithCashPayment = catchAsync(async (req, res, next) => {
   }
 
   // Calculate duration
-  const start = moment(startDate);
-  const end = moment(endDate);
-  const nights = end.diff(start, 'days');
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const nights = differenceInDays(end, start);
 
   if (nights < listingDoc.availability.minStay) {
     return next(new AppError(`Minimum stay is ${listingDoc.availability.minStay} nights`, 400));

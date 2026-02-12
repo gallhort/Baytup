@@ -249,7 +249,7 @@ export default function FilterSidebar({
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-[#FF6B35]/10 rounded-lg">
-                  <span className="text-[#FF6B35] font-bold text-lg">دج</span>
+                  <span className="text-[#FF6B35] font-bold text-lg">DA</span>
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900">{t.filters.priceRange}</h3>
@@ -629,6 +629,29 @@ export default function FilterSidebar({
                     </div>
                     <div className="text-sm text-gray-600">
                       {t.filters.superhostDesc}
+                    </div>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-4 p-4 bg-white hover:bg-rose-50
+                               rounded-xl cursor-pointer transition-all duration-200 group
+                               border-2 border-transparent hover:border-rose-200">
+                  <input
+                    type="checkbox"
+                    checked={filters.coupDeCoeur || false}
+                    onChange={(e) => onFilterChange({
+                      ...filters,
+                      coupDeCoeur: e.target.checked
+                    })}
+                    className="w-5 h-5 text-rose-500 border-2 border-gray-300 rounded-lg
+                             focus:ring-rose-500 focus:ring-2 transition-all duration-200"
+                  />
+                  <div className="flex-1">
+                    <div className="font-bold text-gray-900 group-hover:text-rose-600 transition-colors">
+                      ❤ Coup de coeur voyageurs
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Note 4.7+ avec au moins 3 avis
                     </div>
                   </div>
                 </label>

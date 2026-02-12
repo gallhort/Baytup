@@ -69,15 +69,11 @@ function SearchPageContent() {
   const t = useTranslation('search') as any;
   const vehiclesEnabled = useFeature('vehiclesEnabled'); // ✅ Feature flag
 
-  // ✅ Force LTR for search page only (even in Arabic)
+  // Set direction based on language
+  const isRTL = language === 'ar';
   useEffect(() => {
-    document.documentElement.dir = 'ltr';
-    return () => {
-      // Restore original direction when leaving search page
-      const dir = language === 'ar' ? 'rtl' : 'ltr';
-      document.documentElement.dir = dir;
-    };
-  }, []); // Run only once on mount/unmount
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+  }, [isRTL]);
 
   // Socket.IO hooks
   const { isConnected, connectionError } = useSocketConnection();
@@ -212,29 +208,12 @@ function SearchPageContent() {
       apiFilters.lng = parseFloat(lng);
       // ✅ FIX: Always use state searchRadius (not URL) - state is updated by slider in real-time
       apiFilters.radius = searchRadius;
-      console.log('📍 Using coordinates from URL with state radius:', { lat: apiFilters.lat, lng: apiFilters.lng, radius: searchRadius });
+      if (process.env.NODE_ENV === 'development') console.log('Using coordinates from URL with state radius:', { lat: apiFilters.lat, lng: apiFilters.lng, radius: searchRadius });
     } else if (filters.location) {
       // Fallback to text-based search if no coordinates
-      console.log('📍 No coordinates in URL, using text-based search for:', filters.location);
+      if (process.env.NODE_ENV === 'development') console.log('No coordinates in URL, using text-based search for:', filters.location);
     }
 
-    // ✅ DEBUG: Log search parameters
-    console.log('🔍 Search parameters:', {
-      location: apiFilters.location,
-      lat: apiFilters.lat,
-      lng: apiFilters.lng,
-      category: apiFilters.category,
-      currency: apiFilters.currency, // ✅ Added currency to debug
-      bounds: apiFilters.bounds,
-      center: apiFilters.center,
-      radius: apiFilters.radius,
-      guests: apiFilters.guests,
-      startDate: apiFilters.startDate,
-      endDate: apiFilters.endDate,
-      priceRange: apiFilters.priceRange,
-      propertyTypes: apiFilters.propertyTypes,
-      amenities: apiFilters.amenities
-    });
 
     try {
       if (!useRestAPI) {
@@ -251,10 +230,14 @@ function SearchPageContent() {
 
           // Enhanced listing transformation with CONSISTENT coordinate handling (SAME AS HOMEPAGE)
           const transformedListings = newListings.map((listing: any) => {
-            // IMPORTANT: Convert GeoJSON [lng, lat] to Google Maps [lat, lng] format
-            const coords = listing.location?.coordinates ?
-              [listing.location.coordinates[1], listing.location.coordinates[0]] : // Swap [lng, lat] to [lat, lng]
-              [36.7538, 3.0588]; // Default to Algiers [lat, lng]
+            // IMPORTANT: Convert GeoJSON [lng, lat] to Leaflet [lat, lng] format
+            // Skip [0,0] coordinates (null island) - treat as no coordinates
+            const rawCoords = listing.location?.coordinates;
+            const hasValidCoords = rawCoords && Array.isArray(rawCoords) && rawCoords.length === 2 &&
+              !(rawCoords[0] === 0 && rawCoords[1] === 0);
+            const coords = hasValidCoords
+              ? [rawCoords[1], rawCoords[0]] // Swap [lng, lat] to [lat, lng]
+              : null; // No valid coordinates
 
             return {
             id: listing._id || listing.id,
@@ -273,8 +256,7 @@ function SearchPageContent() {
               coordinates: coords
             },
             location: {
-              // Keep original for backward compatibility
-              coordinates: listing.location?.coordinates || [3.0588, 36.7538]
+              coordinates: hasValidCoords ? listing.location.coordinates : null
             },
             // Add displayCoordinates for EnhancedMapView compatibility
             displayCoordinates: coords,
@@ -386,10 +368,8 @@ function SearchPageContent() {
   // Search listings when filters change (wait for context to be ready)
   useEffect(() => {
     if (!contextReady) {
-      console.log('⏳ Waiting for context to be ready before searching...');
       return;
     }
-    console.log('✅ Context ready, performing search with currency:', currency);
     performSearch(1, false);
   }, [performSearch, contextReady]); // currency is already in performSearch deps
 
@@ -402,14 +382,15 @@ function SearchPageContent() {
     setMapVisibleListings(listings);
   }, [listings]);
 
-  // ✅ NEW: Fit bounds when listings change (e.g., after currency change)
+  // Fit bounds only on initial load or when listings array reference changes from a new fetch
+  const prevListingsRef = useRef<any[]>([]);
   useEffect(() => {
-    // Only trigger fitBounds if listings changed significantly (not just reordering)
-    if (listings.length > 0 && listings.length !== prevListingsCountRef.current) {
-      console.log('📍 Listings changed, triggering fitBounds');
+    // Only trigger fitBounds if the actual listings data changed (new fetch), not from filter/visibility changes
+    if (listings.length > 0 && listings !== prevListingsRef.current && listings.length !== prevListingsCountRef.current) {
       setShouldFitBounds(true);
     }
     prevListingsCountRef.current = listings.length;
+    prevListingsRef.current = listings;
   }, [listings]);
 
   // ✅ SIMPLIFIED: Client-side filtering and sorting
@@ -673,7 +654,7 @@ function SearchPageContent() {
           ref={listContainerRef}
           className="w-full xl:w-[45%] flex-shrink-0 overflow-y-auto hide-scrollbar bg-gray-50"
         >
-          <div className="px-4 sm:px-6 xl:px-6 xl:pr-4 py-6">
+          <div className="px-4 sm:px-6 xl:px-6 xl:pe-4 py-6">
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
                 {error}
@@ -722,12 +703,7 @@ function SearchPageContent() {
               </div>
             ) : (
               <div>
-                {/* Connection Status */}
-                {!isConnected && (
-                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm">
-                    {t.offline?.mode || 'Mode hors ligne.'} {t.offline?.realtimeDisabled || 'Mises à jour en temps réel désactivées.'}
-                  </div>
-                )}
+                {/* Connection status removed - REST API works fine without WebSocket */}
 
                 {/* Abritel-style Search Results */}
                 <SearchResults
@@ -753,7 +729,7 @@ function SearchPageContent() {
         </div>
 
         {/* Right: Map Panel (55% - Fixed, hidden on mobile/tablet avec marge droite) */}
-        <div className="hidden xl:block xl:w-[55%] flex-shrink-0 h-full relative bg-gray-100 pr-6">
+        <div className="hidden xl:block xl:w-[55%] flex-shrink-0 h-full relative bg-gray-100 pe-6">
           <div className="h-full w-full">
             <LeafletMapView
               listings={listings}
@@ -781,7 +757,7 @@ function SearchPageContent() {
         </div>
 
         {/* Mobile + Tablet: Floating Map Button (visible until 1280px) */}
-        <div className="xl:hidden fixed bottom-6 right-6 z-30">
+        <div className="xl:hidden fixed bottom-6 end-6 z-30">
           <button
             onClick={() => setIsMapModalOpen(true)}
             className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-full shadow-2xl transition-all duration-300"

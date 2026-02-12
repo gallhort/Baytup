@@ -77,8 +77,24 @@ export default function HostPaymentsPage() {
     }
   }, [user, router]);
 
-  // Check if user has EUR listings (optional - you can implement this check)
-  const hasEurListings = true; // TODO: Check if user has listings with currency='EUR'
+  const [hasEurListings, setHasEurListings] = useState(false);
+
+  useEffect(() => {
+    const checkEurListings = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/listings/my/listings`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const listings = data.data?.listings || data.listings || [];
+          setHasEurListings(listings.some((l: any) => l.pricing?.currency === 'EUR'));
+        }
+      } catch {}
+    };
+    if (user) checkEurListings();
+  }, [user]);
 
   const handleOnboardingComplete = () => {
     toast.success('Configuration Stripe terminée avec succès !');

@@ -15,17 +15,29 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'baytup.fr',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.baytup.fr',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.tile.openstreetmap.org',
       },
       ...(!isProd ? [{
         protocol: 'http',
         hostname: 'localhost',
         port: '5000',
       }] : []),
-      {
-        protocol: 'https',
-        hostname: 'baytup.fr',
-      },
     ],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
@@ -35,11 +47,6 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
-  },
-  i18n: {
-    locales: ['en', 'fr', 'ar'],
-    defaultLocale: 'en',
-    localeDetection: false,
   },
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,

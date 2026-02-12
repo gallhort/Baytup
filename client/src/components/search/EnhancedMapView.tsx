@@ -559,11 +559,11 @@ export default function EnhancedMapView({
     const price = listing.pricing?.basePrice || listing.price || 0;
     if (currency === 'DZD') {
       if (price >= 10000) {
-        return `${Math.round(price/1000)}K دج`;
+        return `${Math.round(price/1000)}K DA`;
       } else if (price >= 1000) {
-        return `${(price/1000).toFixed(1)}K دج`;
+        return `${(price/1000).toFixed(1)}K DA`;
       }
-      return `${price} دج`;
+      return `${price} DA`;
     }
     return `€${price}`;
   }, [currency]);

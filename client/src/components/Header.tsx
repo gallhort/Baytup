@@ -641,7 +641,7 @@ const Header = React.memo(function Header({
   ];
 
   const currencies = [
-    { code: 'DZD', symbol: 'دج', name: t.algerianDinar, nameAr: t.algerianDinar },
+    { code: 'DZD', symbol: 'DA', name: t.algerianDinar, nameAr: t.algerianDinar },
     { code: 'EUR', symbol: '€', name: t.euro, nameAr: t.euro }
   ];
 
@@ -1943,6 +1943,14 @@ const Header = React.memo(function Header({
                           >
                             <LayoutDashboard className="h-4 w-4" />
                             <span>{t.dashboard}</span>
+                          </Link>
+                          <Link
+                            href="/dashboard/support"
+                            className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors hover:scale-105 flex items-center space-x-2"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            <HelpCircle className="h-4 w-4" />
+                            <span>{language === 'fr' ? 'Aide & Support' : language === 'ar' ? 'المساعدة والدعم' : 'Help & Support'}</span>
                           </Link>
                           <div className="border-t border-gray-100 my-2" />
                           <button

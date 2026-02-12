@@ -32,7 +32,7 @@ const UserSchema = new mongoose.Schema({
     required: function() {
       return !this.googleId;
     },
-    minLength: [6, 'Password must be at least 6 characters'],
+    minLength: [8, 'Password must be at least 8 characters'],
     select: false
   },
   phone: {

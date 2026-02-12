@@ -35,23 +35,13 @@ export default function BookingConfirmationPage() {
     try {
       const token = localStorage.getItem('token');
 
-      console.log('🔍 Verification Debug:', {
-        bookingId,
-        hasToken: !!token,
-        apiUrl: process.env.NEXT_PUBLIC_API_URL,
-        fullUrl: `${process.env.NEXT_PUBLIC_API_URL}/bookings/${bookingId}/verify-payment`
-      });
-
       if (!token) {
-        console.error('❌ No token found in localStorage');
         setPaymentStatus({
           status: 'error',
           message: (t as any)?.error?.pleaseLogin || 'Please log in to view your booking'
         });
         return;
       }
-
-      console.log('📡 Calling verify payment API...');
 
       // Call verify payment endpoint with timeout
       const response = await axios.get(
@@ -63,8 +53,6 @@ export default function BookingConfirmationPage() {
           timeout: 30000 // 30 second timeout
         }
       );
-
-      console.log('✅ API Response:', response.data);
 
       if (response.data.status === 'success') {
         const booking = response.data.data.booking;
@@ -91,7 +79,7 @@ export default function BookingConfirmationPage() {
         }
       }
     } catch (error: any) {
-      console.error('❌ Payment verification error:', {
+      console.error('Payment verification error:', {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,

@@ -350,11 +350,11 @@ export default function LeafletMapView({
     const price = listing.pricing?.basePrice || listing.price || 0;
     if (currency === 'DZD') {
       if (price >= 10000) {
-        return `${Math.round(price/1000)}K دج`;
+        return `${Math.round(price/1000)}K DA`;
       } else if (price >= 1000) {
-        return `${(price/1000).toFixed(1)}K دج`;
+        return `${(price/1000).toFixed(1)}K DA`;
       }
-      return `${price} دج`;
+      return `${price} DA`;
     }
     return `€${price}`;
   }, [currency]);
@@ -452,7 +452,7 @@ export default function LeafletMapView({
                 }
               }}
             >
-              <Popup maxWidth={280} minWidth={240} className="leaflet-popup-mobile-friendly">
+              <Popup maxWidth={280} minWidth={240} autoPan={false} closeOnClick={true} className="leaflet-popup-mobile-friendly">
                 <div className="w-full bg-white rounded-lg overflow-hidden">
                   <Link
                     href={getListingUrl(listing._id)}

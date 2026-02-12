@@ -237,7 +237,7 @@ export default function BookingCalendar({
   // Format price
   const formatPrice = (amount: number, currency: string) => {
     if (currency === 'DZD') {
-      return `${amount.toLocaleString('fr-FR')} دج`;
+      return `${amount.toLocaleString('fr-FR')} DA`;
     }
     return `€${amount.toLocaleString('fr-FR')}`;
   };

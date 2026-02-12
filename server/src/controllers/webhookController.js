@@ -16,8 +16,8 @@ const handleSlickPayWebhook = catchAsync(async (req, res, next) => {
   const webhookData = req.body;
   const signature = req.headers['x-slickpay-signature'] || req.headers['slickpay-signature'];
 
-  // Verify webhook signature
-  if (!slickPayService.verifyWebhookSignature(webhookData, signature)) {
+  // Verify webhook signature (use raw body for secure HMAC verification)
+  if (!slickPayService.verifyWebhookSignature(webhookData, signature, req.rawBody)) {
     console.error('Invalid webhook signature');
     return res.status(401).json({
       status: 'error',
@@ -57,6 +57,13 @@ const handleSlickPayWebhook = catchAsync(async (req, res, next) => {
     case 'invoice.paid':
     case 'paid':
     case 'completed': {
+      // Verify paid amount matches expected amount (prevent amount manipulation)
+      const webhookAmount = webhookData.amount || webhookData.paid_amount;
+      if (webhookAmount && Math.abs(webhookAmount - booking.pricing.totalAmount) > 1) {
+        console.error(`[Webhook] Amount mismatch: paid=${webhookAmount}, expected=${booking.pricing.totalAmount}`);
+        return res.status(400).json({ status: 'error', message: 'Payment amount mismatch' });
+      }
+
       // Payment successful - atomic update prevents race condition (P0 #1)
       const updatedSlickPay = await Booking.findOneAndUpdate(
         { _id: booking._id, 'payment.status': { $ne: 'paid' } },
@@ -64,7 +71,7 @@ const handleSlickPayWebhook = catchAsync(async (req, res, next) => {
           $set: {
             status: 'confirmed',
             'payment.status': 'paid',
-            'payment.paidAmount': booking.pricing.totalAmount,
+            'payment.paidAmount': webhookAmount || booking.pricing.totalAmount,
             'payment.paidAt': new Date()
           }
         },
@@ -264,6 +271,13 @@ const handleChargilyWebhook = catchAsync(async (req, res, next) => {
   // Process based on event type
   switch (eventType) {
     case 'payment_success': {
+      // Verify paid amount matches expected amount (prevent amount manipulation)
+      const chargilyAmount = processedEvent.amount || req.body?.data?.amount;
+      if (chargilyAmount && Math.abs(chargilyAmount - booking.pricing.totalAmount) > 1) {
+        console.error(`[Chargily Webhook] Amount mismatch: paid=${chargilyAmount}, expected=${booking.pricing.totalAmount}`);
+        return res.status(400).json({ status: 'error', message: 'Payment amount mismatch' });
+      }
+
       // Payment successful - atomic update prevents race condition (P0 #1)
       const updatedChargily = await Booking.findOneAndUpdate(
         { _id: booking._id, 'payment.status': { $ne: 'paid' } },
@@ -271,7 +285,7 @@ const handleChargilyWebhook = catchAsync(async (req, res, next) => {
           $set: {
             status: 'confirmed',
             'payment.status': 'paid',
-            'payment.paidAmount': booking.pricing.totalAmount,
+            'payment.paidAmount': chargilyAmount || booking.pricing.totalAmount,
             'payment.paidAt': new Date(),
             'payment.transactionId': checkoutId
           }

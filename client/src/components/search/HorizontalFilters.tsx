@@ -291,6 +291,22 @@ export default function HorizontalFilters({
                     </div>
                   </label>
 
+                  <label className="flex items-center gap-3 p-3 hover:bg-rose-50 rounded-lg cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={filters.coupDeCoeur || false}
+                      onChange={(e) => onFilterChange({ ...filters, coupDeCoeur: e.target.checked })}
+                      className="w-5 h-5 text-rose-500 border-gray-300 rounded focus:ring-rose-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-rose-500">❤</span>
+                        <span className="font-medium">Coup de coeur voyageurs</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Note 4.7+ avec au moins 3 avis</p>
+                    </div>
+                  </label>
+
                   {onRadiusChange && (
                     <div className="pt-4 border-t border-gray-200">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
