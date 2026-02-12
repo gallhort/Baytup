@@ -533,7 +533,7 @@ export default function ListingDetailPage() {
         longitude: listing.location.coordinates[0]
       }
     } : {}),
-    ...(listing.stats?.reviewCount > 0 ? {
+    ...((listing.stats?.reviewCount ?? 0) > 0 ? {
       aggregateRating: {
         '@type': 'AggregateRating',
         ratingValue: listing.stats.averageRating,
