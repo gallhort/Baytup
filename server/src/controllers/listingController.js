@@ -9,6 +9,183 @@ const {
   sendListingDeletedEmail
 } = require('../utils/emailService');
 
+// Multilingual city name mapping for Algerian wilayas
+// When a user searches in any language, we expand to all variants
+const CITY_ALIASES = {
+  // Wilaya 16 - Alger
+  'algiers': ['alger', 'algiers', 'الجزائر', 'الجزائر العاصمة'],
+  'alger': ['alger', 'algiers', 'الجزائر', 'الجزائر العاصمة'],
+  'الجزائر': ['alger', 'algiers', 'الجزائر', 'الجزائر العاصمة'],
+  // Wilaya 31 - Oran
+  'oran': ['oran', 'وهران'],
+  'وهران': ['oran', 'وهران'],
+  // Wilaya 25 - Constantine
+  'constantine': ['constantine', 'قسنطينة'],
+  'قسنطينة': ['constantine', 'قسنطينة'],
+  // Wilaya 23 - Annaba
+  'annaba': ['annaba', 'عنابة'],
+  'عنابة': ['annaba', 'عنابة'],
+  // Wilaya 09 - Blida
+  'blida': ['blida', 'البليدة'],
+  'البليدة': ['blida', 'البليدة'],
+  // Wilaya 15 - Tizi Ouzou
+  'tizi ouzou': ['tizi ouzou', 'tizi-ouzou', 'تيزي وزو'],
+  'تيزي وزو': ['tizi ouzou', 'tizi-ouzou', 'تيزي وزو'],
+  // Wilaya 06 - Béjaïa
+  'bejaia': ['bejaia', 'béjaïa', 'bgayet', 'بجاية'],
+  'béjaïa': ['bejaia', 'béjaïa', 'bgayet', 'بجاية'],
+  'بجاية': ['bejaia', 'béjaïa', 'bgayet', 'بجاية'],
+  // Wilaya 19 - Sétif
+  'setif': ['setif', 'sétif', 'سطيف'],
+  'sétif': ['setif', 'sétif', 'سطيف'],
+  'سطيف': ['setif', 'sétif', 'سطيف'],
+  // Wilaya 05 - Batna
+  'batna': ['batna', 'باتنة'],
+  'باتنة': ['batna', 'باتنة'],
+  // Wilaya 47 - Ghardaïa
+  'ghardaia': ['ghardaia', 'ghardaïa', 'غرداية'],
+  'ghardaïa': ['ghardaia', 'ghardaïa', 'غرداية'],
+  'غرداية': ['ghardaia', 'ghardaïa', 'غرداية'],
+  // Wilaya 41 - Souk Ahras
+  'souk ahras': ['souk ahras', 'سوق أهراس'],
+  'سوق أهراس': ['souk ahras', 'سوق أهراس'],
+  // Wilaya 44 - Aïn Defla
+  'ain defla': ['ain defla', 'aïn defla', 'عين الدفلى'],
+  'aïn defla': ['ain defla', 'aïn defla', 'عين الدفلى'],
+  // Wilaya 42 - Tipaza
+  'tipaza': ['tipaza', 'tipasa', 'تيبازة'],
+  'تيبازة': ['tipaza', 'tipasa', 'تيبازة'],
+  // Wilaya 35 - Boumerdès
+  'boumerdes': ['boumerdes', 'boumerdès', 'بومرداس'],
+  'boumerdès': ['boumerdes', 'boumerdès', 'بومرداس'],
+  'بومرداس': ['boumerdes', 'boumerdès', 'بومرداس'],
+  // Wilaya 02 - Chlef
+  'chlef': ['chlef', 'الشلف'],
+  'الشلف': ['chlef', 'الشلف'],
+  // Wilaya 26 - Médéa
+  'medea': ['medea', 'médéa', 'المدية'],
+  'médéa': ['medea', 'médéa', 'المدية'],
+  'المدية': ['medea', 'médéa', 'المدية'],
+  // Wilaya 48 - Relizane
+  'relizane': ['relizane', 'غليزان'],
+  'غليزان': ['relizane', 'غليزان'],
+  // Wilaya 13 - Tlemcen
+  'tlemcen': ['tlemcen', 'تلمسان'],
+  'تلمسان': ['tlemcen', 'تلمسان'],
+  // Wilaya 27 - Mostaganem
+  'mostaganem': ['mostaganem', 'مستغانم'],
+  'مستغانم': ['mostaganem', 'مستغانم'],
+  // Wilaya 22 - Sidi Bel Abbès
+  'sidi bel abbes': ['sidi bel abbes', 'sidi bel abbès', 'سيدي بلعباس'],
+  'سيدي بلعباس': ['sidi bel abbes', 'sidi bel abbès', 'سيدي بلعباس'],
+  // Wilaya 07 - Biskra
+  'biskra': ['biskra', 'بسكرة'],
+  'بسكرة': ['biskra', 'بسكرة'],
+  // Wilaya 30 - Ouargla
+  'ouargla': ['ouargla', 'ورقلة'],
+  'ورقلة': ['ouargla', 'ورقلة'],
+  // Wilaya 17 - Djelfa
+  'djelfa': ['djelfa', 'الجلفة'],
+  'الجلفة': ['djelfa', 'الجلفة'],
+  // Wilaya 43 - Mila
+  'mila': ['mila', 'ميلة'],
+  'ميلة': ['mila', 'ميلة'],
+  // Wilaya 34 - Bordj Bou Arréridj
+  'bordj bou arreridj': ['bordj bou arreridj', 'برج بوعريريج'],
+  'برج بوعريريج': ['bordj bou arreridj', 'برج بوعريريج'],
+  // Wilaya 03 - Laghouat
+  'laghouat': ['laghouat', 'الأغواط'],
+  'الأغواط': ['laghouat', 'الأغواط'],
+  // Wilaya 29 - Mascara
+  'mascara': ['mascara', 'معسكر'],
+  'معسكر': ['mascara', 'معسكر'],
+  // Wilaya 10 - Bouira
+  'bouira': ['bouira', 'البويرة'],
+  'البويرة': ['bouira', 'البويرة'],
+  // Wilaya 04 - Oum El Bouaghi
+  'oum el bouaghi': ['oum el bouaghi', 'أم البواقي'],
+  'أم البواقي': ['oum el bouaghi', 'أم البواقي'],
+  // Wilaya 20 - Saïda
+  'saida': ['saida', 'saïda', 'سعيدة'],
+  'saïda': ['saida', 'saïda', 'سعيدة'],
+  'سعيدة': ['saida', 'saïda', 'سعيدة'],
+  // Wilaya 28 - M\'sila
+  'msila': ['msila', 'm\'sila', 'المسيلة'],
+  'المسيلة': ['msila', 'm\'sila', 'المسيلة'],
+  // Wilaya 11 - Tamanrasset
+  'tamanrasset': ['tamanrasset', 'تمنراست'],
+  'تمنراست': ['tamanrasset', 'تمنراست'],
+  // Wilaya 08 - Béchar
+  'bechar': ['bechar', 'béchar', 'بشار'],
+  'béchar': ['bechar', 'béchar', 'بشار'],
+  'بشار': ['bechar', 'béchar', 'بشار'],
+  // Wilaya 33 - Illizi
+  'illizi': ['illizi', 'إليزي'],
+  'إليزي': ['illizi', 'إليزي'],
+  // Wilaya 39 - El Oued
+  'el oued': ['el oued', 'الوادي'],
+  'الوادي': ['el oued', 'الوادي'],
+  // Wilaya 36 - El Tarf
+  'el tarf': ['el tarf', 'الطارف'],
+  'الطارف': ['el tarf', 'الطارف'],
+  // Wilaya 38 - Tissemsilt
+  'tissemsilt': ['tissemsilt', 'تيسمسيلت'],
+  'تيسمسيلت': ['tissemsilt', 'تيسمسيلت'],
+  // Wilaya 46 - Aïn Témouchent
+  'ain temouchent': ['ain temouchent', 'aïn témouchent', 'عين تموشنت'],
+  'عين تموشنت': ['ain temouchent', 'aïn témouchent', 'عين تموشنت'],
+  // Wilaya 14 - Tiaret
+  'tiaret': ['tiaret', 'تيارت'],
+  'تيارت': ['tiaret', 'تيارت'],
+  // Wilaya 32 - El Bayadh
+  'el bayadh': ['el bayadh', 'البيض'],
+  'البيض': ['el bayadh', 'البيض'],
+  // Wilaya 37 - Tindouf
+  'tindouf': ['tindouf', 'تندوف'],
+  'تندوف': ['tindouf', 'تندوف'],
+  // Wilaya 01 - Adrar
+  'adrar': ['adrar', 'أدرار'],
+  'أدرار': ['adrar', 'أدرار'],
+  // Wilaya 40 - Khenchela
+  'khenchela': ['khenchela', 'خنشلة'],
+  'خنشلة': ['khenchela', 'خنشلة'],
+  // Wilaya 12 - Tébessa
+  'tebessa': ['tebessa', 'tébessa', 'تبسة'],
+  'tébessa': ['tebessa', 'tébessa', 'تبسة'],
+  'تبسة': ['tebessa', 'tébessa', 'تبسة'],
+  // Wilaya 21 - Skikda
+  'skikda': ['skikda', 'سكيكدة'],
+  'سكيكدة': ['skikda', 'سكيكدة'],
+  // Wilaya 18 - Jijel
+  'jijel': ['jijel', 'جيجل'],
+  'جيجل': ['jijel', 'جيجل'],
+  // Wilaya 24 - Guelma
+  'guelma': ['guelma', 'قالمة'],
+  'قالمة': ['guelma', 'قالمة'],
+  // Wilaya 16 suburbs often listed
+  'bordj el kiffan': ['bordj el kiffan', 'برج الكيفان'],
+  'rouiba': ['rouiba', 'rouïba', 'الرويبة'],
+  'draria': ['draria', 'الدرارية'],
+  'bab ezzouar': ['bab ezzouar', 'باب الزوار'],
+  'cheraga': ['cheraga', 'شراقة'],
+  'bir mourad rais': ['bir mourad rais', 'بئر مراد رايس'],
+  'ain benian': ['ain benian', 'aïn benian', 'عين البنيان'],
+  'dely ibrahim': ['dely ibrahim', 'دالي إبراهيم'],
+  'kouba': ['kouba', 'القبة'],
+  'hussein dey': ['hussein dey', 'حسين داي'],
+  'el harrach': ['el harrach', 'الحراش'],
+  'birkhadem': ['birkhadem', 'بئر خادم'],
+};
+
+/**
+ * Expand a search term to include all multilingual variants
+ * e.g., "Algiers" → ["alger", "algiers", "الجزائر", "الجزائر العاصمة"]
+ */
+function expandCityAliases(term) {
+  const normalized = term.toLowerCase().trim();
+  return CITY_ALIASES[normalized] || [term];
+}
+
 // @desc    Get all listings with filters and pagination
 // @route   GET /api/listings
 // @access  Public
@@ -231,16 +408,16 @@ const getListings = async (req, res, next) => {
     }
 
     // Wilaya/region filter - searches only city and state fields (not country)
+    // Expands search terms to all language variants (FR/EN/AR)
     const wilaya = req.query.wilaya;
     if (wilaya) {
       const wilayas = Array.isArray(wilaya) ? wilaya : wilaya.split(',');
-      const wilayConds = wilayas.flatMap(w => {
-        const term = w.trim();
-        return [
-          { 'address.city': { $regex: term, $options: 'i' } },
-          { 'address.state': { $regex: term, $options: 'i' } }
-        ];
-      });
+      // Expand each term to include all multilingual aliases
+      const allTerms = [...new Set(wilayas.flatMap(w => expandCityAliases(w.trim())))];
+      const wilayConds = allTerms.flatMap(term => [
+        { 'address.city': { $regex: term, $options: 'i' } },
+        { 'address.state': { $regex: term, $options: 'i' } }
+      ]);
       if (wilayConds.length > 0) {
         if (!query.$and) query.$and = [];
         query.$and.push({ $or: wilayConds });
@@ -345,21 +522,28 @@ const getListings = async (req, res, next) => {
       }
       // PRIORITY 4: Text-based location search (fallback)
       else if (location) {
-        console.log('⚠️ FALLING BACK to text-based search! lat/lng/radius were not used.');
-        console.log('⚠️ This means lat=', lat, 'lng=', lng, 'radius=', radius, 'are not all truthy');
-        // ✅ FIX: Split location by comma to handle "Alger, Algérie" format
-        // Google Places API returns "City, Country" format
+        // Split location by comma to handle "Alger, Algérie" format
         const locationParts = location.split(',').map(part => part.trim());
 
-        // Create OR conditions for each part of the location
+        // Expand each part to include multilingual city name variants (FR/EN/AR)
+        const allParts = [...new Set(locationParts.flatMap(part => expandCityAliases(part)))];
+
+        // Create OR conditions for each expanded term
         const orConditions = [];
 
-        locationParts.forEach(part => {
+        allParts.forEach(part => {
           if (part) {
             orConditions.push(
               { 'address.city': { $regex: part, $options: 'i' } },
               { 'address.state': { $regex: part, $options: 'i' } },
-              { 'address.country': { $regex: part, $options: 'i' } },
+              { 'address.country': { $regex: part, $options: 'i' } }
+            );
+          }
+        });
+        // Also search title/description with the ORIGINAL terms only (not expanded aliases)
+        locationParts.forEach(part => {
+          if (part) {
+            orConditions.push(
               { title: { $regex: part, $options: 'i' } },
               { description: { $regex: part, $options: 'i' } }
             );
@@ -367,28 +551,34 @@ const getListings = async (req, res, next) => {
         });
 
         if (orConditions.length > 0) {
-          const locationQuery = { $or: orConditions };
-          query = { ...query, ...locationQuery };
-          console.log('🗺️ Location search:', locationParts.join(' OR '), '→', orConditions.length, 'conditions');
+          // Use $and to avoid overwriting other $or clauses (currency, etc.)
+          if (!query.$and) query.$and = [];
+          query.$and.push({ $or: orConditions });
         }
       }
     }
 
     // General search functionality
     if (search) {
-      const searchQuery = {
-        $or: [
-          { title: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { 'address.city': { $regex: search, $options: 'i' } },
-          { 'address.state': { $regex: search, $options: 'i' } },
-          { subcategory: { $regex: search, $options: 'i' } },
-          { 'stayDetails.stayType': { $regex: search, $options: 'i' } },
-          { 'vehicleDetails.make': { $regex: search, $options: 'i' } },
-          { 'vehicleDetails.model': { $regex: search, $options: 'i' } }
-        ]
-      };
-      query = { ...query, ...searchQuery };
+      // Expand city aliases for address fields
+      const searchAliases = expandCityAliases(search);
+      const searchOrConditions = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { subcategory: { $regex: search, $options: 'i' } },
+        { 'stayDetails.stayType': { $regex: search, $options: 'i' } },
+        { 'vehicleDetails.make': { $regex: search, $options: 'i' } },
+        { 'vehicleDetails.model': { $regex: search, $options: 'i' } }
+      ];
+      // Add all multilingual variants for address fields
+      searchAliases.forEach(alias => {
+        searchOrConditions.push(
+          { 'address.city': { $regex: alias, $options: 'i' } },
+          { 'address.state': { $regex: alias, $options: 'i' } }
+        );
+      });
+      if (!query.$and) query.$and = [];
+      query.$and.push({ $or: searchOrConditions });
     }
 
     // Availability check - only if both dates are provided and valid

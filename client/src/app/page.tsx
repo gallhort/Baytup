@@ -1060,7 +1060,7 @@ export default function HomePage() {
 
                 return (
                   <Link
-                    href={`/search?location=${encodeURIComponent(destination.displayName)}`}
+                    href={`/search?location=${encodeURIComponent(destination.displayName)}&wilaya=${encodeURIComponent(destination.wilaya)}`}
                     key={destination.name}
                     className="group cursor-pointer animate-fade-in-up"
                     style={{ animationDelay: `${animationDelay}ms` }}

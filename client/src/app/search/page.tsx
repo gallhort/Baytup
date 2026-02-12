@@ -202,9 +202,18 @@ function SearchPageContent() {
       children: filters.children > 0 ? filters.children : undefined,
       page: pageNum,
       limit: 20,
-      // ✅ NEW: Pass currency for multi-currency filtering
-      currency: currency
+      // Pass currency for filtering
+      currency: currency,
     };
+
+    // If wilaya param exists (from homepage city cards), use it for precise search
+    // wilaya searches city+state fields, more accurate than location which also searches title/description
+    const wilayaParam = searchParams?.get('wilaya');
+    if (wilayaParam) {
+      apiFilters.wilaya = wilayaParam;
+      // Remove location to avoid double-filtering (wilaya is more precise)
+      delete apiFilters.location;
+    }
 
     // ✅ SIMPLIFIED: Read lat/lng from URL, but use state for radius (state is source of truth)
     const lat = searchParams?.get('lat');
