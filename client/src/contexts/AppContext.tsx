@@ -79,13 +79,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'SET_USER', payload: response.data.user });
       }
     } catch (error: any) {
-      console.error('Failed to load user:', error);
+      const status = error?.response?.status;
 
-      // If token is invalid or expired, remove it
-      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+      // Only remove token on actual 401 (expired/invalid token)
+      // Don't remove on network errors or server errors (token might still be valid)
+      if (status === 401) {
         localStorage.removeItem('token');
-        dispatch({ type: 'LOGOUT' });
       }
+      dispatch({ type: 'LOGOUT' });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
       dispatch({ type: 'SET_INITIALIZED', payload: true });

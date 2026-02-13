@@ -20,6 +20,12 @@ class SocketService {
 
     if (this.socket?.connected) return;
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Don't connect without auth - server requires authentication
+      return;
+    }
+
     const SERVER_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
     this.socket = io(SERVER_URL, {
@@ -29,6 +35,9 @@ class SocketService {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       timeout: 10000,
+      auth: {
+        token
+      }
     });
 
     this.socket.on('connect', () => {

@@ -1147,7 +1147,7 @@ export default function HomePage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
-                  href="/dashboard/listings/new"
+                  href="/dashboard/my-listings/create"
                   className="inline-flex items-center space-x-3 bg-white text-primary-700 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-xl"
                 >
                   <HomeIcon className="w-6 h-6" />

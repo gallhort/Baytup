@@ -18,15 +18,12 @@ authApi.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle response errors
+// Handle response errors - let callers (AppContext) handle auth state
 authApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid, remove it
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
+    // Don't redirect here - AppContext handles auth state and navigation
+    // The aggressive redirect was causing forced logout on every page refresh
     return Promise.reject(error);
   }
 );
@@ -105,7 +102,8 @@ export const getCurrentUser = async (): Promise<ApiResponse<{ user: User }>> => 
     const response = await authApi.get('/me');
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to get user data');
+    // Preserve the original error with status code so AppContext can distinguish 401 from network errors
+    throw error;
   }
 };
 

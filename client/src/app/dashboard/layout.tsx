@@ -279,12 +279,12 @@ export default function DashboardLayout({
 
   const menuItems = getMenuItems();
 
-  // Redirect if not logged in
+  // Redirect if not logged in (only after auth check is complete)
   useEffect(() => {
-    if (!user) {
+    if (state.isInitialized && !user) {
       router.push('/login');
     }
-  }, [user, router]);
+  }, [state.isInitialized, user, router]);
 
   // Check if user has EUR listings (for Stripe Connect menu visibility)
   useEffect(() => {

@@ -33,16 +33,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('baytup_token');
-        // Don't redirect to login for public routes
-        if (!window.location.pathname.includes('/search') && window.location.pathname !== '/') {
-          window.location.href = '/login';
-        }
-      }
-    }
+    // Don't redirect or remove tokens here - let AppContext handle auth state
+    // Aggressive 401 handling was causing forced logouts on page refresh
     return Promise.reject(error);
   }
 );

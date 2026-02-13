@@ -65,13 +65,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       }
     } catch (error: any) {
       console.error('Error loading wishlist:', error);
-      
-      // Si erreur 401, déconnecter
+
+      // Don't remove token here - only AppContext should manage auth token lifecycle
+      // Just clear wishlist data on error
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
         setIsAuthenticated(false);
       }
-      
+
       setWishlistIds(new Set());
     } finally {
       setIsLoading(false);

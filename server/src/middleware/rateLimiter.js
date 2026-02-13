@@ -1,9 +1,10 @@
 const rateLimit = require('express-rate-limit');
 
-// General API rate limiter - 100 requests per 15 minutes
+// General API rate limiter - 500 requests per 15 minutes
+// (Homepage alone fires ~8+ requests per load: listings, city counts, auth check, etc.)
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: process.env.NODE_ENV === 'development' ? 1000 : 500,
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -36,10 +37,11 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Search rate limiter - 60 requests per minute
+// Search rate limiter - 120 requests per minute
+// (Homepage fires ~8 listing requests at once: main search + 6 city counts + featured)
 const searchLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 60,
+  max: process.env.NODE_ENV === 'development' ? 200 : 120,
   message: { error: 'Too many search requests, please slow down.' },
   standardHeaders: true,
   legacyHeaders: false,
