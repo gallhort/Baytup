@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import {
@@ -78,19 +79,78 @@ interface ModerationStats {
   trend: Array<{ _id: string; count: number }>;
 }
 
+interface FlaggedMessage {
+  _id: string;
+  sender: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatar?: string;
+  };
+  conversation: {
+    _id: string;
+    subject?: string;
+  };
+  content: string;
+  flagged: boolean;
+  flagReason?: string;
+  moderationFlags: string[];
+  createdAt: string;
+}
+
+interface FlaggedReview {
+  _id: string;
+  reviewer: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  listing: {
+    _id: string;
+    title: string;
+    category?: string;
+  };
+  comment: string;
+  rating: { overall: number };
+  status: string;
+  flagged: boolean;
+  flagReason?: string;
+  moderationFlags: string[];
+  moderationScore?: number;
+  createdAt: string;
+}
+
 export default function ModerationPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'logs' | 'rules' | 'flagged' | 'stats'>('logs');
   const [logs, setLogs] = useState<ModerationLog[]>([]);
   const [rules, setRules] = useState<ModerationRule[]>([]);
   const [stats, setStats] = useState<ModerationStats | null>(null);
+  const [flaggedMessages, setFlaggedMessages] = useState<FlaggedMessage[]>([]);
+  const [flaggedReviews, setFlaggedReviews] = useState<FlaggedReview[]>([]);
+  const [flaggedFilter, setFlaggedFilter] = useState<'all' | 'messages' | 'reviews'>('all');
+  const [flaggedPage, setFlaggedPage] = useState(1);
+  const [flaggedPagination, setFlaggedPagination] = useState({ messagesTotal: 0, reviewsTotal: 0, messagesPages: 1, reviewsPages: 1 });
   const [loading, setLoading] = useState(false);
   const [selectedLog, setSelectedLog] = useState<ModerationLog | null>(null);
   const [showRuleModal, setShowRuleModal] = useState(false);
   const [editingRule, setEditingRule] = useState<ModerationRule | null>(null);
 
+  // 2E: Read ?tab= from URL to auto-select tab (e.g. from notification link)
+  useEffect(() => {
+    const tab = searchParams?.get('tab');
+    if (tab && ['logs', 'rules', 'flagged', 'stats'].includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (activeTab === 'logs') fetchLogs();
     else if (activeTab === 'rules') fetchRules();
+    else if (activeTab === 'flagged') fetchFlaggedContent();
     else if (activeTab === 'stats') fetchStats();
   }, [activeTab]);
 
@@ -136,6 +196,63 @@ export default function ModerationPage() {
       toast.error(error.response?.data?.message || 'Erreur lors du chargement des statistiques');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFlaggedContent = async (page = flaggedPage) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      const limit = 15;
+
+      const [messagesRes, reviewsRes] = await Promise.all([
+        axios.get(`${API_URL}/moderation/flagged/messages?page=${page}&limit=${limit}`, { headers }),
+        axios.get(`${API_URL}/moderation/flagged/reviews?page=${page}&limit=${limit}`, { headers })
+      ]);
+
+      setFlaggedMessages(messagesRes.data.data.messages);
+      setFlaggedReviews(reviewsRes.data.data.reviews);
+      setFlaggedPagination({
+        messagesTotal: messagesRes.data.pagination.total,
+        reviewsTotal: reviewsRes.data.pagination.total,
+        messagesPages: messagesRes.data.pagination.pages,
+        reviewsPages: reviewsRes.data.pagination.pages
+      });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Erreur lors du chargement du contenu flaggé');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const moderateMessage = async (messageId: string, action: 'unflag' | 'hide') => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API_URL}/moderation/messages/${messageId}/action`,
+        { action },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(action === 'unflag' ? 'Message approuvé' : 'Message masqué');
+      fetchFlaggedContent();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Erreur');
+    }
+  };
+
+  const moderateReview = async (reviewId: string, action: 'unflag' | 'hide' | 'approve') => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API_URL}/moderation/reviews/${reviewId}/action`,
+        { action },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(action === 'hide' ? 'Avis masqué' : 'Avis approuvé');
+      fetchFlaggedContent();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Erreur');
     }
   };
 
@@ -437,6 +554,225 @@ export default function ModerationPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* FLAGGED TAB */}
+          {activeTab === 'flagged' && (
+            <div className="space-y-4">
+              {/* Header + Filter + Refresh */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold">Contenu Flaggé</h2>
+                  <span className="text-sm text-gray-500">
+                    ({flaggedPagination.messagesTotal} messages, {flaggedPagination.reviewsTotal} avis)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex bg-gray-100 rounded-lg p-0.5">
+                    {[
+                      { id: 'all' as const, label: 'Tous' },
+                      { id: 'messages' as const, label: 'Messages' },
+                      { id: 'reviews' as const, label: 'Avis' }
+                    ].map((f) => (
+                      <button
+                        key={f.id}
+                        onClick={() => { setFlaggedFilter(f.id); setFlaggedPage(1); }}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+                          flaggedFilter === f.id
+                            ? 'bg-white text-[#FF6B35] shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => fetchFlaggedContent()}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Messages Section */}
+              {(flaggedFilter === 'all' || flaggedFilter === 'messages') && (
+                <>
+                  {flaggedFilter === 'all' && (
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase flex items-center gap-2 mt-2">
+                      <MessageSquare className="w-4 h-4" /> Messages ({flaggedPagination.messagesTotal})
+                    </h3>
+                  )}
+                  {flaggedMessages.length === 0 ? (
+                    <div className="text-center py-6 bg-gray-50 rounded-lg">
+                      <MessageSquare className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm">Aucun message flaggé</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {flaggedMessages.map((msg) => (
+                        <div key={msg._id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm font-medium text-gray-900">
+                                  {msg.sender.firstName} {msg.sender.lastName}
+                                </span>
+                                <span className="text-xs text-gray-400">{msg.sender.email}</span>
+                                <span className="text-xs text-gray-400">
+                                  {new Date(msg.createdAt).toLocaleDateString('fr-FR')}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700 mb-2">{msg.content}</p>
+                              <div className="flex flex-wrap gap-1">
+                                {msg.moderationFlags.map((flag, i) => (
+                                  <span key={i} className="px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded-full">{flag}</span>
+                                ))}
+                                {msg.flagReason && (
+                                  <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded-full">{msg.flagReason}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-1.5 shrink-0">
+                              <button
+                                onClick={() => moderateMessage(msg._id, 'unflag')}
+                                title="Approuver"
+                                className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => moderateMessage(msg._id, 'hide')}
+                                title="Masquer"
+                                className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => router.push(`/dashboard/messages?c=${msg.conversation?._id}`)}
+                                title="Voir conversation"
+                                className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Reviews Section */}
+              {(flaggedFilter === 'all' || flaggedFilter === 'reviews') && (
+                <>
+                  {flaggedFilter === 'all' && (
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase flex items-center gap-2 mt-4">
+                      <Star className="w-4 h-4" /> Avis ({flaggedPagination.reviewsTotal})
+                    </h3>
+                  )}
+                  {flaggedReviews.length === 0 ? (
+                    <div className="text-center py-6 bg-gray-50 rounded-lg">
+                      <Star className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm">Aucun avis flaggé</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {flaggedReviews.map((review) => (
+                        <div key={review._id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm font-medium text-gray-900">
+                                  {review.reviewer.firstName} {review.reviewer.lastName}
+                                </span>
+                                <span className="text-xs text-gray-400">{review.reviewer.email}</span>
+                                <span className="px-1.5 py-0.5 text-xs bg-gray-100 rounded">
+                                  {review.rating.overall}/5
+                                </span>
+                                <span className={`px-1.5 py-0.5 text-xs rounded-full ${
+                                  review.status === 'published' ? 'bg-green-100 text-green-700' :
+                                  review.status === 'hidden' ? 'bg-red-100 text-red-700' :
+                                  review.status === 'flagged' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {review.status}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500 mb-1">
+                                Annonce : <span className="font-medium text-gray-700">{review.listing.title}</span>
+                                <span className="ml-2 text-gray-400">{new Date(review.createdAt).toLocaleDateString('fr-FR')}</span>
+                              </p>
+                              <p className="text-sm text-gray-700 mb-2">{review.comment}</p>
+                              <div className="flex flex-wrap gap-1">
+                                {review.moderationFlags.map((flag, i) => (
+                                  <span key={i} className="px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded-full">{flag}</span>
+                                ))}
+                                {review.flagReason && (
+                                  <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded-full">{review.flagReason}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-1.5 shrink-0">
+                              <button
+                                onClick={() => moderateReview(review._id, 'approve')}
+                                title="Approuver"
+                                className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => moderateReview(review._id, 'hide')}
+                                title="Masquer"
+                                className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => router.push(`/listing/${review.listing._id}`)}
+                                title="Voir annonce"
+                                className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Pagination */}
+              {(() => {
+                const totalPages = Math.max(flaggedPagination.messagesPages, flaggedPagination.reviewsPages);
+                if (totalPages <= 1) return null;
+                return (
+                  <div className="flex items-center justify-center gap-2 pt-4">
+                    <button
+                      onClick={() => { const p = flaggedPage - 1; setFlaggedPage(p); fetchFlaggedContent(p); }}
+                      disabled={flaggedPage <= 1}
+                      className="px-3 py-1.5 text-sm bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Précédent
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      Page {flaggedPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => { const p = flaggedPage + 1; setFlaggedPage(p); fetchFlaggedContent(p); }}
+                      disabled={flaggedPage >= totalPages}
+                      className="px-3 py-1.5 text-sm bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Suivant
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           )}
 

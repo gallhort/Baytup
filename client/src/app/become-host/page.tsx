@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/contexts/AppContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useFeature } from '@/contexts/FeatureFlagsContext';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
@@ -11,6 +12,7 @@ export default function BecomeHostPage() {
   const router = useRouter();
   const { state } = useApp();
   const t = useTranslation('become-host');
+  const vehiclesEnabled = useFeature('vehiclesEnabled');
   const [isCreatingApplication, setIsCreatingApplication] = useState(false);
 
   const createHostApplication = async () => {
@@ -97,12 +99,15 @@ export default function BecomeHostPage() {
             {(t as any)?.hero?.title || 'Become a Host'}
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {(t as any)?.hero?.subtitle || 'Share your space or vehicle and start earning with Algeria\'s leading sharing platform'}
+            {vehiclesEnabled
+              ? ((t as any)?.hero?.subtitle || 'Share your space or vehicle and start earning with Algeria\'s leading sharing platform')
+              : ((t as any)?.hero?.subtitleStayOnly || 'Share your space and start earning with Algeria\'s leading rental platform')
+            }
           </p>
         </div>
 
         {/* Benefits Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className={`grid grid-cols-1 ${vehiclesEnabled ? 'md:grid-cols-3' : 'md:grid-cols-2 max-w-3xl mx-auto'} gap-8 mb-16`}>
           <div className="bg-white p-8 rounded-xl shadow-sm text-center">
             <div className="text-4xl mb-4">🏠</div>
             <h3 className="text-xl font-semibold mb-4">{(t as any)?.benefits?.shareSpace?.title || 'Share Your Space'}</h3>
@@ -111,13 +116,15 @@ export default function BecomeHostPage() {
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-xl shadow-sm text-center">
-            <div className="text-4xl mb-4">🚗</div>
-            <h3 className="text-xl font-semibold mb-4">{(t as any)?.benefits?.shareVehicle?.title || 'Share Your Vehicle'}</h3>
-            <p className="text-gray-600">
-              {(t as any)?.benefits?.shareVehicle?.description || 'Let others rent your car when you\'re not using it and earn extra income'}
-            </p>
-          </div>
+          {vehiclesEnabled && (
+            <div className="bg-white p-8 rounded-xl shadow-sm text-center">
+              <div className="text-4xl mb-4">🚗</div>
+              <h3 className="text-xl font-semibold mb-4">{(t as any)?.benefits?.shareVehicle?.title || 'Share Your Vehicle'}</h3>
+              <p className="text-gray-600">
+                {(t as any)?.benefits?.shareVehicle?.description || 'Let others rent your car when you\'re not using it and earn extra income'}
+              </p>
+            </div>
+          )}
 
           <div className="bg-white p-8 rounded-xl shadow-sm text-center">
             <div className="text-4xl mb-4">💰</div>
@@ -144,7 +151,12 @@ export default function BecomeHostPage() {
                 2
               </div>
               <h4 className="font-semibold mb-2">{(t as any)?.howItWorks?.step2?.title || 'List Your Property'}</h4>
-              <p className="text-sm text-gray-600">{(t as any)?.howItWorks?.step2?.description || 'Add photos and details about your space or vehicle'}</p>
+              <p className="text-sm text-gray-600">
+                {vehiclesEnabled
+                  ? ((t as any)?.howItWorks?.step2?.description || 'Add photos and details about your space or vehicle')
+                  : ((t as any)?.howItWorks?.step2?.descriptionStayOnly || 'Add photos and details about your space')
+                }
+              </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-[#FF6B35] text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">

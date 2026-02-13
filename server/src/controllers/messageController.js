@@ -245,17 +245,39 @@ const sendMessage = catchAsync(async (req, res, next) => {
     return next(new AppError('You are not authorized to send messages in this conversation', 403));
   }
 
+  // Check if booking is confirmed/paid (skip external contact moderation)
+  let skipExternalContact = false;
+  if (conversation.booking) {
+    const booking = await Booking.findById(conversation.booking).select('status');
+    if (booking && ['confirmed', 'completed'].includes(booking.status)) {
+      skipExternalContact = true;
+    }
+  }
+
   // Check content moderation (only for text messages)
   let moderationData = {};
+  let finalContent = content;
+  let shouldAddWarning = false;
+  let warningMessage = null;
+
   if (type === 'text' && content) {
     const moderation = await moderationService.checkContent(content, 'message', {
       userId,
+      skipExternalContact,
       metadata: { conversationId }
     });
 
-    // If blocked, prevent message from being sent
-    if (moderation.action === 'block') {
-      return next(new AppError(moderation.message || 'Votre message contient du contenu inapproprié et ne peut être envoyé', 400));
+    // If masked, use masked content + add system warning
+    if (moderation.action === 'mask' && moderation.maskedContent) {
+      finalContent = moderation.maskedContent;
+      shouldAddWarning = true;
+      warningMessage = moderation.warningMessage;
+      moderationData = {
+        flagged: true,
+        moderationFlags: moderation.flags,
+        moderationScore: moderation.totalScore,
+        flagReason: 'Auto-moderated: content masked'
+      };
     }
 
     // If flagged, mark message for review
@@ -267,13 +289,21 @@ const sendMessage = catchAsync(async (req, res, next) => {
         flagReason: 'Auto-flagged by moderation system'
       };
     }
+
+    // Notify admins (fire-and-forget)
+    if (moderation.action === 'mask' || moderation.action === 'flag') {
+      moderationService.notifyAdminsOfFlaggedMessage({
+        userId, action: moderation.action, flags: moderation.flags,
+        originalContent: content, conversationId, totalScore: moderation.totalScore
+      });
+    }
   }
 
-  // Create message
+  // Create message (with masked content if moderated)
   const message = await Message.create({
     conversation: conversationId,
     sender: userId,
-    content,
+    content: finalContent,
     type,
     attachments: attachments || [],
     ...moderationData
@@ -286,6 +316,32 @@ const sendMessage = catchAsync(async (req, res, next) => {
     .filter(p => p.user.toString() !== userId)
     .map(p => p.user.toString());
 
+  // Create system warning message if content was moderated
+  let systemMessage = null;
+  if (shouldAddWarning && warningMessage) {
+    systemMessage = await Message.create({
+      conversation: conversationId,
+      sender: userId,
+      content: warningMessage,
+      type: 'system',
+      systemData: {
+        action: 'moderation_warning',
+        metadata: { triggeredFlags: moderationData.moderationFlags || [] }
+      }
+    });
+    await systemMessage.populate('sender', 'firstName lastName avatar role');
+
+    // Update conversation lastMessage to the user message (not the system one)
+    conversation.lastMessage = {
+      content: finalContent,
+      sender: userId,
+      sentAt: new Date(),
+      type: 'text'
+    };
+    conversation.messageCount = (conversation.messageCount || 0) + 2;
+    await conversation.save();
+  }
+
   // Create notification for message recipients
   try {
     const sender = await User.findById(userId).select('firstName lastName');
@@ -296,13 +352,13 @@ const sendMessage = catchAsync(async (req, res, next) => {
         recipient: recipientId,
         sender: userId,
         type: 'message_received',
-        title: 'New Message! 💬',
+        title: 'New Message!',
         message: `${sender.firstName} ${sender.lastName} sent you a message${listing?.listing ? ` about "${listing.listing.title}"` : ''}.`,
         data: {
           conversationId,
           messageId: message._id,
           senderName: `${sender.firstName} ${sender.lastName}`,
-          messagePreview: content.substring(0, 100),
+          messagePreview: finalContent.substring(0, 100),
           listingTitle: listing?.listing?.title
         },
         link: `/dashboard/messages/${conversationId}`,
@@ -313,7 +369,7 @@ const sendMessage = catchAsync(async (req, res, next) => {
     console.error('Error creating message notification:', notificationError);
   }
 
-  // Emit socket event for real-time messaging
+  // Emit socket events for real-time messaging
   const io = req.io || global.io;
   if (io) {
     recipientIds.forEach(recipientId => {
@@ -321,13 +377,28 @@ const sendMessage = catchAsync(async (req, res, next) => {
         conversationId,
         message: message.toObject()
       });
+      // Also emit system warning if present
+      if (systemMessage) {
+        io.to(`user-${recipientId}`).emit('new_message', {
+          conversationId,
+          message: systemMessage.toObject()
+        });
+      }
     });
+    // Emit to sender too so they see the system message
+    if (systemMessage) {
+      io.to(`user-${userId}`).emit('new_message', {
+        conversationId,
+        message: systemMessage.toObject()
+      });
+    }
   }
 
   res.status(201).json({
     status: 'success',
     data: {
-      message
+      message,
+      ...(systemMessage ? { systemMessage } : {})
     }
   });
 });
@@ -363,35 +434,57 @@ const updateMessage = catchAsync(async (req, res, next) => {
     return next(new AppError('Cannot edit messages older than 15 minutes', 400));
   }
 
+  // Check if booking is confirmed/paid (skip external contact moderation)
+  let skipExternalContactEdit = false;
+  const editConversation = await Conversation.findById(message.conversation);
+  if (editConversation?.booking) {
+    const editBooking = await Booking.findById(editConversation.booking).select('status');
+    if (editBooking && ['confirmed', 'completed'].includes(editBooking.status)) {
+      skipExternalContactEdit = true;
+    }
+  }
+
   // Check content moderation for edited message
   const moderation = await moderationService.checkContent(content, 'message', {
     userId,
+    skipExternalContact: skipExternalContactEdit,
     metadata: { conversationId: message.conversation, messageId }
   });
 
-  // If blocked, prevent update
-  if (moderation.action === 'block') {
-    return next(new AppError(moderation.message || 'Votre message contient du contenu inapproprié et ne peut être envoyé', 400));
-  }
-
   // Update message
   message.originalContent = message.content;
-  message.content = content;
   message.edited = true;
   message.editedAt = new Date();
 
-  // Update moderation flags if content is flagged
-  if (moderation.action === 'flag') {
+  // If masked, use masked content
+  if (moderation.action === 'mask' && moderation.maskedContent) {
+    message.content = moderation.maskedContent;
+    message.flagged = true;
+    message.moderationFlags = moderation.flags;
+    message.moderationScore = moderation.totalScore;
+    message.flagReason = 'Auto-moderated after edit: content masked';
+  } else if (moderation.action === 'flag') {
+    message.content = content;
     message.flagged = true;
     message.moderationFlags = moderation.flags;
     message.moderationScore = moderation.totalScore;
     message.flagReason = 'Auto-flagged by moderation system after edit';
   } else {
+    message.content = content;
     // Clear flags if content is now clean
     message.flagged = false;
     message.moderationFlags = [];
     message.moderationScore = 0;
     message.flagReason = undefined;
+  }
+
+  // Notify admins of flagged edited message (fire-and-forget)
+  if (moderation.action === 'mask' || moderation.action === 'flag') {
+    moderationService.notifyAdminsOfFlaggedMessage({
+      userId, action: moderation.action, flags: moderation.flags,
+      originalContent: content, conversationId: message.conversation.toString(),
+      totalScore: moderation.totalScore
+    });
   }
 
   await message.save();

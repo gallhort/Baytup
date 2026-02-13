@@ -1,7 +1,8 @@
 {
   "hero": {
     "title": "Devenez Hôte",
-    "subtitle": "Partagez votre espace ou votre véhicule et commencez à gagner avec la plateforme de partage leader en Algérie"
+    "subtitle": "Partagez votre espace ou votre véhicule et commencez à gagner avec la plateforme de partage leader en Algérie",
+    "subtitleStayOnly": "Partagez votre espace et commencez à gagner avec la plateforme de location leader en Algérie"
   },
   "benefits": {
     "shareSpace": {
@@ -25,7 +26,8 @@
     },
     "step2": {
       "title": "Listez Votre Propriété",
-      "description": "Ajoutez des photos et des détails sur votre espace ou véhicule"
+      "description": "Ajoutez des photos et des détails sur votre espace ou véhicule",
+      "descriptionStayOnly": "Ajoutez des photos et des détails sur votre espace"
     },
     "step3": {
       "title": "Recevez des Réservations",

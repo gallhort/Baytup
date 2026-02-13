@@ -83,16 +83,12 @@ export default function LeafletLocationPicker({
     }
   }, [center.lat, center.lng]);
 
-  // Reverse geocode avec Nominatim (OpenStreetMap - GRATUIT)
+  // Reverse geocode via backend proxy (avoids CORS issues with Nominatim)
   const reverseGeocode = async (lat: number, lng: number) => {
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
-        {
-          headers: {
-            'Accept-Language': 'fr' // Préférer les résultats en français
-          }
-        }
+        `${apiUrl}/geocode/reverse?lat=${lat}&lon=${lng}&lang=fr`
       );
 
       if (response.ok) {

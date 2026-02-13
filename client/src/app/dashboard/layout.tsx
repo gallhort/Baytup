@@ -13,7 +13,7 @@ import {
   FaBed, FaUsers, FaClipboardList,
   FaEnvelope, FaHistory, FaMapMarkerAlt, FaStar,
   FaShoppingCart, FaFileInvoiceDollar, FaMoneyBillWave, FaBell,
-  FaExclamationTriangle, FaCreditCard
+  FaExclamationTriangle, FaCreditCard, FaShieldAlt
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { IconType } from 'react-icons';
@@ -61,7 +61,8 @@ export default function DashboardLayout({
   const isRTL = language === 'ar';
 
   // Check if we're on a full-screen page (listing editor, messages)
-  const isListingEditorPage = pathname?.startsWith('/dashboard/my-listings/edit/');
+  const isListingEditorPage = pathname?.startsWith('/dashboard/my-listings/edit/')
+    || pathname === '/dashboard/my-listings/create';
   const isFullScreenPage = pathname === '/dashboard/messages' || isListingEditorPage;
 
   // ✅ FIX: Prevent body scroll when on full-screen pages
@@ -155,6 +156,12 @@ export default function DashboardLayout({
           label: (t as any)?.menuItems?.admin?.payouts || 'Payouts',
           href: '/dashboard/payouts',
           color: 'text-green-600'
+        },
+        {
+          icon: FaShieldAlt,
+          label: 'Modération',
+          href: '/dashboard/admin/moderation',
+          color: 'text-red-500'
         },
         { type: 'divider' },
         ...commonItems

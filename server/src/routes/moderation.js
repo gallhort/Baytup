@@ -521,4 +521,96 @@ router.get('/flagged/reviews', protect, adminOnly, async (req, res) => {
   }
 });
 
+// ========================================
+// DIRECT MODERATION ACTIONS
+// ========================================
+
+// @desc    Take action on a flagged message (unflag or hide)
+// @route   PUT /api/moderation/messages/:id/action
+// @access  Private/Admin
+router.put('/messages/:id/action', protect, adminOnly, async (req, res) => {
+  try {
+    const { action } = req.body; // 'unflag' | 'hide'
+
+    if (!['unflag', 'hide'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Action must be unflag or hide' });
+    }
+
+    const message = await Message.findById(req.params.id);
+    if (!message) {
+      return res.status(404).json({ success: false, message: 'Message not found' });
+    }
+
+    if (action === 'unflag') {
+      message.flagged = false;
+      message.flagReason = undefined;
+      message.moderationFlags = [];
+      message.moderationScore = 0;
+      message.moderatedBy = req.user._id;
+    } else if (action === 'hide') {
+      message.flagged = true;
+      message.flagReason = 'Hidden by admin';
+      message.moderatedBy = req.user._id;
+    }
+
+    await message.save();
+
+    // Also update any pending moderation log
+    await ModerationLog.updateMany(
+      { contentId: message._id, contentType: 'message', reviewStatus: 'pending' },
+      { reviewStatus: action === 'unflag' ? 'approved' : 'rejected', reviewedBy: req.user._id, reviewedAt: new Date() }
+    );
+
+    res.status(200).json({ success: true, message: `Message ${action === 'unflag' ? 'approuvé' : 'masqué'}`, data: { message } });
+  } catch (error) {
+    console.error('Error moderating message:', error);
+    res.status(500).json({ success: false, message: 'Error moderating message', error: error.message });
+  }
+});
+
+// @desc    Take action on a flagged review (unflag, hide, or approve)
+// @route   PUT /api/moderation/reviews/:id/action
+// @access  Private/Admin
+router.put('/reviews/:id/action', protect, adminOnly, async (req, res) => {
+  try {
+    const { action } = req.body; // 'unflag' | 'hide' | 'approve'
+
+    if (!['unflag', 'hide', 'approve'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Action must be unflag, hide or approve' });
+    }
+
+    const review = await Review.findById(req.params.id);
+    if (!review) {
+      return res.status(404).json({ success: false, message: 'Review not found' });
+    }
+
+    if (action === 'unflag' || action === 'approve') {
+      review.flagged = false;
+      review.flagReason = undefined;
+      review.moderationFlags = [];
+      review.moderationScore = 0;
+      review.status = 'published';
+      review.moderatedBy = req.user._id;
+    } else if (action === 'hide') {
+      review.flagged = true;
+      review.status = 'hidden';
+      review.moderatedBy = req.user._id;
+    }
+
+    await review.save();
+
+    // Also update any pending moderation log
+    await ModerationLog.updateMany(
+      { contentId: review._id, contentType: 'review', reviewStatus: 'pending' },
+      { reviewStatus: action === 'hide' ? 'rejected' : 'approved', reviewedBy: req.user._id, reviewedAt: new Date() }
+    );
+
+    const label = action === 'hide' ? 'masqué' : 'approuvé';
+    res.status(200).json({ success: true, message: `Avis ${label}`, data: { review } });
+  } catch (error) {
+    console.error('Error moderating review:', error);
+    res.status(500).json({ success: false, message: 'Error moderating review', error: error.message });
+  }
+});
+
 module.exports = router;

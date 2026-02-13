@@ -104,10 +104,28 @@ class EscrowService {
    * @param {ObjectId} releasedBy - Admin user ID (for manual release)
    * @returns {Promise<Object>} - Updated escrow document
    */
+  /**
+   * Patch legacy escrows missing required breakdown fields
+   */
+  _patchLegacyBreakdown(escrow) {
+    if (!escrow.breakdown) {
+      escrow.breakdown = {};
+    }
+    if (!escrow.breakdown.subtotal) {
+      escrow.breakdown.subtotal = escrow.amount || 0;
+    }
+    if (!escrow.breakdown.hostAmount) {
+      escrow.breakdown.hostAmount = escrow.amount || 0;
+    }
+  }
+
   async releaseFunds(escrow, releaseType = 'manual', releasedBy = null) {
     if (!['held', 'frozen'].includes(escrow.status)) {
       throw new Error(`Cannot release escrow with status: ${escrow.status}`);
     }
+
+    // Patch legacy escrows missing breakdown fields
+    this._patchLegacyBreakdown(escrow);
 
     escrow.status = 'released';
     escrow.releasedAt = new Date();
@@ -145,6 +163,7 @@ class EscrowService {
       return escrow;
     }
 
+    this._patchLegacyBreakdown(escrow);
     escrow.status = 'frozen';
     escrow.frozenAt = new Date();
     escrow.dispute = dispute._id;
@@ -173,6 +192,7 @@ class EscrowService {
       throw new Error('Escrow is not frozen');
     }
 
+    this._patchLegacyBreakdown(escrow);
     escrow.status = 'held';
     escrow.unfrozenAt = new Date();
 
@@ -195,6 +215,8 @@ class EscrowService {
    */
   async resolveDispute(escrow, resolution) {
     const { hostPortion, guestPortion, resolvedBy, notes } = resolution;
+
+    this._patchLegacyBreakdown(escrow);
 
     // Validate amounts
     const totalToDistribute = escrow.breakdown.hostAmount;
@@ -264,6 +286,7 @@ class EscrowService {
    * @returns {Promise<Object>} - Updated escrow with refund details
    */
   async processCancellationRefund(escrow, options = {}) {
+    this._patchLegacyBreakdown(escrow);
     const booking = await Booking.findById(escrow.booking).populate('listing');
 
     // Validate refund is possible
@@ -370,6 +393,7 @@ class EscrowService {
    * @returns {Promise<Object>} - Updated escrow document
    */
   async processRefund(escrow, amount, reason = 'Refund requested') {
+    this._patchLegacyBreakdown(escrow);
     const booking = await Booking.findById(escrow.booking);
 
     // Calculate max refundable (exclude service fee which is never refunded)
@@ -467,6 +491,7 @@ class EscrowService {
       throw new Error(`Cannot create payout for escrow with status: ${escrow.status}. Must be released first.`);
     }
 
+    this._patchLegacyBreakdown(escrow);
     const booking = await Booking.findById(escrow.booking).populate('host listing');
     const host = booking.host;
 

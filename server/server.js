@@ -47,19 +47,11 @@ const io = socketIo(server, {
 connectDB().then(async () => {
   console.log('✅ MongoDB connected successfully');
 
-  // Seed default moderation rules (only if not already seeded)
+  // Seed/sync default moderation rules (upsert - safe to re-run)
   try {
-    const ModerationRule = require('./src/models/ModerationRule');
-    const count = await ModerationRule.countDocuments();
-
-    if (count === 0) {
-      console.log('⚙️  Seeding default moderation rules...');
-      const moderationService = require('./src/services/moderationService');
-      await moderationService.seedDefaultRules();
-      console.log('✅ Default moderation rules seeded successfully');
-    } else {
-      console.log(`✅ Moderation rules already exist (${count} rules)`);
-    }
+    const moderationService = require('./src/services/moderationService');
+    await moderationService.seedDefaultRules();
+    console.log('✅ Moderation rules synced successfully');
   } catch (error) {
     console.error('⚠️  Failed to seed moderation rules:', error.message);
   }
@@ -281,6 +273,8 @@ io.on('connection', (socket) => {
       }
 
       const { Conversation, Message } = require('./src/models/Message');
+      const Booking = require('./src/models/Booking');
+      const moderationService = require('./src/services/moderationService');
 
       // Verify conversation exists and user is participant
       const conversation = await Conversation.findById(conversationId);
@@ -296,32 +290,108 @@ io.on('connection', (socket) => {
         return socket.emit('error', { message: 'Not authorized to send messages in this conversation' });
       }
 
-      // Create message
+      // Check if booking is confirmed/paid (skip external contact moderation)
+      let skipExternalContact = false;
+      if (conversation.booking) {
+        const booking = await Booking.findById(conversation.booking).select('status');
+        if (booking && ['confirmed', 'completed'].includes(booking.status)) {
+          skipExternalContact = true;
+        }
+      }
+
+      // Run content moderation
+      let finalContent = content;
+      let moderationData = {};
+      let shouldAddWarning = false;
+      let warningMessage = null;
+
+      if (type === 'text' && content) {
+        const moderation = await moderationService.checkContent(content, 'message', {
+          userId: socket.user._id.toString(),
+          skipExternalContact,
+          metadata: { conversationId }
+        });
+
+        if (moderation.action === 'mask' && moderation.maskedContent) {
+          finalContent = moderation.maskedContent;
+          shouldAddWarning = true;
+          warningMessage = moderation.warningMessage;
+          moderationData = {
+            flagged: true,
+            moderationFlags: moderation.flags,
+            moderationScore: moderation.totalScore,
+            flagReason: 'Auto-moderated: content masked'
+          };
+        } else if (moderation.action === 'flag') {
+          moderationData = {
+            flagged: true,
+            moderationFlags: moderation.flags,
+            moderationScore: moderation.totalScore,
+            flagReason: 'Auto-flagged by moderation system'
+          };
+        }
+
+        // Notify admins (fire-and-forget)
+        if (moderation.action === 'mask' || moderation.action === 'flag') {
+          moderationService.notifyAdminsOfFlaggedMessage({
+            userId: socket.user._id.toString(), action: moderation.action,
+            flags: moderation.flags, originalContent: content,
+            conversationId, totalScore: moderation.totalScore
+          });
+        }
+      }
+
+      // Create message with (possibly masked) content
       const message = await Message.create({
         conversation: conversationId,
         sender: socket.user._id,
-        content,
+        content: finalContent,
         type,
-        attachments
+        attachments,
+        ...moderationData
       });
 
       await message.populate('sender', 'firstName lastName avatar role');
 
       // Update conversation's last message
       conversation.lastMessage = {
-        content: message.content,
+        content: finalContent,
         sender: socket.user._id,
         sentAt: message.createdAt
       };
-      await conversation.save();
 
-      console.log(`📨 Message sent in conversation ${conversationId} by user ${socket.user._id}`);
+      // Create system warning message if content was moderated
+      let systemMsg = null;
+      if (shouldAddWarning && warningMessage) {
+        systemMsg = await Message.create({
+          conversation: conversationId,
+          sender: socket.user._id,
+          content: warningMessage,
+          type: 'system',
+          systemData: {
+            action: 'moderation_warning',
+            metadata: { triggeredFlags: moderationData.moderationFlags || [] }
+          }
+        });
+        await systemMsg.populate('sender', 'firstName lastName avatar role');
+        conversation.messageCount = (conversation.messageCount || 0) + 2;
+      }
+
+      await conversation.save();
 
       // Emit to conversation room (including sender for confirmation)
       io.to(`conversation-${conversationId}`).emit('new_message', {
         conversationId,
         message: message.toObject()
       });
+
+      // Emit system warning after the message
+      if (systemMsg) {
+        io.to(`conversation-${conversationId}`).emit('new_message', {
+          conversationId,
+          message: systemMsg.toObject()
+        });
+      }
 
       // Also emit to other participants' user rooms (for notifications)
       const recipientIds = conversation.participants
@@ -556,6 +626,7 @@ app.use('/api/escrow', require('./src/routes/escrow'));
 app.use('/api/stripe-connect', require('./src/routes/stripeConnect'));
 app.use('/api/pricing', require('./src/routes/pricing'));
 app.use('/api/calendar', require('./src/routes/calendar'));
+app.use('/api/geocode', require('./src/routes/geocode'));
 
 // 404 handler
 app.use('*', (req, res) => {

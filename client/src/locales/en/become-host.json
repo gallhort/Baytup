@@ -1,7 +1,8 @@
 {
   "hero": {
     "title": "Become a Host",
-    "subtitle": "Share your space or vehicle and start earning with Algeria's leading sharing platform"
+    "subtitle": "Share your space or vehicle and start earning with Algeria's leading sharing platform",
+    "subtitleStayOnly": "Share your space and start earning with Algeria's leading rental platform"
   },
   "benefits": {
     "shareSpace": {
@@ -25,7 +26,8 @@
     },
     "step2": {
       "title": "List Your Property",
-      "description": "Add photos and details about your space or vehicle"
+      "description": "Add photos and details about your space or vehicle",
+      "descriptionStayOnly": "Add photos and details about your space"
     },
     "step3": {
       "title": "Get Bookings",

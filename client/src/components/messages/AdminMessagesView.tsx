@@ -1,23 +1,24 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import moment from 'moment';
+import { useSearchParams } from 'next/navigation';
 import {
   Search, MessageCircle, Archive, Trash2, Users, Mail,
-  ChevronLeft, ChevronRight, X, TrendingUp
+  ChevronLeft, ChevronRight, X, AlertTriangle, ExternalLink,
+  Flag, ArchiveRestore, User as UserIcon, Clock
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
-// Helper function for avatar URLs with proper fallback
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 const getAvatarUrl = (avatar: string | undefined) => {
   if (!avatar) return '/uploads/users/default-avatar.png';
   if (avatar.startsWith('http')) return avatar;
-
-  // Remove /api prefix if present
   const cleanPath = avatar.startsWith('/api') ? avatar.substring(4) : avatar;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  const baseUrl = API_URL.replace('/api', '');
   return `${baseUrl}${cleanPath}`;
 };
 
@@ -47,6 +48,9 @@ interface Message {
   sender: User;
   content: string;
   createdAt: string;
+  flagged?: boolean;
+  flagReason?: string;
+  moderationFlags?: string[];
 }
 
 interface Conversation {
@@ -71,24 +75,12 @@ interface Stats {
   totalMessages: number;
 }
 
-interface StatsResponse {
-  totalConversations: number;
-  activeConversations: number;
-  archivedConversations: number;
-  totalMessages: number;
-}
-
 export default function AdminMessagesView() {
   const t = useTranslation('messages');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [stats, setStats] = useState<Stats>({
-    total: 0,
-    active: 0,
-    archived: 0,
-    totalMessages: 0
-  });
+  const [stats, setStats] = useState<Stats>({ total: 0, active: 0, archived: 0, totalMessages: 0 });
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,15 +91,28 @@ export default function AdminMessagesView() {
   const [conversationToDelete, setConversationToDelete] = useState<Conversation | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const pendingConversationId = useRef<string | null>(searchParams.get('c'));
 
   useEffect(() => {
     fetchData();
   }, [statusFilter, page]);
 
+  // Auto-open conversation from ?c= URL param
+  useEffect(() => {
+    if (pendingConversationId.current && !loading && !selectedConversation) {
+      const convId = pendingConversationId.current;
+      pendingConversationId.current = null;
+      // Directly fetch the conversation messages — works even if the conversation
+      // isn't in the currently filtered/paginated list (e.g. archived)
+      fetchMessages(convId);
+    }
+  }, [loading]);
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch conversations first (includes stats), then fetch detailed stats
       await fetchConversations();
       await fetchStats();
     } catch (error) {
@@ -120,26 +125,18 @@ export default function AdminMessagesView() {
   const fetchConversations = async () => {
     try {
       const token = localStorage.getItem('token');
-      const params: any = {
-        page,
-        limit: 20,
-        sort: '-updatedAt'
-      };
+      const params: any = { page, limit: 20, sort: '-updatedAt' };
       if (statusFilter) params.status = statusFilter;
       if (searchQuery) params.search = searchQuery;
 
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/messages/admin/conversations`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params
-        }
-      );
+      const response = await axios.get(`${API_URL}/messages/admin/conversations`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params
+      });
 
       setConversations(response.data.data.conversations || []);
       setTotalPages(response.data.pagination?.pages || 1);
 
-      // Update stats from conversations response if available
       if (response.data.stats) {
         setStats({
           total: response.data.stats.total || 0,
@@ -150,19 +147,16 @@ export default function AdminMessagesView() {
       }
     } catch (error: any) {
       console.error('Error fetching conversations:', error);
-      toast.error(error.response?.data?.message || (t as any)?.toast?.loadFailed || 'Failed to load conversations');
+      toast.error(error.response?.data?.message || 'Failed to load conversations');
     }
   };
 
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/messages/admin/stats`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Map the server response to match our Stats interface
+      const response = await axios.get(`${API_URL}/messages/admin/stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const summary = response.data.data.summary;
       if (summary) {
         setStats({
@@ -181,17 +175,19 @@ export default function AdminMessagesView() {
     try {
       setMessagesLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/messages/admin/conversations/${conversationId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const response = await axios.get(`${API_URL}/messages/admin/conversations/${conversationId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setMessages(response.data.data.messages || []);
       setSelectedConversation(response.data.data.conversation);
-      scrollToBottom();
+      setTimeout(() => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        }
+      }, 100);
     } catch (error: any) {
       console.error('Error fetching messages:', error);
-      toast.error((t as any)?.toast?.loadFailed || 'Failed to load messages');
+      toast.error('Failed to load messages');
     } finally {
       setMessagesLoading(false);
     }
@@ -199,22 +195,19 @@ export default function AdminMessagesView() {
 
   const handleDeleteConversation = async () => {
     if (!conversationToDelete) return;
-
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/messages/admin/conversations/${conversationToDelete._id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      toast.success((t as any)?.toast?.conversationDeleteSuccess || 'Conversation deleted successfully');
+      await axios.delete(`${API_URL}/messages/admin/conversations/${conversationToDelete._id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Conversation supprimée');
       setShowDeleteModal(false);
       setConversationToDelete(null);
       setSelectedConversation(null);
       setMessages([]);
       fetchData();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || (t as any)?.toast?.conversationDeleteFailed || 'Failed to delete conversation');
+      toast.error(error.response?.data?.message || 'Échec de la suppression');
     }
   };
 
@@ -224,522 +217,405 @@ export default function AdminMessagesView() {
     fetchConversations();
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   const formatTime = (date: string) => {
-    const messageDate = moment(date);
+    const d = moment(date);
     const now = moment();
-
-    if (messageDate.isSame(now, 'day')) {
-      return messageDate.format('HH:mm');
-    } else if (messageDate.isAfter(now.clone().subtract(7, 'days'))) {
-      return messageDate.format('ddd HH:mm');
-    } else {
-      return messageDate.format('MMM DD');
-    }
-  };
-
-  const formatFullTime = (date: string) => {
-    return moment(date).format('MMM DD, YYYY [at] HH:mm');
-  };
-
-  const getParticipantNames = (conv: Conversation) => {
-    return conv.participants
-      .map(p => `${p.user.firstName} ${p.user.lastName}`)
-      .join(' & ');
+    if (d.isSame(now, 'day')) return d.format('HH:mm');
+    if (d.isAfter(now.clone().subtract(7, 'days'))) return d.format('ddd HH:mm');
+    return d.format('DD/MM/YY');
   };
 
   const getHostAndGuest = (conv: Conversation) => {
     const host = conv.participants.find(p => p.user.role === 'host')?.user;
-    const guest = conv.participants.find(p => p.user.role === 'guest')?.user;
+    const guest = conv.participants.find(p => p.user.role === 'guest' || p.user.role !== 'host')?.user;
     return { host, guest };
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B35] mx-auto mb-4"></div>
-          <p className="text-gray-600">{(t as any)?.admin?.loading || 'Loading messages management...'}</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF6B35] mx-auto mb-3"></div>
+          <p className="text-gray-500 text-sm">Chargement...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="h-[calc(100vh-120px)] flex flex-col">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{(t as any)?.admin?.header?.title || 'Messages Management'}</h1>
-        <p className="text-gray-600">{(t as any)?.admin?.header?.subtitle || 'View and manage all conversations across the platform'}</p>
+      <div className="px-1 pb-3">
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="text-xl font-bold text-gray-900">Gestion des messages</h1>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-gray-500">
+          <span>Surveillance des conversations</span>
+          <span className="text-gray-300">|</span>
+          <span><strong className="text-gray-700">{stats.total}</strong> conversations</span>
+          <span className="text-gray-300">·</span>
+          <span className="text-green-600"><strong>{stats.active}</strong> actives</span>
+          <span className="text-gray-300">·</span>
+          <span className="text-purple-600"><strong>{stats.archived}</strong> archivées</span>
+          <span className="text-gray-300">·</span>
+          <span className="text-blue-600"><strong>{stats.totalMessages}</strong> messages</span>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-sm border border-orange-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-orange-600 mb-1">{(t as any)?.admin?.stats?.totalConversations || 'Total Conversations'}</p>
-                <p className="text-3xl font-bold text-orange-900">{stats.total.toLocaleString()}</p>
-                <p className="text-xs text-orange-600 mt-1">{(t as any)?.admin?.stats?.allTime || 'All time'}</p>
+      {/* Main Layout */}
+      <div className="flex-1 flex bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-0">
+
+        {/* Left Panel - Conversations */}
+        <div className="w-[360px] flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
+          {/* Search */}
+          <div className="p-3 border-b border-gray-200">
+            <form onSubmit={handleSearch}>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Rechercher utilisateurs, annonces..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent"
+                />
               </div>
-              <div className="p-3 bg-orange-200 rounded-full">
-                <MessageCircle className="w-8 h-8 text-orange-600" />
-              </div>
+            </form>
+            {/* Filter pills */}
+            <div className="flex gap-1.5 mt-2">
+              {[
+                { value: 'active' as const, label: 'Actives', count: stats.active },
+                { value: 'archived' as const, label: 'Archivées', count: stats.archived },
+                { value: '' as const, label: 'Toutes', count: stats.total }
+              ].map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => { setStatusFilter(f.value); setPage(1); }}
+                  className={`flex-1 py-1.5 px-2 rounded-md text-xs font-medium transition ${
+                    statusFilter === f.value
+                      ? 'bg-[#FF6B35] text-white shadow-sm'
+                      : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  {f.label} ({f.count})
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl shadow-sm border border-green-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600 mb-1">{(t as any)?.admin?.stats?.activeConversations || 'Active Conversations'}</p>
-                <p className="text-3xl font-bold text-green-900">{stats.active.toLocaleString()}</p>
-                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  {(t as any)?.admin?.stats?.currentlyOngoing || 'Currently ongoing'}
+          {/* Conversation List */}
+          <div className="flex-1 overflow-y-auto">
+            {conversations.length === 0 ? (
+              <div className="p-6 text-center">
+                <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">
+                  {searchQuery ? 'Aucun résultat' : 'Aucune conversation'}
                 </p>
               </div>
-              <div className="p-3 bg-green-200 rounded-full">
-                <Mail className="w-8 h-8 text-green-600" />
-              </div>
-            </div>
-          </div>
+            ) : (
+              conversations.map((conv) => {
+                const { host, guest } = getHostAndGuest(conv);
+                const isSelected = selectedConversation?._id === conv._id;
 
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl shadow-sm border border-purple-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-600 mb-1">{(t as any)?.admin?.stats?.archived || 'Archived'}</p>
-                <p className="text-3xl font-bold text-purple-900">{stats.archived.toLocaleString()}</p>
-                <p className="text-xs text-purple-600 mt-1">{(t as any)?.admin?.stats?.inactiveThreads || 'Inactive threads'}</p>
-              </div>
-              <div className="p-3 bg-purple-200 rounded-full">
-                <Archive className="w-8 h-8 text-purple-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl shadow-sm border border-blue-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600 mb-1">{(t as any)?.admin?.stats?.totalMessages || 'Total Messages'}</p>
-                <p className="text-3xl font-bold text-blue-900">{stats.totalMessages.toLocaleString()}</p>
-                <p className="text-xs text-blue-600 mt-1">{(t as any)?.admin?.stats?.platformWide || 'Platform-wide'}</p>
-              </div>
-              <div className="p-3 bg-blue-200 rounded-full">
-                <Users className="w-8 h-8 text-blue-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-      {/* Main Content */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden" style={{ height: '650px' }}>
-        <div className="flex h-full">
-          {/* Conversations List */}
-          <div className="w-full md:w-1/3 border-r border-gray-200 flex flex-col">
-            {/* Search and Filter */}
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
-              <form onSubmit={handleSearch} className="mb-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder={(t as any)?.admin?.searchPlaceholder || 'Search users, listings...'}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent transition"
-                  />
-                </div>
-              </form>
-
-              {/* Status Filter */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setStatusFilter('active');
-                    setPage(1);
-                  }}
-                  className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition ${
-                    statusFilter === 'active'
-                      ? 'bg-[#FF6B35] text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                  }`}
-                >
-                  {(t as any)?.conversations?.filters?.active || 'Active'}
-                </button>
-                <button
-                  onClick={() => {
-                    setStatusFilter('archived');
-                    setPage(1);
-                  }}
-                  className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition ${
-                    statusFilter === 'archived'
-                      ? 'bg-[#FF6B35] text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                  }`}
-                >
-                  {(t as any)?.conversations?.filters?.archived || 'Archived'}
-                </button>
-                <button
-                  onClick={() => {
-                    setStatusFilter('');
-                    setPage(1);
-                  }}
-                  className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition ${
-                    statusFilter === ''
-                      ? 'bg-[#FF6B35] text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                  }`}
-                >
-                  {(t as any)?.admin?.filters?.all || 'All'}
-                </button>
-              </div>
-            </div>
-
-            {/* Conversations */}
-            <div className="flex-1 overflow-y-auto">
-              {conversations.length === 0 ? (
-                <div className="p-8 text-center">
-                  <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">{(t as any)?.admin?.empty?.noConversations || 'No conversations found'}</h3>
-                  <p className="text-sm text-gray-500">
-                    {searchQuery ? ((t as any)?.admin?.empty?.tryAdjusting || 'Try adjusting your search') : ((t as any)?.admin?.empty?.noInCategory || 'No conversations in this category')}
-                  </p>
-                </div>
-              ) : (
-                conversations.map((conv) => {
-                  const { host, guest } = getHostAndGuest(conv);
-
-                  return (
-                    <div
-                      key={conv._id}
-                      onClick={() => fetchMessages(conv._id)}
-                      className={`p-4 border-b border-gray-200 cursor-pointer transition ${
-                        selectedConversation?._id === conv._id
-                          ? 'bg-orange-50 border-l-4 border-l-[#FF6B35]'
-                          : 'hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        {/* Avatar Group - Show both host and guest */}
-                        <div className="relative flex-shrink-0">
-                          {/* Guest Avatar (Front) */}
-                          {guest && (
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                              <img
-                                src={getAvatarUrl(guest.avatar)}
-                                alt={`${guest.firstName} ${guest.lastName}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = '/uploads/users/default-avatar.png';
-                                }}
-                              />
-                            </div>
-                          )}
-                          {/* Host Avatar (Overlapped) */}
-                          {host && (
-                            <div className="absolute -right-2 -bottom-1 w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm bg-white">
-                              <img
-                                src={getAvatarUrl(host.avatar)}
-                                alt={`${host.firstName} ${host.lastName}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = '/uploads/users/default-avatar.png';
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex-1">
-                              <h3 className="text-sm font-semibold text-gray-900 truncate">
-                                {guest && `${guest.firstName} ${guest.lastName}`}
-                                {host && guest && ' & '}
-                                {host && `${host.firstName} ${host.lastName}`}
-                              </h3>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                {guest && (
-                                  <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
-                                    {(t as any)?.admin?.roles?.guest || 'Guest'}
-                                  </span>
-                                )}
-                                {host && (
-                                  <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
-                                    {(t as any)?.admin?.roles?.host || 'Host'}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            {conv.lastMessage && (
-                              <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
-                                {formatTime(conv.lastMessage.sentAt || conv.updatedAt)}
-                              </span>
-                            )}
-                          </div>
-
-                          {conv.listing && (
-                            <p className="text-xs text-gray-600 truncate mb-1 flex items-center gap-1">
-                              <span className="text-gray-400">📍</span>
-                              {conv.listing.title}
-                            </p>
-                          )}
-
-                          {conv.lastMessage && (
-                            <p className="text-sm text-gray-600 truncate">
-                              {conv.lastMessage.content}
-                            </p>
-                          )}
-
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs text-gray-500 font-medium">
-                              {conv.messageCount} {conv.messageCount === 1 ? ((t as any)?.admin?.labels?.message || 'message') : ((t as any)?.admin?.labels?.messages || 'messages')}
-                            </span>
-                            {conv.status === 'archived' && (
-                              <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full">
-                                {(t as any)?.conversations?.filters?.archived || 'Archived'}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-                <button
-                  onClick={() => setPage(Math.max(1, page - 1))}
-                  disabled={page === 1}
-                  className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
-                >
-                  <ChevronLeft className="w-5 h-5 text-gray-600" />
-                </button>
-                <span className="text-sm font-medium text-gray-700">
-                  {(t as any)?.admin?.pagination?.page || 'Page'} {page} {(t as any)?.admin?.pagination?.of || 'of'} {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage(Math.min(totalPages, page + 1))}
-                  disabled={page === totalPages}
-                  className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
-                >
-                  <ChevronRight className="w-5 h-5 text-gray-600" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Messages Area */}
-          <div className="flex-1 flex flex-col">
-            {selectedConversation && !messagesLoading ? (
-              <>
-                {/* Messages Header */}
-                <div className="p-4 border-b border-gray-200 bg-white">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {/* Show both avatars in header too */}
-                      <div className="relative flex-shrink-0">
-                        {(() => {
-                          const { host, guest } = getHostAndGuest(selectedConversation);
-                          return (
-                            <>
-                              {guest && (
-                                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                                  <img
-                                    src={getAvatarUrl(guest.avatar)}
-                                    alt={`${guest.firstName}`}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.src = '/uploads/users/default-avatar.png';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                              {host && (
-                                <div className="absolute -right-1 -bottom-1 w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-sm bg-white">
-                                  <img
-                                    src={getAvatarUrl(host.avatar)}
-                                    alt={`${host.firstName}`}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.src = '/uploads/users/default-avatar.png';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                      <div>
-                        <h3 className="text-base font-semibold text-gray-900">
-                          {getParticipantNames(selectedConversation)}
-                        </h3>
-                        {selectedConversation.listing && (
-                          <p className="text-xs text-gray-500">
-                            {selectedConversation.listing.title}
-                          </p>
+                return (
+                  <div
+                    key={conv._id}
+                    onClick={() => fetchMessages(conv._id)}
+                    className={`px-3 py-3 border-b border-gray-100 cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-white border-l-3 border-l-[#FF6B35] shadow-sm'
+                        : 'hover:bg-white/70'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      {/* Stacked Avatars */}
+                      <div className="relative flex-shrink-0 w-10 h-10">
+                        <img
+                          src={getAvatarUrl(guest?.avatar)}
+                          alt=""
+                          className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/uploads/users/default-avatar.png'; }}
+                        />
+                        {host && (
+                          <img
+                            src={getAvatarUrl(host.avatar)}
+                            alt=""
+                            className="absolute -right-1 -bottom-0.5 w-6 h-6 rounded-full object-cover border-2 border-white shadow-sm"
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/uploads/users/default-avatar.png'; }}
+                          />
                         )}
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setConversationToDelete(selectedConversation);
-                          setShowDeleteModal(true);
-                        }}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                        title={(t as any)?.messagesArea?.tooltips?.delete || 'Delete conversation'}
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-gray-900 truncate">
+                            {guest ? `${guest.firstName} ${guest.lastName}` : ''}
+                            {host && guest ? ' ↔ ' : ''}
+                            {host ? `${host.firstName} ${host.lastName}` : ''}
+                          </span>
+                          <span className="text-[10px] text-gray-400 flex-shrink-0 ml-2">
+                            {formatTime(conv.lastMessage?.sentAt || conv.updatedAt)}
+                          </span>
+                        </div>
 
-                {/* Messages List */}
-                <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-                  {messages.length === 0 ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="text-center">
-                        <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500">{(t as any)?.admin?.messages?.noMessages || 'No messages in this conversation'}</p>
+                        {conv.listing && (
+                          <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                            {conv.listing.title}
+                          </p>
+                        )}
+
+                        {conv.lastMessage && (
+                          <p className="text-xs text-gray-500 truncate mt-0.5">
+                            {conv.lastMessage.content}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className="text-[10px] text-gray-400">{conv.messageCount} msgs</span>
+                          {conv.status === 'archived' && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">Archivée</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {messages.map((message, index) => {
-                        const showAvatar = index === 0 || messages[index - 1].sender._id !== message.sender._id;
-
-                        return (
-                          <div key={message._id} className="flex items-start gap-3">
-                            {/* Avatar */}
-                            {showAvatar ? (
-                              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 shadow-sm border-2 border-white">
-                                <img
-                                  src={getAvatarUrl(message.sender.avatar)}
-                                  alt={message.sender.firstName}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = '/uploads/users/default-avatar.png';
-                                  }}
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 flex-shrink-0" />
-                            )}
-
-                            {/* Message Content */}
-                            <div className="flex-1">
-                              {showAvatar && (
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-sm font-semibold text-gray-900">
-                                    {message.sender.firstName} {message.sender.lastName}
-                                  </span>
-                                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                    message.sender.role === 'host'
-                                      ? 'bg-green-100 text-green-700'
-                                      : message.sender.role === 'guest'
-                                      ? 'bg-blue-100 text-blue-700'
-                                      : 'bg-gray-100 text-gray-700'
-                                  }`}>
-                                    {message.sender.role}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="bg-white px-4 py-3 rounded-lg border border-gray-200 shadow-sm inline-block max-w-xl">
-                                <p className="text-sm text-gray-900 break-words whitespace-pre-wrap">{message.content}</p>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {formatFullTime(message.createdAt)}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      <div ref={messagesEndRef} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Info Footer */}
-                <div className="p-4 border-t border-gray-200 bg-orange-50">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse"></div>
-                    <p className="text-sm font-medium text-[#FF6B35]">
-                      {(t as any)?.admin?.footer?.readOnly || 'Admin View - Read-only mode'}
-                    </p>
                   </div>
-                </div>
-              </>
-            ) : messagesLoading ? (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B35] mx-auto mb-4"></div>
-                  <p className="text-gray-600">{(t as any)?.messagesArea?.loading || 'Loading messages...'}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                  <MessageCircle className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{(t as any)?.messagesArea?.emptyState?.title || 'Select a conversation'}</h3>
-                  <p className="text-gray-500">{(t as any)?.messagesArea?.emptyState?.subtitle || 'Choose a conversation from the list to view messages'}</p>
-                </div>
-              </div>
+                );
+              })
             )}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="p-2 border-t border-gray-200 bg-white flex items-center justify-between">
+              <button
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page === 1}
+                className="p-1.5 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-40 transition"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-xs text-gray-500">{page} / {totalPages}</span>
+              <button
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
+                disabled={page === totalPages}
+                className="p-1.5 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-40 transition"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Right Panel - Messages */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {selectedConversation && !messagesLoading ? (
+            <>
+              {/* Conversation Header with Admin Toolbar */}
+              <div className="px-4 py-3 border-b border-gray-200 bg-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Participants Info */}
+                    {(() => {
+                      const { host, guest } = getHostAndGuest(selectedConversation);
+                      return (
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative flex-shrink-0">
+                            <img
+                              src={getAvatarUrl(guest?.avatar)}
+                              alt=""
+                              className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm"
+                              onError={(e) => { (e.target as HTMLImageElement).src = '/uploads/users/default-avatar.png'; }}
+                            />
+                            {host && (
+                              <img
+                                src={getAvatarUrl(host.avatar)}
+                                alt=""
+                                className="absolute -right-1 -bottom-0.5 w-5 h-5 rounded-full object-cover border-2 border-white"
+                                onError={(e) => { (e.target as HTMLImageElement).src = '/uploads/users/default-avatar.png'; }}
+                              />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-sm font-semibold text-gray-900 truncate">
+                                {guest && <>{guest.firstName} {guest.lastName}</>}
+                                {host && guest && <span className="text-gray-400 mx-1">↔</span>}
+                                {host && <>{host.firstName} {host.lastName}</>}
+                              </h3>
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                              {selectedConversation.listing && (
+                                <span className="truncate max-w-[200px]">{selectedConversation.listing.title}</span>
+                              )}
+                              <span>·</span>
+                              <span>{selectedConversation.messageCount} messages</span>
+                              <span>·</span>
+                              <span>{moment(selectedConversation.createdAt).format('DD/MM/YY')}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Admin Actions */}
+                  <div className="flex items-center gap-1">
+                    {selectedConversation.listing && (
+                      <a
+                        href={`/listing/${selectedConversation.listing._id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                        title="Voir l'annonce"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                    <button
+                      onClick={() => {
+                        setConversationToDelete(selectedConversation);
+                        setShowDeleteModal(true);
+                      }}
+                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                      title="Supprimer la conversation"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 bg-gray-50/50">
+                {messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Aucun message</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-w-3xl mx-auto">
+                    {messages.map((message, index) => {
+                      const showHeader = index === 0 || messages[index - 1].sender._id !== message.sender._id;
+                      const isFlagged = message.flagged;
+
+                      return (
+                        <div key={message._id} className={`flex items-start gap-2.5 ${isFlagged ? 'relative' : ''}`}>
+                          {showHeader ? (
+                            <img
+                              src={getAvatarUrl(message.sender.avatar)}
+                              alt=""
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-0.5"
+                              onError={(e) => { (e.target as HTMLImageElement).src = '/uploads/users/default-avatar.png'; }}
+                            />
+                          ) : (
+                            <div className="w-8 flex-shrink-0" />
+                          )}
+
+                          <div className="flex-1 min-w-0">
+                            {showHeader && (
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-xs font-semibold text-gray-900">
+                                  {message.sender.firstName} {message.sender.lastName}
+                                </span>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                                  message.sender.role === 'host'
+                                    ? 'bg-green-100 text-green-700'
+                                    : message.sender.role === 'admin'
+                                    ? 'bg-orange-100 text-orange-700'
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}>
+                                  {message.sender.role === 'host' ? 'Hôte' : message.sender.role === 'admin' ? 'Admin' : 'Invité'}
+                                </span>
+                                <span className="text-[10px] text-gray-400">
+                                  {moment(message.createdAt).format('DD/MM HH:mm')}
+                                </span>
+                              </div>
+                            )}
+                            <div className={`inline-block px-3 py-2 rounded-lg text-sm max-w-xl ${
+                              isFlagged
+                                ? 'bg-red-50 border border-red-200'
+                                : 'bg-white border border-gray-200'
+                            }`}>
+                              <p className="text-gray-900 break-words whitespace-pre-wrap">{message.content}</p>
+                              {isFlagged && (
+                                <div className="flex items-center gap-1 mt-1.5 pt-1.5 border-t border-red-200">
+                                  <AlertTriangle className="w-3 h-3 text-red-500" />
+                                  <span className="text-[10px] text-red-600 font-medium">
+                                    Flaggé{message.flagReason ? ` : ${message.flagReason}` : ''}
+                                  </span>
+                                  {message.moderationFlags?.map((flag, i) => (
+                                    <span key={i} className="text-[10px] px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full">{flag}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </div>
+
+              {/* Admin Footer */}
+              <div className="px-4 py-2 border-t border-gray-200 bg-orange-50/50">
+                <div className="flex items-center justify-center gap-1.5">
+                  <div className="w-1.5 h-1.5 bg-[#FF6B35] rounded-full"></div>
+                  <span className="text-[11px] font-medium text-[#FF6B35]">Mode lecture seule — Vue administrateur</span>
+                </div>
+              </div>
+            </>
+          ) : messagesLoading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B35] mx-auto mb-2"></div>
+                <p className="text-sm text-gray-500">Chargement...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center bg-gray-50/30">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <MessageCircle className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-base font-semibold text-gray-900 mb-1">Sélectionnez une conversation</h3>
+                <p className="text-sm text-gray-500">Choisissez dans la liste pour voir les échanges</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Delete Conversation Modal */}
+      {/* Delete Modal */}
       {showDeleteModal && conversationToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
-            <div className="p-6">
-              <div className="flex items-center justify-center w-14 h-14 mx-auto bg-red-100 rounded-full mb-4">
-                <Trash2 className="w-7 h-7 text-red-600" />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full shadow-2xl">
+            <div className="p-5">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-3">
+                <Trash2 className="w-6 h-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
-                {(t as any)?.admin?.deleteModal?.title || 'Delete Conversation'}
-              </h3>
+              <h3 className="text-lg font-bold text-gray-900 text-center mb-1">Supprimer la conversation</h3>
               <p className="text-sm text-gray-600 text-center">
-                {(t as any)?.admin?.deleteModal?.message || 'Are you sure you want to permanently delete this conversation? This will delete all'}{' '}
-                <span className="font-semibold text-gray-900">{conversationToDelete.messageCount} {conversationToDelete.messageCount === 1 ? ((t as any)?.admin?.labels?.message || 'message') : ((t as any)?.admin?.labels?.messages || 'messages')}</span> {(t as any)?.admin?.deleteModal?.between || 'between'}{' '}
-                <span className="font-semibold text-gray-900">{getParticipantNames(conversationToDelete)}</span>.
-                {(t as any)?.admin?.deleteModal?.cannotUndo || 'This action cannot be undone.'}
+                Supprimer définitivement les <strong>{conversationToDelete.messageCount} messages</strong> entre{' '}
+                <strong>{conversationToDelete.participants.map(p => `${p.user.firstName} ${p.user.lastName}`).join(' et ')}</strong> ?
               </p>
             </div>
-
-            <div className="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 rounded-b-xl">
+            <div className="bg-gray-50 px-5 py-3 flex items-center justify-end gap-2 rounded-b-xl">
               <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setConversationToDelete(null);
-                }}
-                className="px-6 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition shadow-sm"
+                onClick={() => { setShowDeleteModal(false); setConversationToDelete(null); }}
+                className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
               >
-                {(t as any)?.deleteModal?.cancel || 'Cancel'}
+                Annuler
               </button>
               <button
                 onClick={handleDeleteConversation}
-                className="px-6 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition shadow-sm"
+                className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
               >
-                {(t as any)?.admin?.deleteModal?.confirmButton || 'Delete Permanently'}
+                Supprimer
               </button>
             </div>
           </div>

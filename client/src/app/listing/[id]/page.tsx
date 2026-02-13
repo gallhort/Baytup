@@ -935,16 +935,18 @@ export default function ListingDetailPage() {
               {currentUser && host && (currentUser as any)._id !== host._id && (
                 <button
                   onClick={() => router.push(`/dashboard/messages?user=${host._id}&listing=${listing.id || (listing as any)._id}`)}
-                  className="mt-4 text-gray-900 underline font-medium text-sm"
+                  className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 border-2 border-gray-900 text-gray-900 rounded-lg font-semibold text-sm hover:bg-gray-900 hover:text-white transition-colors"
                 >
+                  <MessageCircle className="w-4 h-4" />
                   Contacter l'hôte
                 </button>
               )}
               {!currentUser && (
                 <button
                   onClick={() => router.push(`/login?redirect=/listing/${params.id}`)}
-                  className="mt-4 text-gray-500 underline text-sm"
+                  className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 text-gray-500 rounded-lg font-medium text-sm hover:border-gray-400 hover:text-gray-700 transition-colors"
                 >
+                  <MessageCircle className="w-4 h-4" />
                   Connectez-vous pour contacter l'hôte
                 </button>
               )}
@@ -1959,6 +1961,26 @@ export default function ListingDetailPage() {
 </div>
 )}
 </div>
+          {/* Contact Host - in booking card */}
+          {currentUser && host && (currentUser as any)._id !== host._id && (
+            <button
+              onClick={() => router.push(`/dashboard/messages?user=${host._id}&listing=${listing.id || (listing as any)._id}`)}
+              className="w-full mt-4 py-3 border-2 border-gray-900 text-gray-900 rounded-xl font-semibold text-sm hover:bg-gray-900 hover:text-white transition-colors flex items-center justify-center gap-2"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Contacter l'hôte
+            </button>
+          )}
+          {!currentUser && (
+            <button
+              onClick={() => router.push(`/login?redirect=/listing/${params.id}`)}
+              className="w-full mt-4 py-3 border-2 border-gray-300 text-gray-500 rounded-xl font-medium text-sm hover:border-gray-400 hover:text-gray-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Connectez-vous pour contacter l'hôte
+            </button>
+          )}
+
           {/* Report Listing */}
           <button className="w-full mt-4 flex items-center justify-center gap-2 py-3 text-gray-600 hover:text-gray-900 transition-colors">
             <Flag className="w-4 h-4" />
@@ -2003,19 +2025,30 @@ export default function ListingDetailPage() {
           </button>
         )}
       </div>
-      <button
-        onClick={() => {
-          if (!checkIn || !checkOut) {
-            setDateError(true);
-            setTimeout(() => setDateError(false), 4000);
-            return;
-          }
-          setShowBookingModal(true);
-        }}
-        className="px-5 py-2.5 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white font-semibold rounded-lg text-sm"
-      >
-        Réserver
-      </button>
+      <div className="flex items-center gap-2">
+        {currentUser && host && (currentUser as any)._id !== host._id && (
+          <button
+            onClick={() => router.push(`/dashboard/messages?user=${host._id}&listing=${listing.id || (listing as any)._id}`)}
+            className="p-2.5 border-2 border-gray-300 rounded-lg hover:border-gray-900 hover:text-gray-900 transition-colors text-gray-500"
+            aria-label="Contacter l'hôte"
+          >
+            <MessageCircle className="w-5 h-5" />
+          </button>
+        )}
+        <button
+          onClick={() => {
+            if (!checkIn || !checkOut) {
+              setDateError(true);
+              setTimeout(() => setDateError(false), 4000);
+              return;
+            }
+            setShowBookingModal(true);
+          }}
+          className="px-5 py-2.5 bg-gradient-to-r from-[#FF385C] to-[#E31C5F] text-white font-semibold rounded-lg text-sm"
+        >
+          Réserver
+        </button>
+      </div>
     </div>
   </div>
 

@@ -121,7 +121,9 @@ const NotificationSchema = new mongoose.Schema({
       'ticket_reply',
       'ticket_updated',
       'ticket_resolved',
-      'ticket_assigned'
+      'ticket_assigned',
+      // Moderation
+      'message_flagged'
     ],
     required: [true, 'Notification type is required'],
     index: true

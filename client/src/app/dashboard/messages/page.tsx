@@ -142,6 +142,7 @@ export default function MessagesPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const isInitializedRef = useRef(false);
+  const selectedConversationRef = useRef<Conversation | null>(null);
 
   // Initialize socket connection once on mount
   useEffect(() => {
@@ -188,6 +189,11 @@ export default function MessagesPage() {
     };
   }, [])
 
+  // Keep ref in sync with state so socket handlers always see latest value
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
+
   // Fetch data when filter changes
   useEffect(() => {
     fetchData();
@@ -215,10 +221,14 @@ export default function MessagesPage() {
       if (existingConversation) {
         fetchMessages(existingConversation._id);
         setConversationInitialized(true);
+        router.replace(`/dashboard/messages?c=${existingConversation._id}`, { scroll: false });
       } else {
         createOrGetConversationWithUser(recipientId, listingId || undefined)
-          .then(() => {
+          .then((conv) => {
             setConversationInitialized(true);
+            if (conv?._id) {
+              router.replace(`/dashboard/messages?c=${conv._id}`, { scroll: false });
+            }
           })
           .catch(err => {
             console.error('Failed to create conversation:', err);
@@ -226,6 +236,20 @@ export default function MessagesPage() {
       }
     }
   }, [searchParams, conversations, currentUserId, conversationInitialized]);
+
+  // Restore selected conversation from ?c= param on page load/refresh
+  useEffect(() => {
+    const conversationId = searchParams?.get('c');
+    const recipientId = searchParams?.get('user');
+    // ?user= takes priority over ?c=
+    if (conversationId && !recipientId && !selectedConversation && !loading && conversations.length > 0) {
+      const exists = conversations.find(conv => conv._id === conversationId);
+      if (exists) {
+        fetchMessages(conversationId);
+        setShowMobileConversation(true);
+      }
+    }
+  }, [searchParams, conversations, selectedConversation, loading]);
 
   // ✅ FIX BQ-35: Auto-scroll with delay to ensure DOM is updated
   useEffect(() => {
@@ -275,15 +299,21 @@ export default function MessagesPage() {
       toast.error(error.message || ((t as any)?.toast?.connectionError || 'Connection error'));
     });
 
-    // ✅ FIX BQ-34: New message received - ensure real-time display
+    // ✅ FIX: Use ref to avoid stale closure - socket is bound once on mount
+    // but selectedConversation changes over time
     socketRef.current.on('new_message', (data: { conversationId: string; message: Message }) => {
+      const currentConv = selectedConversationRef.current;
       // Only add message if it's for the currently selected conversation
-      if (selectedConversation && data.conversationId === selectedConversation._id) {
+      if (currentConv && data.conversationId === currentConv._id) {
         setMessages(prev => {
-          // Check if this is replacing a temporary message
-          const tempMsgIndex = prev.findIndex(m => m._id.startsWith('temp-') && m.content === data.message.content);
-          if (tempMsgIndex !== -1) {
-            // Replace temporary message with real one
+          // Check if this is replacing a temporary message (match by sender, content may differ if masked)
+          const senderId = typeof data.message.sender === 'object' ? data.message.sender._id : data.message.sender;
+          const tempMsgIndex = prev.findIndex(m =>
+            m._id.startsWith('temp-') &&
+            (typeof m.sender === 'object' ? m.sender._id : m.sender) === senderId
+          );
+          if (tempMsgIndex !== -1 && data.message.type !== 'system') {
+            // Replace temporary message with real one (may have masked content)
             const updated = [...prev];
             updated[tempMsgIndex] = data.message;
             return updated;
@@ -295,8 +325,13 @@ export default function MessagesPage() {
           return [...prev, data.message];
         });
 
-        // ✅ FIX BQ-35: Scroll to bottom when new message arrives
+        // Scroll to bottom when new message arrives
         setTimeout(scrollToBottom, 200);
+
+        // Auto mark as read since user is viewing this conversation
+        if (socketRef.current?.connected) {
+          socketRef.current.emit('mark_as_read', data.conversationId);
+        }
       }
 
       // Update conversation list
@@ -307,8 +342,9 @@ export default function MessagesPage() {
     socketRef.current.on('message_notification', (data: { conversationId: string; message: Message }) => {
       fetchConversations();
 
+      const currentConv = selectedConversationRef.current;
       // Show notification if not viewing this conversation
-      if (!selectedConversation || data.conversationId !== selectedConversation._id) {
+      if (!currentConv || data.conversationId !== currentConv._id) {
         const name = `${data.message.sender.firstName} ${data.message.sender.lastName}`;
         const message = (t as any)?.toast?.newMessage ? (t as any).toast.newMessage.replace('{name}', name) : `New message from ${name}`;
         toast.success(message);
@@ -317,7 +353,8 @@ export default function MessagesPage() {
 
     // Message updated
     socketRef.current.on('message_updated', (data: { conversationId: string; message: Message }) => {
-      if (selectedConversation && data.conversationId === selectedConversation._id) {
+      const currentConv = selectedConversationRef.current;
+      if (currentConv && data.conversationId === currentConv._id) {
         setMessages(prev =>
           prev.map(msg => (msg._id === data.message._id ? data.message : msg))
         );
@@ -326,7 +363,8 @@ export default function MessagesPage() {
 
     // Message deleted
     socketRef.current.on('message_deleted', (data: { conversationId: string; messageId: string }) => {
-      if (selectedConversation && data.conversationId === selectedConversation._id) {
+      const currentConv = selectedConversationRef.current;
+      if (currentConv && data.conversationId === currentConv._id) {
         setMessages(prev => prev.filter(msg => msg._id !== data.messageId));
       }
       fetchConversations();
@@ -341,8 +379,9 @@ export default function MessagesPage() {
 
     // Messages read notification - update read status like WhatsApp
     socketRef.current.on('messages_read', (data: { conversationId: string; userId: string; readAt: string }) => {
+      const currentConv = selectedConversationRef.current;
       // Update messages to mark them as read by this user
-      if (selectedConversation && data.conversationId === selectedConversation._id) {
+      if (currentConv && data.conversationId === currentConv._id) {
         setMessages(prev =>
           prev.map(msg => {
             // If message is not yet read by this user, add them to readBy array
@@ -561,10 +600,17 @@ export default function MessagesPage() {
           }
         );
 
-        // Replace temp message with real message from server
-        setMessages(prev => prev.map(msg =>
-          msg._id === tempMessage._id ? response.data.data.message : msg
-        ));
+        // Replace temp message with real message from server (may have masked content)
+        setMessages(prev => {
+          const updated = prev.map(msg =>
+            msg._id === tempMessage._id ? response.data.data.message : msg
+          );
+          // Add system warning message if present
+          if (response.data.data.systemMessage) {
+            updated.push(response.data.data.systemMessage);
+          }
+          return updated;
+        });
         fetchConversations();
       }
     } catch (error: any) {
@@ -898,7 +944,8 @@ export default function MessagesPage() {
                         key={conversation._id}
                         onClick={() => {
                           fetchMessages(conversation._id);
-                          setShowMobileConversation(true); // Show conversation on mobile
+                          setShowMobileConversation(true);
+                          router.replace(`/dashboard/messages?c=${conversation._id}`, { scroll: false });
                         }}
                         className={`p-4 border-b border-gray-200 cursor-pointer transition-colors ${
                           selectedConversation?._id === conversation._id
@@ -1084,6 +1131,22 @@ export default function MessagesPage() {
                             index === 0 ||
                             messages[index - 1].sender._id !== message.sender._id;
 
+                          // System messages (moderation warnings, etc.)
+                          if (message.type === 'system') {
+                            return (
+                              <div key={message._id} className="flex justify-center my-2">
+                                <div className="max-w-[85%] px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
+                                  <div className="flex items-start gap-2">
+                                    <svg className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                    <p className="text-xs text-amber-800 leading-relaxed">{message.content}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+
                           return (
                             <div
                               key={message._id}
@@ -1138,7 +1201,7 @@ export default function MessagesPage() {
                                       {formatFullTime(message.createdAt)}
                                     </span>
 
-                                    {/* ✅ FIX: WhatsApp-style read indicators (checkmarks) */}
+                                    {/* WhatsApp-style read indicators (checkmarks) */}
                                     {isOwnMessage && (
                                       <div className="flex items-center">
                                         {(() => {
