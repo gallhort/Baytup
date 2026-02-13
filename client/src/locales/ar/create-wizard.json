@@ -1,0 +1,328 @@
+{
+  "exit": "خروج",
+  "saveDraft": "حفظ",
+  "back": "رجوع",
+  "next": "التالي",
+  "phaseLabels": {
+    "1": "الخطوة {current} من {total}",
+    "2": "الخطوة {current} من {total}",
+    "3": "الخطوة {current} من {total}"
+  },
+  "phases": {
+    "1": "صف عقارك",
+    "2": "اجعله مميزا",
+    "3": "انهِ وانشر"
+  },
+  "exitDialog": {
+    "title": "المغادرة دون حفظ؟",
+    "description": "تم حفظ تقدمك كمسودة. يمكنك المتابعة من حيث توقفت.",
+    "stay": "البقاء",
+    "leave": "مغادرة"
+  },
+  "guestUpgrade": {
+    "title": "كن مضيفا",
+    "description": "لإنشاء إعلانات والبدء في الكسب، تحتاج إلى التقدم لتصبح مضيفا. لا يستغرق الأمر سوى بضع دقائق.",
+    "cta": "التقدم لتصبح مضيفا",
+    "back": "العودة إلى لوحة التحكم"
+  },
+  "category": {
+    "title": "ماذا تعرض؟",
+    "subtitle": "اختر نوع الإعلان الذي تريد إنشاءه.",
+    "stay": "مكان إقامة",
+    "stayDesc": "شقة، منزل، فيلا، غرفة، رياض...",
+    "vehicle": "مركبة",
+    "vehicleDesc": "سيارة، دراجة نارية، شاحنة صغيرة..."
+  },
+  "propertyType": {
+    "title": "ما نوع العقار؟",
+    "subtitle": "اختر الخيار الذي يصف عقارك بشكل أفضل.",
+    "types": {
+      "apartment": "شقة",
+      "house": "منزل",
+      "villa": "فيلا",
+      "studio": "استوديو",
+      "room": "غرفة",
+      "riad": "رياض",
+      "guesthouse": "دار ضيافة",
+      "hotel_room": "غرفة فندق"
+    }
+  },
+  "vehicleType": {
+    "title": "ما نوع المركبة؟",
+    "subtitle": "اختر الخيار الذي يصف مركبتك بشكل أفضل.",
+    "types": {
+      "car": "سيارة",
+      "motorcycle": "دراجة نارية",
+      "truck": "شاحنة",
+      "van": "شاحنة صغيرة",
+      "suv": "SUV",
+      "bus": "حافلة",
+      "bicycle": "دراجة",
+      "scooter": "سكوتر",
+      "boat": "قارب"
+    }
+  },
+  "location": {
+    "title": "أين يقع؟",
+    "subtitle": "سيحصل الضيوف على العنوان الدقيق بعد الحجز فقط.",
+    "city": "المدينة",
+    "cityPlaceholder": "ابحث عن مدينة...",
+    "street": "العنوان",
+    "streetPlaceholder": "مثال: 23 شارع ديدوش مراد",
+    "state": "الولاية",
+    "mapHint": "انقر على الخريطة أو اسحب العلامة لتحديد الموقع الدقيق.",
+    "useMyPosition": "استخدم موقعي GPS",
+    "searchAddress": "ابحث عن عنوان",
+    "searchAddressPlaceholder": "مثال: 23 شارع ديدوش مراد، الجزائر",
+    "search": "بحث",
+    "geoNotSupported": "تحديد الموقع غير مدعوم في متصفحك",
+    "geoPermissionDenied": "تم رفض إذن الموقع. يرجى السماح بالوصول في إعدادات المتصفح.",
+    "geoUnavailable": "الموقع غير متاح. حاول مرة أخرى.",
+    "geoError": "تعذر الحصول على موقعك. حاول مرة أخرى."
+  },
+  "basicsStay": {
+    "title": "أخبرنا عن مكانك",
+    "subtitle": "شارك بعض التفاصيل الأساسية عن عقارك.",
+    "bedrooms": "غرف النوم",
+    "bathrooms": "الحمامات",
+    "floor": "الطابق",
+    "floorHint": "الطابق الأرضي = 0",
+    "area": "المساحة (م²)",
+    "furnished": "التأثيث",
+    "furnishedOptions": {
+      "furnished": "مفروش",
+      "semi-furnished": "شبه مفروش",
+      "unfurnished": "غير مفروش"
+    }
+  },
+  "basicsVehicle": {
+    "title": "تفاصيل المركبة",
+    "subtitle": "أخبرنا المزيد عن مركبتك.",
+    "make": "الشركة المصنعة",
+    "makePlaceholder": "مثال: تويوتا",
+    "model": "الموديل",
+    "modelPlaceholder": "مثال: كورولا",
+    "year": "السنة",
+    "seats": "المقاعد",
+    "transmission": "ناقل الحركة",
+    "transmissionOptions": {
+      "manual": "يدوي",
+      "automatic": "أوتوماتيك"
+    },
+    "fuelType": "نوع الوقود",
+    "fuelOptions": {
+      "gasoline": "بنزين",
+      "diesel": "ديزل",
+      "electric": "كهربائي",
+      "hybrid": "هجين"
+    }
+  },
+  "amenities": {
+    "title": "ما المرافق التي تقدمها؟",
+    "subtitle": "اختر كل ما ينطبق. يمكنك إضافة المزيد لاحقا.",
+    "items": {
+      "wifi": "واي فاي",
+      "parking": "موقف سيارات",
+      "pool": "مسبح",
+      "gym": "صالة رياضة",
+      "garden": "حديقة",
+      "terrace": "تراس",
+      "elevator": "مصعد",
+      "security": "أمن",
+      "ac": "تكييف",
+      "heating": "تدفئة",
+      "kitchen": "مطبخ",
+      "balcony": "شرفة",
+      "tv": "تلفزيون",
+      "washer": "غسالة",
+      "beach_access": "وصول للشاطئ",
+      "mountain_view": "إطلالة جبلية"
+    }
+  },
+  "vehicleFeatures": {
+    "title": "ما الميزات المتوفرة؟",
+    "subtitle": "اختر كل ما ينطبق.",
+    "items": {
+      "gps": "GPS",
+      "bluetooth": "بلوتوث",
+      "ac": "تكييف",
+      "sunroof": "فتحة سقف",
+      "backup_camera": "كاميرا خلفية",
+      "cruise_control": "مثبت السرعة",
+      "heated_seats": "مقاعد مدفأة",
+      "wifi_hotspot": "واي فاي",
+      "child_seat": "مقعد طفل",
+      "ski_rack": "حامل تزلج",
+      "bike_rack": "حامل دراجة"
+    }
+  },
+  "photos": {
+    "title": "أضف صورا",
+    "subtitle": "الصور الجميلة تساعد الضيوف على تخيل إقامتهم. أضف صورة واحدة على الأقل.",
+    "dropHere": "اسحب وأفلت صورك هنا",
+    "orClick": "أو انقر للتصفح",
+    "uploading": "جاري الرفع...",
+    "uploadSuccess": "صورة(صور) تم رفعها",
+    "uploadError": "فشل الرفع",
+    "fileTooLarge": "الملف كبير جدا (الحد الأقصى 5 ميغابايت). تم تخطي بعض الملفات.",
+    "cover": "غلاف",
+    "setCover": "تعيين كغلاف",
+    "remove": "حذف",
+    "captionPlaceholder": "أضف وصفا...",
+    "addMore": "إضافة المزيد"
+  },
+  "titleStep": {
+    "title": "أعطِ إعلانك عنوانا",
+    "subtitle": "العناوين القصيرة تعمل بشكل أفضل. كن مبدعا!",
+    "placeholder": "مثال: شقة مريحة في قلب الجزائر العاصمة",
+    "tipsTitle": "نصائح",
+    "tip1": "سلط الضوء على ما يجعل مكانك مميزا",
+    "tip2": "اذكر الحي أو معلما قريبا",
+    "tip3": "حافظ على العنوان أقل من 50 حرفا"
+  },
+  "descriptionStep": {
+    "title": "صف إعلانك",
+    "subtitle": "شارك ما يجعل مكانك مميزا وما يمكن أن يتوقعه الضيوف.",
+    "placeholder": "صف المساحة والحي وما سيحبه الضيوف...",
+    "minChars": "20 حرفا كحد أدنى",
+    "remaining": "متبقي",
+    "tipsTitle": "ما يجب تضمينه",
+    "tip1": "المساحة: التصميم والأسلوب والميزات الفريدة",
+    "tip2": "الحي: المطاعم والنقل والمعالم القريبة",
+    "tip3": "وصول الضيوف: مدخل خاص ومساحات مشتركة وموقف سيارات",
+    "tip4": "ما يجعله مميزا: المناظر والتاريخ والتجديد الحديث"
+  },
+  "pricing": {
+    "title": "حدد سعرك",
+    "subtitle": "يمكنك تغييره في أي وقت.",
+    "currency": "العملة",
+    "pricingType": "نوع التسعير",
+    "pricingTypes": {
+      "per_night": "/ ليلة",
+      "per_day": "/ يوم",
+      "per_week": "/ أسبوع",
+      "per_month": "/ شهر",
+      "per_hour": "/ ساعة"
+    },
+    "basePrice": "السعر الأساسي",
+    "cleaningFee": "رسوم التنظيف",
+    "securityDeposit": "مبلغ الضمان",
+    "enableAltCurrency": "عرض السعر بعملة أخرى أيضا",
+    "altBasePrice": "السعر البديل",
+    "altCleaningFee": "رسوم التنظيف البديلة"
+  },
+  "availability": {
+    "title": "إعدادات التوفر",
+    "subtitle": "حدد تفضيلات الحجز.",
+    "instantBook": "الحجز الفوري",
+    "instantBookDesc": "يمكن للضيوف الحجز دون انتظار موافقتك",
+    "stayDuration": "مدة الإقامة",
+    "minStay": "الحد الأدنى للإقامة (ليالٍ)",
+    "maxStay": "الحد الأقصى للإقامة (ليالٍ)",
+    "advanceNotice": "إشعار مسبق (أيام)",
+    "advanceNoticeDesc": "كم يوما مسبقا يمكن للضيوف الحجز",
+    "preparationTime": "وقت التحضير (أيام)",
+    "preparationTimeDesc": "الوقت بين الحجوزات للتنظيف",
+    "checkTimes": "الوصول والمغادرة",
+    "checkInFrom": "الوصول من",
+    "checkInTo": "الوصول حتى",
+    "checkOutBefore": "المغادرة قبل"
+  },
+  "rules": {
+    "title": "قواعد المنزل",
+    "subtitle": "حدد توقعات واضحة لضيوفك.",
+    "items": {
+      "smoking": "التدخين",
+      "pets": "الحيوانات الأليفة",
+      "parties": "الحفلات والمناسبات",
+      "children": "الأطفال"
+    },
+    "allowed": "مسموح",
+    "notAllowed": "غير مسموح",
+    "cancellationTitle": "سياسة الإلغاء",
+    "cancellation": {
+      "flexible": {
+        "label": "مرنة",
+        "description": "استرداد كامل حتى 24 ساعة قبل الوصول"
+      },
+      "moderate": {
+        "label": "معتدلة",
+        "description": "استرداد كامل حتى 5 أيام قبل الوصول"
+      },
+      "strict": {
+        "label": "صارمة",
+        "description": "استرداد 50% حتى أسبوع قبل الوصول"
+      },
+      "strict_long_term": {
+        "label": "صارمة (إقامة طويلة)",
+        "description": "سياسة صارمة للإقامات 30 يوما فأكثر"
+      },
+      "non_refundable": {
+        "label": "غير قابل للاسترداد",
+        "description": "لا استرداد بعد الحجز"
+      }
+    },
+    "customRules": "قواعد إضافية",
+    "customRulePlaceholder": "أضف قاعدة..."
+  },
+  "review": {
+    "title": "راجع إعلانك",
+    "subtitle": "إليك ملخص إعلانك. راجعه قبل النشر.",
+    "edit": "تعديل",
+    "sections": {
+      "category": "الفئة",
+      "location": "الموقع",
+      "title": "العنوان",
+      "price": "السعر",
+      "details": "التفاصيل",
+      "photos": "الصور",
+      "cancellation": "سياسة الإلغاء"
+    },
+    "bedrooms": "غرف النوم",
+    "bathrooms": "الحمامات",
+    "area": "المساحة",
+    "furnished": "التأثيث",
+    "amenities": "المرافق",
+    "make": "الشركة المصنعة",
+    "model": "الموديل",
+    "year": "السنة",
+    "seats": "المقاعد",
+    "features": "الميزات",
+    "photosCount": "صورة(صور) تم رفعها",
+    "pricingTypes": {
+      "per_night": "/ ليلة",
+      "per_day": "/ يوم",
+      "per_week": "/ أسبوع",
+      "per_month": "/ شهر",
+      "per_hour": "/ ساعة"
+    },
+    "publish": "نشر الإعلان",
+    "saveDraft": "حفظ كمسودة"
+  },
+  "validation": {
+    "selectCategory": "يرجى اختيار فئة",
+    "selectType": "يرجى اختيار نوع",
+    "selectCity": "يرجى اختيار مدينة",
+    "enterStreet": "يرجى إدخال العنوان",
+    "placeMarker": "يرجى وضع العلامة على الخريطة",
+    "atLeastOneBedroom": "يرجى إضافة غرفة نوم واحدة على الأقل",
+    "atLeastOneBathroom": "يرجى إضافة حمام واحد على الأقل",
+    "enterMake": "يرجى إدخال الشركة المصنعة",
+    "enterModel": "يرجى إدخال الموديل",
+    "selectTransmission": "يرجى اختيار نوع ناقل الحركة",
+    "selectFuelType": "يرجى اختيار نوع الوقود",
+    "atLeastOnePhoto": "يرجى رفع صورة واحدة على الأقل",
+    "enterTitle": "يرجى إدخال عنوان",
+    "titleTooShort": "يجب أن يحتوي العنوان على 5 أحرف على الأقل",
+    "titleTooLong": "لا يمكن أن يتجاوز العنوان 100 حرف",
+    "enterDescription": "يرجى إدخال وصف",
+    "descriptionTooShort": "يجب أن يحتوي الوصف على 20 حرفا على الأقل",
+    "descriptionTooLong": "لا يمكن أن يتجاوز الوصف 2000 حرف",
+    "enterPrice": "يرجى إدخال سعر صالح"
+  },
+  "messages": {
+    "publishSuccess": "تم نشر إعلانك!",
+    "draftSuccess": "تم حفظ المسودة بنجاح",
+    "error": "فشل الإنشاء. يرجى المحاولة مرة أخرى."
+  }
+}

@@ -1,0 +1,328 @@
+{
+  "exit": "Exit",
+  "saveDraft": "Save",
+  "back": "Back",
+  "next": "Next",
+  "phaseLabels": {
+    "1": "STEP {current} OF {total}",
+    "2": "STEP {current} OF {total}",
+    "3": "STEP {current} OF {total}"
+  },
+  "phases": {
+    "1": "Describe your property",
+    "2": "Make it stand out",
+    "3": "Finish and publish"
+  },
+  "exitDialog": {
+    "title": "Leave without saving?",
+    "description": "Your progress has been saved as a draft. You can continue from where you left off.",
+    "stay": "Stay",
+    "leave": "Leave"
+  },
+  "guestUpgrade": {
+    "title": "Become a host",
+    "description": "To create listings and start earning, you need to apply to become a host. It only takes a few minutes.",
+    "cta": "Apply to become a host",
+    "back": "Back to dashboard"
+  },
+  "category": {
+    "title": "What are you listing?",
+    "subtitle": "Choose the type of listing you want to create.",
+    "stay": "A place to stay",
+    "stayDesc": "Apartment, house, villa, room, riad...",
+    "vehicle": "A vehicle",
+    "vehicleDesc": "Car, motorcycle, van, SUV, bicycle..."
+  },
+  "propertyType": {
+    "title": "What type of property?",
+    "subtitle": "Select the option that best describes your property.",
+    "types": {
+      "apartment": "Apartment",
+      "house": "House",
+      "villa": "Villa",
+      "studio": "Studio",
+      "room": "Room",
+      "riad": "Riad",
+      "guesthouse": "Guesthouse",
+      "hotel_room": "Hotel room"
+    }
+  },
+  "vehicleType": {
+    "title": "What type of vehicle?",
+    "subtitle": "Select the option that best describes your vehicle.",
+    "types": {
+      "car": "Car",
+      "motorcycle": "Motorcycle",
+      "truck": "Truck",
+      "van": "Van",
+      "suv": "SUV",
+      "bus": "Bus",
+      "bicycle": "Bicycle",
+      "scooter": "Scooter",
+      "boat": "Boat"
+    }
+  },
+  "location": {
+    "title": "Where is it located?",
+    "subtitle": "Guests will only get the exact address once they book.",
+    "city": "City",
+    "cityPlaceholder": "Search for a city...",
+    "street": "Street address",
+    "streetPlaceholder": "e.g. 23 Rue Didouche Mourad",
+    "state": "Wilaya",
+    "mapHint": "Click on the map or drag the marker to set the exact location.",
+    "useMyPosition": "Use my GPS position",
+    "searchAddress": "Search an address",
+    "searchAddressPlaceholder": "e.g. 23 Rue Didouche Mourad, Alger",
+    "search": "Search",
+    "geoNotSupported": "Geolocation is not supported by your browser",
+    "geoPermissionDenied": "Location permission denied. Please allow access in your browser settings.",
+    "geoUnavailable": "Position unavailable. Try again.",
+    "geoError": "Could not get your position. Try again."
+  },
+  "basicsStay": {
+    "title": "Tell us about your place",
+    "subtitle": "Share some basic details about your property.",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "floor": "Floor",
+    "floorHint": "Ground floor = 0",
+    "area": "Area (m²)",
+    "furnished": "Furnishing",
+    "furnishedOptions": {
+      "furnished": "Furnished",
+      "semi-furnished": "Semi-furnished",
+      "unfurnished": "Unfurnished"
+    }
+  },
+  "basicsVehicle": {
+    "title": "Vehicle details",
+    "subtitle": "Tell us more about your vehicle.",
+    "make": "Make",
+    "makePlaceholder": "e.g. Toyota",
+    "model": "Model",
+    "modelPlaceholder": "e.g. Corolla",
+    "year": "Year",
+    "seats": "Seats",
+    "transmission": "Transmission",
+    "transmissionOptions": {
+      "manual": "Manual",
+      "automatic": "Automatic"
+    },
+    "fuelType": "Fuel type",
+    "fuelOptions": {
+      "gasoline": "Gasoline",
+      "diesel": "Diesel",
+      "electric": "Electric",
+      "hybrid": "Hybrid"
+    }
+  },
+  "amenities": {
+    "title": "What amenities do you offer?",
+    "subtitle": "Select all that apply. You can always add more later.",
+    "items": {
+      "wifi": "Wi-Fi",
+      "parking": "Parking",
+      "pool": "Pool",
+      "gym": "Gym",
+      "garden": "Garden",
+      "terrace": "Terrace",
+      "elevator": "Elevator",
+      "security": "Security",
+      "ac": "Air conditioning",
+      "heating": "Heating",
+      "kitchen": "Kitchen",
+      "balcony": "Balcony",
+      "tv": "TV",
+      "washer": "Washer",
+      "beach_access": "Beach access",
+      "mountain_view": "Mountain view"
+    }
+  },
+  "vehicleFeatures": {
+    "title": "What features does it have?",
+    "subtitle": "Select all that apply.",
+    "items": {
+      "gps": "GPS",
+      "bluetooth": "Bluetooth",
+      "ac": "Air conditioning",
+      "sunroof": "Sunroof",
+      "backup_camera": "Backup camera",
+      "cruise_control": "Cruise control",
+      "heated_seats": "Heated seats",
+      "wifi_hotspot": "Wi-Fi hotspot",
+      "child_seat": "Child seat",
+      "ski_rack": "Ski rack",
+      "bike_rack": "Bike rack"
+    }
+  },
+  "photos": {
+    "title": "Add some photos",
+    "subtitle": "Great photos help guests imagine staying at your place. Upload at least 1 photo.",
+    "dropHere": "Drag & drop your photos here",
+    "orClick": "or click to browse",
+    "uploading": "Uploading...",
+    "uploadSuccess": "photo(s) uploaded",
+    "uploadError": "Upload failed",
+    "fileTooLarge": "File too large (max 5MB). Some files were skipped.",
+    "cover": "Cover",
+    "setCover": "Set as cover",
+    "remove": "Remove",
+    "captionPlaceholder": "Add a caption...",
+    "addMore": "Add more"
+  },
+  "titleStep": {
+    "title": "Give your listing a title",
+    "subtitle": "Short titles work best. Be creative!",
+    "placeholder": "e.g. Cozy apartment in the heart of Algiers",
+    "tipsTitle": "Tips",
+    "tip1": "Highlight what makes your place special",
+    "tip2": "Mention the neighborhood or a nearby landmark",
+    "tip3": "Keep it under 50 characters for best results"
+  },
+  "descriptionStep": {
+    "title": "Describe your listing",
+    "subtitle": "Share what makes your place special and what guests can expect.",
+    "placeholder": "Describe the space, the neighborhood, what guests will love...",
+    "minChars": "Minimum 20 characters",
+    "remaining": "remaining",
+    "tipsTitle": "What to include",
+    "tip1": "The space: layout, style, unique features",
+    "tip2": "The neighborhood: restaurants, transport, attractions nearby",
+    "tip3": "Guest access: private entrance, shared spaces, parking",
+    "tip4": "What makes it special: views, history, recent renovation"
+  },
+  "pricing": {
+    "title": "Set your price",
+    "subtitle": "You can change it anytime.",
+    "currency": "Currency",
+    "pricingType": "Pricing type",
+    "pricingTypes": {
+      "per_night": "/ night",
+      "per_day": "/ day",
+      "per_week": "/ week",
+      "per_month": "/ month",
+      "per_hour": "/ hour"
+    },
+    "basePrice": "Base price",
+    "cleaningFee": "Cleaning fee",
+    "securityDeposit": "Security deposit",
+    "enableAltCurrency": "Also display price in another currency",
+    "altBasePrice": "Alternative base price",
+    "altCleaningFee": "Alternative cleaning fee"
+  },
+  "availability": {
+    "title": "Availability settings",
+    "subtitle": "Set your booking preferences.",
+    "instantBook": "Instant booking",
+    "instantBookDesc": "Guests can book without waiting for your approval",
+    "stayDuration": "Stay duration",
+    "minStay": "Minimum stay (nights)",
+    "maxStay": "Maximum stay (nights)",
+    "advanceNotice": "Advance notice (days)",
+    "advanceNoticeDesc": "How far in advance guests can book",
+    "preparationTime": "Preparation time (days)",
+    "preparationTimeDesc": "Time between bookings for cleaning",
+    "checkTimes": "Check-in & check-out",
+    "checkInFrom": "Check-in from",
+    "checkInTo": "Check-in until",
+    "checkOutBefore": "Check-out before"
+  },
+  "rules": {
+    "title": "House rules",
+    "subtitle": "Set clear expectations for your guests.",
+    "items": {
+      "smoking": "Smoking",
+      "pets": "Pets",
+      "parties": "Parties & events",
+      "children": "Children"
+    },
+    "allowed": "Allowed",
+    "notAllowed": "Not allowed",
+    "cancellationTitle": "Cancellation policy",
+    "cancellation": {
+      "flexible": {
+        "label": "Flexible",
+        "description": "Full refund up to 24 hours before check-in"
+      },
+      "moderate": {
+        "label": "Moderate",
+        "description": "Full refund up to 5 days before check-in"
+      },
+      "strict": {
+        "label": "Strict",
+        "description": "50% refund up to 1 week before check-in"
+      },
+      "strict_long_term": {
+        "label": "Strict (long-term)",
+        "description": "Strict policy for stays of 30+ days"
+      },
+      "non_refundable": {
+        "label": "Non-refundable",
+        "description": "No refund after booking"
+      }
+    },
+    "customRules": "Additional rules",
+    "customRulePlaceholder": "Add a custom rule..."
+  },
+  "review": {
+    "title": "Review your listing",
+    "subtitle": "Here's a summary of your listing. Review it before publishing.",
+    "edit": "Edit",
+    "sections": {
+      "category": "Category",
+      "location": "Location",
+      "title": "Title",
+      "price": "Price",
+      "details": "Details",
+      "photos": "Photos",
+      "cancellation": "Cancellation policy"
+    },
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "area": "Area",
+    "furnished": "Furnished",
+    "amenities": "Amenities",
+    "make": "Make",
+    "model": "Model",
+    "year": "Year",
+    "seats": "Seats",
+    "features": "Features",
+    "photosCount": "photo(s) uploaded",
+    "pricingTypes": {
+      "per_night": "/ night",
+      "per_day": "/ day",
+      "per_week": "/ week",
+      "per_month": "/ month",
+      "per_hour": "/ hour"
+    },
+    "publish": "Publish listing",
+    "saveDraft": "Save as draft"
+  },
+  "validation": {
+    "selectCategory": "Please select a category",
+    "selectType": "Please select a type",
+    "selectCity": "Please select a city",
+    "enterStreet": "Please enter a street address",
+    "placeMarker": "Please place the marker on the map",
+    "atLeastOneBedroom": "Please add at least 1 bedroom",
+    "atLeastOneBathroom": "Please add at least 1 bathroom",
+    "enterMake": "Please enter the vehicle make",
+    "enterModel": "Please enter the vehicle model",
+    "selectTransmission": "Please select a transmission type",
+    "selectFuelType": "Please select a fuel type",
+    "atLeastOnePhoto": "Please upload at least one photo",
+    "enterTitle": "Please enter a title",
+    "titleTooShort": "Title must be at least 5 characters",
+    "titleTooLong": "Title cannot exceed 100 characters",
+    "enterDescription": "Please enter a description",
+    "descriptionTooShort": "Description must be at least 20 characters",
+    "descriptionTooLong": "Description cannot exceed 2000 characters",
+    "enterPrice": "Please enter a valid price"
+  },
+  "messages": {
+    "publishSuccess": "Your listing has been published!",
+    "draftSuccess": "Draft saved successfully",
+    "error": "Failed to create listing. Please try again."
+  }
+}

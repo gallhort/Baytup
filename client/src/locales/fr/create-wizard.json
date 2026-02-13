@@ -1,0 +1,328 @@
+{
+  "exit": "Quitter",
+  "saveDraft": "Sauvegarder",
+  "back": "Retour",
+  "next": "Suivant",
+  "phaseLabels": {
+    "1": "ETAPE {current} SUR {total}",
+    "2": "ETAPE {current} SUR {total}",
+    "3": "ETAPE {current} SUR {total}"
+  },
+  "phases": {
+    "1": "Decrivez votre bien",
+    "2": "Demarquez-vous",
+    "3": "Finalisez et publiez"
+  },
+  "exitDialog": {
+    "title": "Quitter sans sauvegarder ?",
+    "description": "Votre progression a ete sauvegardee en brouillon. Vous pourrez reprendre la ou vous en etiez.",
+    "stay": "Rester",
+    "leave": "Quitter"
+  },
+  "guestUpgrade": {
+    "title": "Devenez hote",
+    "description": "Pour creer des annonces et commencer a gagner de l'argent, vous devez postuler pour devenir hote. Cela ne prend que quelques minutes.",
+    "cta": "Postuler pour devenir hote",
+    "back": "Retour au tableau de bord"
+  },
+  "category": {
+    "title": "Que proposez-vous ?",
+    "subtitle": "Choisissez le type d'annonce que vous souhaitez creer.",
+    "stay": "Un logement",
+    "stayDesc": "Appartement, maison, villa, chambre, riad...",
+    "vehicle": "Un vehicule",
+    "vehicleDesc": "Voiture, moto, van, SUV, velo..."
+  },
+  "propertyType": {
+    "title": "Quel type de logement ?",
+    "subtitle": "Selectionnez l'option qui decrit le mieux votre bien.",
+    "types": {
+      "apartment": "Appartement",
+      "house": "Maison",
+      "villa": "Villa",
+      "studio": "Studio",
+      "room": "Chambre",
+      "riad": "Riad",
+      "guesthouse": "Maison d'hotes",
+      "hotel_room": "Chambre d'hotel"
+    }
+  },
+  "vehicleType": {
+    "title": "Quel type de vehicule ?",
+    "subtitle": "Selectionnez l'option qui decrit le mieux votre vehicule.",
+    "types": {
+      "car": "Voiture",
+      "motorcycle": "Moto",
+      "truck": "Camion",
+      "van": "Fourgon",
+      "suv": "SUV",
+      "bus": "Bus",
+      "bicycle": "Velo",
+      "scooter": "Scooter",
+      "boat": "Bateau"
+    }
+  },
+  "location": {
+    "title": "Ou se trouve votre bien ?",
+    "subtitle": "Les voyageurs n'obtiendront l'adresse exacte qu'une fois la reservation confirmee.",
+    "city": "Ville",
+    "cityPlaceholder": "Rechercher une ville...",
+    "street": "Adresse",
+    "streetPlaceholder": "ex. 23 Rue Didouche Mourad",
+    "state": "Wilaya",
+    "mapHint": "Cliquez sur la carte ou deplacez le marqueur pour definir l'emplacement exact.",
+    "useMyPosition": "Utiliser ma position GPS",
+    "searchAddress": "Rechercher une adresse",
+    "searchAddressPlaceholder": "ex. 23 Rue Didouche Mourad, Alger",
+    "search": "Rechercher",
+    "geoNotSupported": "La geolocalisation n'est pas supportee par votre navigateur",
+    "geoPermissionDenied": "Acces a la localisation refuse. Autorisez l'acces dans les parametres de votre navigateur.",
+    "geoUnavailable": "Position indisponible. Reessayez.",
+    "geoError": "Impossible d'obtenir votre position. Reessayez."
+  },
+  "basicsStay": {
+    "title": "Parlez-nous de votre logement",
+    "subtitle": "Partagez quelques informations de base sur votre bien.",
+    "bedrooms": "Chambres",
+    "bathrooms": "Salles de bain",
+    "floor": "Etage",
+    "floorHint": "Rez-de-chaussee = 0",
+    "area": "Surface (m²)",
+    "furnished": "Ameublement",
+    "furnishedOptions": {
+      "furnished": "Meuble",
+      "semi-furnished": "Semi-meuble",
+      "unfurnished": "Non meuble"
+    }
+  },
+  "basicsVehicle": {
+    "title": "Details du vehicule",
+    "subtitle": "Dites-nous en plus sur votre vehicule.",
+    "make": "Marque",
+    "makePlaceholder": "ex. Toyota",
+    "model": "Modele",
+    "modelPlaceholder": "ex. Corolla",
+    "year": "Annee",
+    "seats": "Places",
+    "transmission": "Transmission",
+    "transmissionOptions": {
+      "manual": "Manuelle",
+      "automatic": "Automatique"
+    },
+    "fuelType": "Carburant",
+    "fuelOptions": {
+      "gasoline": "Essence",
+      "diesel": "Diesel",
+      "electric": "Electrique",
+      "hybrid": "Hybride"
+    }
+  },
+  "amenities": {
+    "title": "Quels equipements proposez-vous ?",
+    "subtitle": "Selectionnez tout ce qui s'applique. Vous pourrez en ajouter plus tard.",
+    "items": {
+      "wifi": "Wi-Fi",
+      "parking": "Parking",
+      "pool": "Piscine",
+      "gym": "Salle de sport",
+      "garden": "Jardin",
+      "terrace": "Terrasse",
+      "elevator": "Ascenseur",
+      "security": "Securite",
+      "ac": "Climatisation",
+      "heating": "Chauffage",
+      "kitchen": "Cuisine",
+      "balcony": "Balcon",
+      "tv": "Television",
+      "washer": "Lave-linge",
+      "beach_access": "Acces plage",
+      "mountain_view": "Vue montagne"
+    }
+  },
+  "vehicleFeatures": {
+    "title": "Quels equipements possede-t-il ?",
+    "subtitle": "Selectionnez tout ce qui s'applique.",
+    "items": {
+      "gps": "GPS",
+      "bluetooth": "Bluetooth",
+      "ac": "Climatisation",
+      "sunroof": "Toit ouvrant",
+      "backup_camera": "Camera de recul",
+      "cruise_control": "Regulateur de vitesse",
+      "heated_seats": "Sieges chauffants",
+      "wifi_hotspot": "Hotspot Wi-Fi",
+      "child_seat": "Siege enfant",
+      "ski_rack": "Porte-ski",
+      "bike_rack": "Porte-velo"
+    }
+  },
+  "photos": {
+    "title": "Ajoutez des photos",
+    "subtitle": "De belles photos aident les voyageurs a s'imaginer chez vous. Ajoutez au moins 1 photo.",
+    "dropHere": "Glissez-deposez vos photos ici",
+    "orClick": "ou cliquez pour parcourir",
+    "uploading": "Telechargement en cours...",
+    "uploadSuccess": "photo(s) telechargee(s)",
+    "uploadError": "Echec du telechargement",
+    "fileTooLarge": "Fichier trop volumineux (max 5 Mo). Certains fichiers ont ete ignores.",
+    "cover": "Couverture",
+    "setCover": "Definir comme couverture",
+    "remove": "Supprimer",
+    "captionPlaceholder": "Ajouter une legende...",
+    "addMore": "Ajouter"
+  },
+  "titleStep": {
+    "title": "Donnez un titre a votre annonce",
+    "subtitle": "Les titres courts fonctionnent le mieux. Soyez creatif !",
+    "placeholder": "ex. Appartement cosy au coeur d'Alger",
+    "tipsTitle": "Conseils",
+    "tip1": "Mettez en avant ce qui rend votre bien unique",
+    "tip2": "Mentionnez le quartier ou un point de repere",
+    "tip3": "Gardez-le sous 50 caracteres pour de meilleurs resultats"
+  },
+  "descriptionStep": {
+    "title": "Decrivez votre annonce",
+    "subtitle": "Partagez ce qui rend votre bien special et ce que les voyageurs peuvent attendre.",
+    "placeholder": "Decrivez l'espace, le quartier, ce que les voyageurs vont adorer...",
+    "minChars": "Minimum 20 caracteres",
+    "remaining": "restant(s)",
+    "tipsTitle": "Que mentionner",
+    "tip1": "L'espace : agencement, style, caracteristiques uniques",
+    "tip2": "Le quartier : restaurants, transports, attractions a proximite",
+    "tip3": "Acces : entree privee, espaces partages, parking",
+    "tip4": "Ce qui le rend special : vues, histoire, renovation recente"
+  },
+  "pricing": {
+    "title": "Fixez votre prix",
+    "subtitle": "Vous pouvez le modifier a tout moment.",
+    "currency": "Devise",
+    "pricingType": "Type de tarification",
+    "pricingTypes": {
+      "per_night": "/ nuit",
+      "per_day": "/ jour",
+      "per_week": "/ semaine",
+      "per_month": "/ mois",
+      "per_hour": "/ heure"
+    },
+    "basePrice": "Prix de base",
+    "cleaningFee": "Frais de menage",
+    "securityDeposit": "Caution",
+    "enableAltCurrency": "Afficher aussi le prix dans une autre devise",
+    "altBasePrice": "Prix de base alternatif",
+    "altCleaningFee": "Frais de menage alternatif"
+  },
+  "availability": {
+    "title": "Parametres de disponibilite",
+    "subtitle": "Definissez vos preferences de reservation.",
+    "instantBook": "Reservation instantanee",
+    "instantBookDesc": "Les voyageurs peuvent reserver sans attendre votre approbation",
+    "stayDuration": "Duree du sejour",
+    "minStay": "Sejour minimum (nuits)",
+    "maxStay": "Sejour maximum (nuits)",
+    "advanceNotice": "Preavis (jours)",
+    "advanceNoticeDesc": "Combien de jours a l'avance les voyageurs peuvent reserver",
+    "preparationTime": "Temps de preparation (jours)",
+    "preparationTimeDesc": "Temps entre les reservations pour le nettoyage",
+    "checkTimes": "Arrivee & depart",
+    "checkInFrom": "Arrivee a partir de",
+    "checkInTo": "Arrivee jusqu'a",
+    "checkOutBefore": "Depart avant"
+  },
+  "rules": {
+    "title": "Regles de la maison",
+    "subtitle": "Definissez des attentes claires pour vos voyageurs.",
+    "items": {
+      "smoking": "Tabac",
+      "pets": "Animaux",
+      "parties": "Fetes & evenements",
+      "children": "Enfants"
+    },
+    "allowed": "Autorise",
+    "notAllowed": "Non autorise",
+    "cancellationTitle": "Politique d'annulation",
+    "cancellation": {
+      "flexible": {
+        "label": "Flexible",
+        "description": "Remboursement integral jusqu'a 24h avant l'arrivee"
+      },
+      "moderate": {
+        "label": "Moderee",
+        "description": "Remboursement integral jusqu'a 5 jours avant l'arrivee"
+      },
+      "strict": {
+        "label": "Stricte",
+        "description": "Remboursement de 50% jusqu'a 1 semaine avant l'arrivee"
+      },
+      "strict_long_term": {
+        "label": "Stricte (long sejour)",
+        "description": "Politique stricte pour les sejours de 30 jours et plus"
+      },
+      "non_refundable": {
+        "label": "Non remboursable",
+        "description": "Aucun remboursement apres reservation"
+      }
+    },
+    "customRules": "Regles supplementaires",
+    "customRulePlaceholder": "Ajouter une regle..."
+  },
+  "review": {
+    "title": "Verifiez votre annonce",
+    "subtitle": "Voici un resume de votre annonce. Verifiez-le avant de publier.",
+    "edit": "Modifier",
+    "sections": {
+      "category": "Categorie",
+      "location": "Localisation",
+      "title": "Titre",
+      "price": "Prix",
+      "details": "Details",
+      "photos": "Photos",
+      "cancellation": "Politique d'annulation"
+    },
+    "bedrooms": "Chambres",
+    "bathrooms": "Salles de bain",
+    "area": "Surface",
+    "furnished": "Ameublement",
+    "amenities": "Equipements",
+    "make": "Marque",
+    "model": "Modele",
+    "year": "Annee",
+    "seats": "Places",
+    "features": "Equipements",
+    "photosCount": "photo(s) telechargee(s)",
+    "pricingTypes": {
+      "per_night": "/ nuit",
+      "per_day": "/ jour",
+      "per_week": "/ semaine",
+      "per_month": "/ mois",
+      "per_hour": "/ heure"
+    },
+    "publish": "Publier l'annonce",
+    "saveDraft": "Sauvegarder en brouillon"
+  },
+  "validation": {
+    "selectCategory": "Veuillez selectionner une categorie",
+    "selectType": "Veuillez selectionner un type",
+    "selectCity": "Veuillez selectionner une ville",
+    "enterStreet": "Veuillez saisir une adresse",
+    "placeMarker": "Veuillez placer le marqueur sur la carte",
+    "atLeastOneBedroom": "Veuillez ajouter au moins 1 chambre",
+    "atLeastOneBathroom": "Veuillez ajouter au moins 1 salle de bain",
+    "enterMake": "Veuillez saisir la marque du vehicule",
+    "enterModel": "Veuillez saisir le modele du vehicule",
+    "selectTransmission": "Veuillez selectionner le type de transmission",
+    "selectFuelType": "Veuillez selectionner le type de carburant",
+    "atLeastOnePhoto": "Veuillez telecharger au moins une photo",
+    "enterTitle": "Veuillez saisir un titre",
+    "titleTooShort": "Le titre doit contenir au moins 5 caracteres",
+    "titleTooLong": "Le titre ne peut pas depasser 100 caracteres",
+    "enterDescription": "Veuillez saisir une description",
+    "descriptionTooShort": "La description doit contenir au moins 20 caracteres",
+    "descriptionTooLong": "La description ne peut pas depasser 2000 caracteres",
+    "enterPrice": "Veuillez saisir un prix valide"
+  },
+  "messages": {
+    "publishSuccess": "Votre annonce a ete publiee !",
+    "draftSuccess": "Brouillon sauvegarde avec succes",
+    "error": "Echec de la creation. Veuillez reessayer."
+  }
+}
